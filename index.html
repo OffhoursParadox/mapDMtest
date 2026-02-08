@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="shortcut icon" href="favicon.png" type="image/png">
+    <title>Project Cataclysm Wiki</title>
+    <meta property="twitter:card" content="summary_large_image">
+    <meta name="keywords" content="Project Cataclysm вики. Project Cataclysm Википедия. Project Cataclysm карта. Аномалии Project Cataclysm. Мутанты Project Cataclysm. Project Cataclysm таблица артефактов. Project cataclysm артефакты.">
+    <meta name="description" content="Project Cataclysm Wiki (Beta) - база знаний игры Project Cataclysm. Здесь вы найдёте интерактивную карту проекта и таблицу артефактов с их свойствами и ценами.">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-overlay"></div>
+
+    <header class="header">
+        <div class="header__container">
+            <a href="index.html" class="header__logo">
+                <span class="header__logo-text">CATACLYSM<span class="header__logo-accent">WIKI</span></span>
+            </a>
+            <nav class="header__nav">
+                <a href="Map/map.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="Table/table.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <span data-i18n="nav.artifacts">Артефакты</span>
+                </a>
+                <a href="Calculator/calculator.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="DPS/dps.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span data-i18n="nav.dps">DPS</span>
+                </a>
+                
+                <!-- Переключатель языка -->
+                <div class="lang-switcher">
+                    <button class="lang-switcher__btn" id="langSwitcher">
+                        <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M2 12h20"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <span class="lang-switcher__current" id="currentLang">RU</span>
+                    </button>
+                    <div class="lang-dropdown" id="langDropdown">
+                        <button class="lang-dropdown__item" data-lang="ru">
+                            <span class="lang-dropdown__flag">🇷🇺</span>
+                            <span class="lang-dropdown__text">Русский</span>
+                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                        <button class="lang-dropdown__item" data-lang="en">
+                            <span class="lang-dropdown__flag">🇬🇧</span>
+                            <span class="lang-dropdown__text">English</span>
+                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            <button class="header__burger" id="burger"><span></span><span></span><span></span></button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <nav class="mobile-menu__nav">
+            <a href="Map/map.html" class="mobile-menu__link" data-i18n="nav.mapFull">Интерактивная карта</a>
+            <a href="Table/table.html" class="mobile-menu__link" data-i18n="nav.artifactsTable">Таблица артефактов</a>
+            <a href="Calculator/calculator.html" class="mobile-menu__link" data-i18n="nav.buildsCalculator">Калькулятор сборок</a>
+            <a href="DPS/dps.html" class="mobile-menu__link" data-i18n="nav.dpsCalculator">Калькулятор DPS</a>
+            
+            <!-- Мобильный переключатель языка -->
+            <div class="mobile-lang-switcher">
+                <button class="mobile-lang-btn" data-lang="ru">
+                    <span class="lang-dropdown__flag">🇷🇺</span> Русский
+                </button>
+                <button class="mobile-lang-btn" data-lang="en">
+                    <span class="lang-dropdown__flag">🇬🇧</span> English
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <main class="main">
+        <section class="hero-compact">
+            <div class="container">
+                <div class="hero-compact__content">
+                    <h1 class="hero-compact__title">PROJECT <span class="hero-compact__accent">CATACLYSM</span> WIKI</h1>
+                    <p class="hero-compact__desc" data-i18n="hero.desc">Официальная база знаний по игре Project Cataclysm</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-nav">
+            <div class="container">
+                <div class="quick-nav__grid">
+                    <a href="Table/table.html" class="quick-card">
+                        <div class="quick-card__icon quick-card__icon--artifacts">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title" data-i18n="cards.artifacts.title">Артефакты</h3>
+                            <p class="quick-card__desc" data-i18n="cards.artifacts.desc">Полный каталог с характеристиками и ценами</p>
+                        </div>
+                        <svg class="quick-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+
+                    <a href="Calculator/calculator.html" class="quick-card">
+                        <div class="quick-card__icon quick-card__icon--calculator">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/>
+                            </svg>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title" data-i18n="cards.calculator.title">Калькулятор сборок</h3>
+                            <p class="quick-card__desc" data-i18n="cards.calculator.desc">Собери оптимальный билд артефактов</p>
+                        </div>
+                        <svg class="quick-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+
+                    <a href="DPS/dps.html" class="quick-card">
+                        <div class="quick-card__icon quick-card__icon--dps">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title" data-i18n="cards.dps.title">Калькулятор DPS</h3>
+                            <p class="quick-card__desc" data-i18n="cards.dps.desc">Расчёт урона в секунду</p>
+                        </div>
+                        <svg class="quick-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+
+                    <a href="Map/map.html" class="quick-card quick-card--featured">
+                        <div class="quick-card__icon quick-card__icon--map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>
+                            </svg>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title" data-i18n="cards.map.title">Интерактивная карта</h3>
+                            <p class="quick-card__desc" data-i18n="cards.map.desc">Все локации и точки интереса</p>
+                        </div>
+                        <svg class="quick-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="content-grid">
+                    <div class="rf-frequencies">
+                        <div class="rf-frequencies__header">
+                            <div class="rf-frequencies__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20v-6M6 20V10M18 20V4"/>
+                                </svg>
+                            </div>
+                            <h2 class="rf-frequencies__title" data-i18n="rf.title">Частоты RF-ресивера</h2>
+                        </div>
+                        <div class="rf-frequencies__grid">
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.junkyard">Свалка</span>
+                                <span class="rf-item__freq">178 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.agroprom">Агропром</span>
+                                <span class="rf-item__freq">123 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.darkHollow">Тёмная лощина</span>
+                                <span class="rf-item__freq">188 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.darkValley">Тёмная долина</span>
+                                <span class="rf-item__freq">141 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.redForest">Редколесье</span>
+                                <span class="rf-item__freq">157 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.wildTerritory">Дикая территория</span>
+                                <span class="rf-item__freq">146 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.yantar">Янтарь</span>
+                                <span class="rf-item__freq">166 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.meadow">Поляна</span>
+                                <span class="rf-item__freq">202 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.anthill">Муравейник</span>
+                                <span class="rf-item__freq">113 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.polissya">Полесское</span>
+                                <span class="rf-item__freq">217 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.militaryWarehouses">Военные склады</span>
+                                <span class="rf-item__freq">271 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                            <div class="rf-item">
+                                <span class="rf-item__location" data-i18n="rf.crater">Котловина</span>
+                                <span class="rf-item__freq">210 <span data-i18n="rf.mhz">МГц</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="updates-block">
+                        <div class="updates-block__header">
+                            <div class="updates-block__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                </svg>
+                            </div>
+                            <h2 class="updates-block__title" data-i18n="updates.title">Обновления</h2>
+                        </div>
+                        <div class="updates-block__content">
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date0">5 февраля 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update0_1">Весь сайт был переведён на английский язык</li>
+                                    <li data-i18n="updates.update0_2">Добавлена кнопка переключения языка</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date1">3 февраля 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update1_1">Добавлена интерактивная карта</li>
+                                    <li data-i18n="updates.update1_2">Отмечены ящики, мутанты, торговцы и НПС</li>
+                                    <li data-i18n="updates.update1_3">Реализована система фильтров</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date2">2 февраля 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update2_1">Полностью обновлён UX калькулятора DPS</li>
+                                    <li data-i18n="updates.update2_2">Была занесена вся информация об оружии в игре</li>
+                                    <li data-i18n="updates.update2_3">Реализован подсчёт ТТК через график</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date3">1 февраля 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update3_1">Перестроена главная страница</li>
+                                    <li data-i18n="updates.update3_2">Добавлены частоты RF-ресивера</li>
+                                    <li data-i18n="updates.update3_3">Добавлено 6 новых бронекостюмов</li>
+                                    <li data-i18n="updates.update3_4">Исправлены пресеты заточки экзоскелетов</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date4">30 января 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update4_1">Калькулятор сборок обновлён до финальной версии</li>
+                                    <li data-i18n="updates.update4_2">Добавлена большая часть снаряжения</li>
+                                    <li data-i18n="updates.update4_3">Переработан UX калькулятора</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date5">23 января 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update5_1">Дополнен функционал калькулятора</li>
+                                    <li data-i18n="updates.update5_2">Добавлен экзоскелет "Иггдрасиль"</li>
+                                    <li data-i18n="updates.update5_3">Добавлены вариации артефакта "Бокал"</li>
+                                </ul>
+                            </div>
+                            <div class="update-entry">
+                                <span class="update-entry__date" data-i18n="updates.date6">11 января 2026</span>
+                                <ul class="update-entry__list">
+                                    <li data-i18n="updates.update6_1">Добавлен калькулятор сборок артефактов</li>
+                                    <li data-i18n="updates.update6_2">Обновлён дизайн сайта</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <div class="container">
+                <div class="about-card">
+                    <div class="about-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                        </svg>
+                    </div>
+                    <div class="about-card__content">
+                        <h3 class="about-card__title" data-i18n="about.title">О проекте</h3>
+                        <p class="about-card__text" data-i18n="about.text"><strong>Project Cataclysm Wiki</strong> — официальная база знаний по игре. Здесь собрана актуальная информация: таблицы артефактов, калькулятор сборок, интерактивная карта и справочные данные.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <p class="footer__copy" data-i18n="footer.copy">© 2026 Project Cataclysm Wiki. Официальный сайт.</p>
+                <div class="footer__links">
+                    <!-- Discord -->
+                    <a href="https://discord.com/invite/5UTs7R8" class="footer__social" title="Discord" target="_blank" rel="noopener noreferrer">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                    </a>
+                    
+                    <!-- VK -->
+                    <a href="https://vk.com/project_cataclysm" class="footer__social" title="VK" target="_blank" rel="noopener noreferrer">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.862-.523-2.049-1.727-1.033-1.033-1.49-1.172-1.744-1.172-.363 0-.468.104-.468.604v1.575c0 .432-.137.693-1.273.693-1.875 0-3.959-1.137-5.422-3.258-2.2-3.098-2.803-5.422-2.803-5.898 0-.254.104-.49.604-.49h1.744c.451 0 .623.207.796.69.879 2.533 2.35 4.754 2.955 4.754.225 0 .33-.104.33-.676V9.68c-.07-1.222-.715-1.326-.715-1.764 0-.207.174-.414.451-.414h2.742c.381 0 .52.207.52.656v3.538c0 .381.173.52.277.52.225 0 .416-.139.831-.554 1.29-1.445 2.212-3.677 2.212-3.677.121-.254.328-.49.78-.49h1.744c.52 0 .641.268.52.656-.225 1.033-2.41 4.116-2.41 4.116-.19.312-.26.45 0 .796.19.26.813.796 1.229 1.277.761.865 1.343 1.594 1.5 2.096.173.502-.087.762-.588.762z"/></svg>
+                    </a>
+                    
+                    <!-- YouTube -->
+                    <a href="https://www.youtube.com/@projectcataclysm" class="footer__social" title="YouTube" target="_blank" rel="noopener noreferrer">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
