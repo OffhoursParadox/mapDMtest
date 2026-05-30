@@ -3,7 +3,6 @@
 function initBurgerMenu() {
     const burger = document.getElementById('burger');
     const mobileMenu = document.getElementById('mobileMenu');
-
     if (!burger || !mobileMenu) return;
 
     burger.addEventListener('click', () => {
@@ -13,15 +12,11 @@ function initBurgerMenu() {
         document.body.style.overflow = isActive ? 'hidden' : '';
 
         const langDropdown = document.getElementById('langDropdown');
-        if (langDropdown) {
-            langDropdown.classList.remove('active');
-        }
+        if (langDropdown) langDropdown.classList.remove('active');
     });
 
     mobileMenu.querySelectorAll('.mobile-menu__link').forEach(link => {
-        link.addEventListener('click', () => {
-            closeMobileMenu(burger, mobileMenu);
-        });
+        link.addEventListener('click', () => closeMobileMenu(burger, mobileMenu));
     });
 
     document.addEventListener('keydown', (e) => {
@@ -49,22 +44,17 @@ function closeMobileMenu(burger, mobileMenu) {
 function initScrollEffects() {
     const header = document.getElementById('mainHeader');
     const scrollTopBtn = document.getElementById('scrollTop');
-
     if (!header) return;
 
     let ticking = false;
-
     window.addEventListener('scroll', () => {
         if (!ticking) {
             requestAnimationFrame(() => {
                 const scrollY = window.scrollY;
-
                 header.classList.toggle('scrolled', scrollY > 50);
-
                 if (scrollTopBtn) {
                     scrollTopBtn.classList.toggle('visible', scrollY > 300);
                 }
-
                 ticking = false;
             });
             ticking = true;
@@ -83,11 +73,42 @@ function initLangDropdownClose() {
         const langDropdown = document.getElementById('langDropdown');
         const langSwitcher = document.getElementById('langSwitcher');
 
-        if (langDropdown && langSwitcher &&
-            !langSwitcher.contains(e.target) &&
+        if (langDropdown && langSwitcher && 
+            !langSwitcher.contains(e.target) && 
             !langDropdown.contains(e.target)) {
             langDropdown.classList.remove('active');
             langSwitcher.setAttribute('aria-expanded', 'false');
         }
     });
+}
+
+function toggleLangDropdown() {
+    const dropdown = document.getElementById('langDropdown');
+    const switcher = document.getElementById('langSwitcher');
+    if (!dropdown || !switcher) return;
+
+    const isActive = dropdown.classList.toggle('active');
+    switcher.setAttribute('aria-expanded', isActive);
+}
+
+function setLanguage(lang) {
+    localStorage.setItem('wiki-lang', lang);
+
+    const currentLang = document.querySelector('.lang-switcher__current');
+    if (currentLang) currentLang.textContent = lang.toUpperCase();
+
+    document.querySelectorAll('.lang-dropdown__item, .mobile-lang-btn').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    const activeDropdownItem = document.querySelector(`.lang-dropdown__item[onclick="setLanguage('${lang}')"]`);
+    const activeMobileBtn = document.querySelector(`.mobile-lang-btn[onclick="setLanguage('${lang}')"]`);
+
+    if (activeDropdownItem) activeDropdownItem.classList.add('active');
+    if (activeMobileBtn) activeMobileBtn.classList.add('active');
+
+    const dropdown = document.getElementById('langDropdown');
+    if (dropdown) dropdown.classList.remove('active');
+
+    document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
 }
