@@ -9,11 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageAnimations();
 });
 
-/* ================================================================
-   PAGE LOAD ANIMATIONS
-   ================================================================ */
 function initPageAnimations() {
-    // Intersection Observer for scroll-triggered animations
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -21,39 +17,35 @@ function initPageAnimations() {
                 observer.unobserve(entry.target);
             }
         });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px'
-    });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-    // Observe content sections
     document.querySelectorAll('.content-grid > *').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(24px)';
-        el.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        Object.assign(el.style, {
+            opacity: '0',
+            transform: 'translateY(24px)',
+            transition: 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+        });
         observer.observe(el);
     });
 
-    // Add visible class style dynamically
     const style = document.createElement('style');
     style.textContent = '.anim-visible { opacity: 1 !important; transform: translateY(0) !important; }';
     document.head.appendChild(style);
 
-    // Stagger RF items
     document.querySelectorAll('.rf-frequencies__grid .rf-item').forEach((item, i) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(12px)';
-        item.style.transition = `opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 50}ms, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 50}ms`;
+        const delay = i * 50;
+        Object.assign(item.style, {
+            opacity: '0',
+            transform: 'translateY(12px)',
+            transition: `opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
+        });
         setTimeout(() => {
             item.style.opacity = '1';
             item.style.transform = 'translateY(0)';
-        }, 800 + i * 50);
+        }, 800 + delay);
     });
 }
 
-/* ================================================================
-   RF FREQUENCY COPY
-   ================================================================ */
 function initRfCopy() {
     document.querySelectorAll('.rf-item').forEach(item => {
         item.addEventListener('click', () => {
@@ -64,7 +56,6 @@ function initRfCopy() {
             if (!match) return;
 
             const freq = match[0];
-
             const showFeedback = () => {
                 const existing = item.querySelector('.rf-copied-tooltip');
                 if (existing) existing.remove();
@@ -83,7 +74,7 @@ function initRfCopy() {
                 }, 1500);
             };
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
+            if (navigator.clipboard?.writeText) {
                 navigator.clipboard.writeText(freq).then(showFeedback).catch(() => {
                     fallbackCopy(freq);
                     showFeedback();
@@ -102,13 +93,10 @@ function fallbackCopy(text) {
     ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); } catch (e) { /* ignored */ }
+    try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
 }
 
-/* ================================================================
-   UPDATES
-   ================================================================ */
 function loadUpdates() {
     const container = document.getElementById('updatesContent');
     if (!container) return;
@@ -120,10 +108,7 @@ function loadUpdates() {
         })
         .then(updates => {
             renderUpdates(updates, container);
-
-            document.addEventListener('languageChanged', () => {
-                renderUpdates(updates, container);
-            });
+            document.addEventListener('languageChanged', () => renderUpdates(updates, container));
         })
         .catch(() => {
             container.innerHTML = '<p style="color:var(--c-text-2);padding:16px;">Не удалось загрузить обновления</p>';
@@ -132,14 +117,11 @@ function loadUpdates() {
 
 function renderUpdates(updates, container) {
     const lang = localStorage.getItem('wiki-lang') || 'ru';
-
     container.innerHTML = updates.map(entry => `
         <div class="update-entry">
             <span class="update-entry__date">${entry.date[lang] || entry.date.ru}</span>
             <ul class="update-entry__list">
-                ${entry.items.map(item =>
-                    `<li>${item[lang] || item.ru}</li>`
-                ).join('')}
+                ${entry.items.map(item => `<li>${item[lang] || item.ru}</li>`).join('')}
             </ul>
         </div>
     `).join('');
