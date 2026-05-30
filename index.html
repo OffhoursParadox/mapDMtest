@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Cataclysm Wiki</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,11 +43,11 @@
                     </svg>
                     Карта
                 </a>
-                <a href="artifacts.html" class="nav-link">
+                <a href="items.html" class="nav-link">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
-                    Артефакты
+                    Предметы
                 </a>
                 <a href="calculator.html" class="nav-link">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,11 +110,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </a>
-            <a href="artifacts.html" class="mobile-menu__link">
+            <a href="items.html" class="mobile-menu__link">
                 <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
-                <span class="mobile-menu__text">Таблица артефактов</span>
+                <span class="mobile-menu__text">База данных предметов</span>
                 <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
@@ -135,6 +136,21 @@
                 <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
+            </a>
+            <a href="guides.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text">Руководства и гайды</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text">Калькулятор бартера</span>
             </a>
         </nav>
         <div class="mobile-lang-switcher">
@@ -196,7 +212,9 @@
                             </div>
                         </div>
                     </div>
-                    <p class="hero-compact__desc">Официальная база знаний по игре Project Cataclysm</p>
+                    <p class="hero-compact__desc">
+                        <span class="hero-desc__text">Официальная база знаний по миру Project Cataclysm</span>
+                    </p>
                 </div>
             </div>
         </section>
@@ -204,64 +222,110 @@
         <section class="quick-nav">
             <div class="container">
                 <div class="quick-nav__grid">
-                    <a href="artifacts.html" class="quick-card quick-card--artifacts">
-                        <div class="quick-card__icon quick-card__icon--artifacts">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                            </svg>
+                    <a href="items.html" class="quick-card quick-card--encyclopedia">
+                        <div class="quick-card__preview">
+                            <img src="images/previews/items.jpg" alt="База данных предметов" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="quick-card__content">
-                            <div class="quick-card__title">Артефакты</div>
-                            <div class="quick-card__desc">Полный каталог с характеристиками и ценами</div>
+                            <h3 class="quick-card__title">База данных предметов</h3>
+                            <p class="quick-card__desc">Полный каталог предметов, экипировки и игровых находок</p>
                         </div>
                         <svg class="quick-card__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
 
                     <a href="calculator.html" class="quick-card quick-card--calculator">
-                        <div class="quick-card__icon quick-card__icon--calculator">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                            </svg>
+                        <div class="quick-card__preview">
+                            <img src="images/previews/calculator.jpg" alt="Калькулятор сборок" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="quick-card__content">
-                            <div class="quick-card__title">Калькулятор сборок</div>
-                            <div class="quick-card__desc">Собери оптимальный билд артефактов</div>
+                            <h3 class="quick-card__title">Калькулятор сборок</h3>
+                            <p class="quick-card__desc">Подбор оптимальной конфигурации и сравнение вариантов</p>
                         </div>
                         <svg class="quick-card__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
 
                     <a href="ttk.html" class="quick-card quick-card--ttk">
-                        <div class="quick-card__icon quick-card__icon--ttk">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
+                        <div class="quick-card__preview">
+                            <img src="images/previews/ttk.jpg" alt="Калькулятор ТТК" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="quick-card__content">
-                            <div class="quick-card__title">Калькулятор ТТК</div>
-                            <div class="quick-card__desc">Расчёт времени на убийство</div>
+                            <h3 class="quick-card__title">Калькулятор ТТК</h3>
+                            <p class="quick-card__desc">Расчёт времени на убийство и эффективности оружия</p>
                         </div>
                         <svg class="quick-card__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
 
-                    <a href="map.html" class="quick-card quick-card--featured">
-                        <div class="quick-card__icon quick-card__icon--map">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                            </svg>
+                    <a href="map.html" class="quick-card quick-card--map">
+                        <div class="quick-card__preview">
+                            <img src="images/previews/map.jpg" alt="Интерактивная карта" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="quick-card__content">
-                            <div class="quick-card__title">Интерактивная карта</div>
-                            <div class="quick-card__desc">Все локации и точки интереса</div>
+                            <h3 class="quick-card__title">Интерактивная карта</h3>
+                            <p class="quick-card__desc">Локации, точки интереса и важные маршруты по Зоне</p>
                         </div>
                         <svg class="quick-card__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
+                    </a>
+
+                    <a href="guides.html" class="quick-card quick-card--guides">
+                        <div class="quick-card__preview">
+                            <img src="images/previews/guides.jpg" alt="Руководства и гайды" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title">Руководства и гайды</h3>
+                            <p class="quick-card__desc">Практические советы, маршруты и полезные игровые разборы</p>
+                        </div>
+                        <svg class="quick-card__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+
+                    <a href="#" class="quick-card quick-card--barter quick-card--disabled" aria-disabled="true" tabindex="-1">
+                        <div class="quick-card__preview">
+                            <img src="images/previews/barter.jpg" alt="Калькулятор бартера" class="quick-card__preview-img">
+                            <div class="quick-card__preview-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="quick-card__content">
+                            <h3 class="quick-card__title">Калькулятор бартера</h3>
+                            <p class="quick-card__desc">Расчёт выгодных обменов и подготовка к торговым цепочкам</p>
+                            <span class="quick-card__badge">В разработке</span>
+                        </div>
                     </a>
                 </div>
             </div>
