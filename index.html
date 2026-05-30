@@ -28,10 +28,9 @@
 <body>
     <div class="bg-overlay"></div>
 
-    <!-- ===== HEADER ===== -->
     <header class="header" id="mainHeader">
         <div class="header__container">
-            <a href="./" class="header__logo" aria-label="Project Cataclysm Wiki — Главная">
+            <a href="/" class="header__logo">
                 <div class="logo-mark">
                     <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
@@ -49,96 +48,88 @@
                 </div>
             </a>
 
-            <nav class="header__nav" aria-label="Основная навигация">
-                <a href="Map/map.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>
+            <nav class="header__nav">
+                <a href="/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                     </svg>
-                    <span data-i18n="nav.map">Карта</span>
+                    <span>Карта</span>
                 </a>
-                <a href="Table/table.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                
+                <a href="/artifacts.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                     </svg>
-                    <span data-i18n="nav.artifacts">Артефакты</span>
+                    <span>Артефакты</span>
                 </a>
-                <a href="Calculator/calculator.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/>
+                
+                <a href="/calculator.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
-                    <span data-i18n="nav.calculator">Калькулятор</span>
+                    <span>Калькулятор</span>
                 </a>
-                <a href="TTK/ttk.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
+                
+                <a href="/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    <span data-i18n="nav.ttk">ТТК</span>
+                    <span>ТТК</span>
                 </a>
-
-                <div class="lang-switcher">
-                    <button class="lang-switcher__btn" id="langSwitcher"
-                            aria-label="Выбор языка"
-                            aria-expanded="false"
-                            aria-haspopup="true">
-                        <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M2 12h20"/>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                        </svg>
-                        <span class="lang-switcher__current" id="currentLang">RU</span>
-                    </button>
-                    <div class="lang-dropdown" id="langDropdown">
-                        <button class="lang-dropdown__item" data-lang="ru">
-                            <span class="lang-dropdown__flag">🇷🇺</span>
-                            <span class="lang-dropdown__text">Русский</span>
-                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                        </button>
-                        <button class="lang-dropdown__item" data-lang="en">
-                            <span class="lang-dropdown__flag">🇬🇧</span>
-                            <span class="lang-dropdown__text">English</span>
-                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
             </nav>
 
-            <button class="header__burger" id="burger"
-                    aria-label="Открыть меню"
-                    aria-expanded="false"
-                    aria-controls="mobileMenu">
-                <span></span><span></span><span></span>
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" onclick="toggleLangDropdown()" aria-expanded="false">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current">RU</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M6 8L2 4h8L6 8z"/>
+                    </svg>
+                </button>
+                
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" onclick="setLanguage('ru')">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" onclick="setLanguage('en')">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
         </div>
     </header>
 
-    <!-- ===== MOBILE MENU ===== -->
-    <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Мобильная навигация">
+    <div class="mobile-menu" id="mobileMenu">
         <nav class="mobile-menu__nav">
-            <a href="Map/map.html" class="mobile-menu__link" data-i18n="nav.mapFull">Интерактивная карта</a>
-            <a href="Table/table.html" class="mobile-menu__link" data-i18n="nav.artifactsTable">Таблица артефактов</a>
-            <a href="Calculator/calculator.html" class="mobile-menu__link" data-i18n="nav.buildsCalculator">Калькулятор сборок</a>
-            <a href="TTK/ttk.html" class="mobile-menu__link" data-i18n="nav.ttkCalculator">Калькулятор ТТК</a>
-
-            <div class="mobile-lang-switcher">
-                <button class="mobile-lang-btn" data-lang="ru">
-                    <span class="lang-dropdown__flag">🇷🇺</span> Русский
-                </button>
-                <button class="mobile-lang-btn" data-lang="en">
-                    <span class="lang-dropdown__flag">🇬🇧</span> English
-                </button>
-            </div>
+            <a href="/map.html" class="mobile-menu__link">🗺️ Интерактивная карта</a>
+            <a href="/artifacts.html" class="mobile-menu__link">✨ Таблица артефактов</a>
+            <a href="/calculator.html" class="mobile-menu__link">🧮 Калькулятор сборок</a>
+            <a href="/ttk.html" class="mobile-menu__link">⚡ Калькулятор ТТК</a>
         </nav>
+        
+        <div class="mobile-lang-switcher">
+            <button class="mobile-lang-btn active" onclick="setLanguage('ru')">🇷🇺 Русский</button>
+            <button class="mobile-lang-btn" onclick="setLanguage('en')">🇬🇧 English</button>
+        </div>
     </div>
 
-    <!-- ===== MAIN ===== -->
     <main class="main">
-
-        <!-- HERO -->
         <section class="hero-compact">
             <div class="container">
                 <div class="hero-compact__content">
@@ -187,7 +178,6 @@
             </div>
         </section>
 
-        <!-- TOOL CARDS -->
         <section class="quick-nav" aria-label="Навигация по разделам">
             <div class="container">
                 <div class="quick-nav__grid anim-stagger">
@@ -255,7 +245,6 @@
             </div>
         </section>
 
-        <!-- CONTENT GRID: RF + Updates -->
         <section class="content-section">
             <div class="container">
                 <div class="content-grid">
@@ -329,15 +318,13 @@
                             </div>
                             <h2 class="updates-block__title" id="updates-title" data-i18n="updates.title">Обновления</h2>
                         </div>
-                        <div class="updates-block__content" id="updatesContent">
-                        </div>
+                        <div class="updates-block__content" id="updatesContent"></div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- ===== FOOTER ===== -->
     <footer class="footer">
         <div class="container">
             <div class="footer__content">
