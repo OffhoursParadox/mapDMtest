@@ -1,0 +1,234 @@
+[
+    {
+        "date": {
+            "ru": "14 марта 2026",
+            "en": "March 14, 2026"
+        },
+        "items": [
+            {
+                "ru": "Завершена работа над заполнением интерактивной карты",
+                "en": "Completed work on populating the interactive map"
+            },
+            {
+                "ru": "На карту добавлена полноценная система уровней локаций (Поверхность / Подземелье)",
+                "en": "A full-fledged system of location levels has been added to the map (Surface / Dungeon)"
+            },
+            {
+                "ru": "Удалён функционал пользовательских меток",
+                "en": "Custom tag functionality has been removed"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "23 февраля 2026",
+            "en": "February 23, 2026"
+        },
+        "items": [
+            {
+                "ru": "Была обновлена интерактивная карта:",
+                "en": "Interactive map has been updated:"
+            },
+            {
+                "ru": "Добавлена кнопка копирования координат для меток, связанных с лутом",
+                "en": "Added coordinate copy button for loot-related markers"
+            },
+            {
+                "ru": "Добавлено подробное описание для спотов боссов и НПС",
+                "en": "Added detailed descriptions for boss and NPC spots"
+            },
+            {
+                "ru": "Добавлены недостающие метки на Армейских складах",
+                "en": "Added missing markers on Army Warehouses"
+            },
+            {
+                "ru": "Оптимизирован код страницы",
+                "en": "Page code optimized"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "14 февраля 2026",
+            "en": "February 14, 2026"
+        },
+        "items": [
+            {
+                "ru": "Улучшена интерактивная карта: исправлен переключатель языка, добавлено сохранение фильтров",
+                "en": "Improved interactive map: fixed language switcher, added filter saving"
+            },
+            {
+                "ru": "Карта запоминает состояние боковой панели и фильтров между сессиями",
+                "en": "Map remembers sidebar state and filters between sessions"
+            },
+            {
+                "ru": "Кнопка «Сбросить фильтры» теперь включает все метки обратно",
+                "en": "\"Reset filters\" button now turns all markers back on"
+            },
+            {
+                "ru": "Повышена безопасность пользовательских меток",
+                "en": "Improved security for user markers"
+            },
+            {
+                "ru": "Проведена оптимизация кода на других страницах сайта",
+                "en": "Code optimization performed on other site pages"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "9 февраля 2026",
+            "en": "February 9, 2026"
+        },
+        "items": [
+            {
+                "ru": "Оптимизирован код главной страницы сайта",
+                "en": "Optimized the main page code"
+            },
+            {
+                "ru": "Обновлены все характеристики снаряжения и артефактов",
+                "en": "Updated all equipment and artifact stats"
+            },
+            {
+                "ru": "В список оружия был добавлен ППШ-41",
+                "en": "PPSh-41 was added to the weapon list"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "5 февраля 2026",
+            "en": "February 5, 2026"
+        },
+        "items": [
+            {
+                "ru": "Весь сайт был переведён на английский язык",
+                "en": "The entire site has been translated into English"
+            },
+            {
+                "ru": "Добавлена кнопка переключения языка",
+                "en": "Added language switch button"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "3 февраля 2026",
+            "en": "February 3, 2026"
+        },
+        "items": [
+            {
+                "ru": "Добавлена интерактивная карта",
+                "en": "Added interactive map"
+            },
+            {
+                "ru": "Отмечены ящики, мутанты, торговцы и НПС",
+                "en": "Marked crates, mutants, traders and NPCs"
+            },
+            {
+                "ru": "Реализована система фильтров",
+                "en": "Implemented filter system"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "2 февраля 2026",
+            "en": "February 2, 2026"
+        },
+        "items": [
+            {
+                "ru": "Полностью обновлён UX калькулятора ТТК",
+                "en": "Completely updated TTK calculator UX"
+            },
+            {
+                "ru": "Была занесена вся информация об оружии в игре",
+                "en": "All weapon information has been added"
+            },
+            {
+                "ru": "Реализован подсчёт ТТК через график",
+                "en": "Implemented TTK calculation via chart"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "1 февраля 2026",
+            "en": "February 1, 2026"
+        },
+        "items": [
+            {
+                "ru": "Перестроена главная страница",
+                "en": "Rebuilt the main page"
+            },
+            {
+                "ru": "Добавлены частоты RF-ресивера",
+                "en": "Added RF receiver frequencies"
+            },
+            {
+                "ru": "Добавлено 6 новых бронекостюмов",
+                "en": "Added 6 new armor suits"
+            },
+            {
+                "ru": "Исправлены пресеты заточки экзоскелетов",
+                "en": "Fixed exoskeleton upgrade presets"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "30 января 2026",
+            "en": "January 30, 2026"
+        },
+        "items": [
+            {
+                "ru": "Калькулятор сборок обновлён до финальной версии",
+                "en": "Build calculator updated to final version"
+            },
+            {
+                "ru": "Добавлена большая часть снаряжения",
+                "en": "Added most of the equipment"
+            },
+            {
+                "ru": "Переработан UX калькулятора",
+                "en": "Reworked calculator UX"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "23 января 2026",
+            "en": "January 23, 2026"
+        },
+        "items": [
+            {
+                "ru": "Дополнен функционал калькулятора",
+                "en": "Extended calculator functionality"
+            },
+            {
+                "ru": "Добавлен экзоскелет \"Иггдрасиль\"",
+                "en": "Added \"Yggdrasil\" exoskeleton"
+            },
+            {
+                "ru": "Добавлены вариации артефакта \"Бокал\"",
+                "en": "Added \"Goblet\" artifact variations"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "11 января 2026",
+            "en": "January 11, 2026"
+        },
+        "items": [
+            {
+                "ru": "Добавлен калькулятор сборок артефактов",
+                "en": "Added artifact build calculator"
+            },
+            {
+                "ru": "Обновлён дизайн сайта",
+                "en": "Updated site design"
+            }
+        ]
+    }
+]
