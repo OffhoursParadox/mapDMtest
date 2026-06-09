@@ -195,6 +195,7 @@
                                 <circle cx="10" cy="32.5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
                             </svg>
                         </div>
+
                         <div class="hero-logo__text">
                             <div class="hero-logo__line1">
                                 <span class="hero-logo__pre">PROJECT</span>
@@ -209,6 +210,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="hero-compact__tagline">
                         <span class="hero-tagline__wing hero-tagline__wing--left"></span>
                         <span class="hero-tagline__text">Официальная база знаний по миру Project Cataclysm</span>
@@ -221,7 +223,7 @@
         <section class="quick-nav">
             <div class="container">
                 <div class="quick-nav__grid">
-                    <a href="items.html" class="quick-card quick-card--encyclopedia">
+                    <a href="items.html" class="quick-card quick-card--encyclopedia" style="--quick-delay:120ms;">
                         <img src="images/previews/items.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -238,7 +240,7 @@
                         </span>
                     </a>
 
-                    <a href="calculator.html" class="quick-card quick-card--calculator">
+                    <a href="calculator.html" class="quick-card quick-card--calculator" style="--quick-delay:195ms;">
                         <img src="images/previews/calculator.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -255,7 +257,7 @@
                         </span>
                     </a>
 
-                    <a href="ttk.html" class="quick-card quick-card--ttk">
+                    <a href="ttk.html" class="quick-card quick-card--ttk" style="--quick-delay:270ms;">
                         <img src="images/previews/ttk.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -272,7 +274,7 @@
                         </span>
                     </a>
 
-                    <a href="map.html" class="quick-card quick-card--map">
+                    <a href="map.html" class="quick-card quick-card--map" style="--quick-delay:345ms;">
                         <img src="images/previews/map.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -289,7 +291,7 @@
                         </span>
                     </a>
 
-                    <a href="#" class="quick-card quick-card--guides quick-card--disabled" aria-disabled="true" tabindex="-1">
+                    <a href="#" class="quick-card quick-card--guides quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:420ms;">
                         <img src="images/previews/guides.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -301,7 +303,7 @@
                         </span>
                     </a>
 
-                    <a href="#" class="quick-card quick-card--barter quick-card--disabled" aria-disabled="true" tabindex="-1">
+                    <a href="#" class="quick-card quick-card--barter quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:495ms;">
                         <img src="images/previews/barter.jpg" alt="" class="quick-card__image" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
@@ -320,6 +322,7 @@
             <div class="container">
                 <div class="rf-receiver-block">
                     <span class="rf-receiver-block__sweep"></span>
+
                     <div class="rf-receiver-block__header">
                         <div class="rf-receiver-block__title-wrap">
                             <div class="rf-receiver-block__icon">
@@ -328,103 +331,138 @@
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="rf-receiver-block__title">RF-ресивер</h2>
-                                <p class="rf-receiver-block__subtitle">Устройство для поиска частот и скрытых сигналов</p>
+                                <h2 class="rf-receiver-block__title">
+                                    <span class="rf-receiver-block__title-latin">RF</span>
+                                    <span class="rf-receiver-block__title-dash">-</span>
+                                    <span class="rf-receiver-block__title-cyrillic">ресивер</span>
+                                </h2>
+                                <p class="rf-receiver-block__subtitle">Специальный детектор, предназначенный для поиска схронов.</p>
                             </div>
-                        </div>
-                        <div class="rf-receiver-block__status">
-                            <span></span>
-                            Сигнал стабилен
                         </div>
                     </div>
 
-                    <div class="rf-receiver-block__showcase">
-                        <div class="rf-receiver-block__device">
-                            <div class="rf-receiver-block__device-frame">
-                                <img src="images/devices/rf-receiver.png" alt="RF-ресивер" class="rf-receiver-block__device-img">
+                    <div class="rf-receiver-block__top">
+                        <div class="rf-receiver-block__left-column">
+                            <div class="rf-receiver-block__device-panel">
+                                <div class="rf-receiver-block__device-frame">
+                                    <img src="images/devices/rf-receiver.png" alt="Изображение RF-ресивера" class="rf-receiver-block__device-image">
+                                </div>
+
+                                <div class="rf-receiver-block__panel-copy">
+                                    <span class="rf-receiver-block__panel-label">Быстрый старт</span>
+                                    <h3 class="rf-receiver-block__section-title">Скопируйте частоту и введите её в устройство</h3>
+                                    <p class="rf-receiver-block__section-text">Нажмите на нужную карточку справа — частота сразу попадёт в буфер обмена. После этого вставьте её в RF-ресивер в игре.</p>
+                                </div>
                             </div>
-                            <span class="rf-receiver-block__device-label">Внешний вид устройства</span>
+
+                            <div class="rf-receiver-block__guide-stack">
+                                <div class="rf-receiver-block__guide-head">
+                                    <div>
+                                        <span class="rf-receiver-block__panel-label">Пошаговый гайд</span>
+                                        <h3 class="rf-receiver-block__section-title">Как пользоваться RF-ресивером</h3>
+                                        <p class="rf-receiver-block__section-text">Короткий гайд: от установки устройства до получения ящика с наградой.</p>
+                                    </div>
+                                </div>
+
+                                <div class="rf-guide-cards">
+                                    <article class="rf-guide-card" style="--guide-card-delay:0ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-1.jpg" alt="Установка RF-ресивера" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">01</span>
+                                            <h4 class="rf-guide-card__title">Экипируйте ресивер</h4>
+                                            <p class="rf-guide-card__text">Поместите устройство в слот детектора и возьмите его в руки.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:90ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-2.jpg" alt="Включение RF-ресивера" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">02</span>
+                                            <h4 class="rf-guide-card__title">Введите частоту</h4>
+                                            <p class="rf-guide-card__text">В инвентаре нажмите ПКМ по устройству, включите его и введите частоту нужной локации.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:180ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-3.jpg" alt="Поиск по сигналу" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">03</span>
+                                            <h4 class="rf-guide-card__title">Идите по сигналу</h4>
+                                            <p class="rf-guide-card__text">Зелёный индикатор должен гореть, а не мигать. Ускорение звука говорит о близости тайника.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:270ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-4.jpg" alt="Награда на сейвзоне" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">04</span>
+                                            <h4 class="rf-guide-card__title">Заберите награду</h4>
+                                            <p class="rf-guide-card__text">В конечной точке появится ящик с лутом. Отнесите его в безопасную зону, чтобы открыть и забрать содержимое.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
                         </div>
-                        <div class="rf-receiver-block__preview">
-                            <div class="rf-receiver-block__preview-frame">
-                                <img src="images/devices/rf-receiver-demo.gif" alt="Демонстрация работы RF-ресивера" class="rf-receiver-block__preview-gif">
-                                <span class="rf-receiver-block__scanlines"></span>
-                                <span class="rf-receiver-block__preview-badge">GIF-демонстрация</span>
+
+                        <div class="rf-receiver-block__frequencies-panel">
+                            <div class="rf-receiver-block__grid" id="rfFrequenciesGrid"></div>
+
+                            <div class="rf-receiver-block__npc-block">
+                                <div class="rf-npc-card">
+                                    <div class="rf-npc-card__media">
+                                        <img src="images/npc/mastak.jpg" alt="НПС Мастак" class="rf-npc-card__image" loading="lazy" decoding="async">
+                                        <span class="rf-npc-card__media-overlay" aria-hidden="true"></span>
+                                    </div>
+
+                                    <div class="rf-npc-card__body">
+                                        <span class="rf-receiver-block__panel-label">Где взять ресивер</span>
+                                        <h3 class="rf-npc-card__title">НПС Мастак</h3>
+                                        <p class="rf-npc-card__text">RF-ресивер можно получить у техника по имени Мастак. Он выдаёт короткое задание, после принятия которого вы сразу получаете устройство.</p>
+                                        <ul class="rf-npc-card__meta">
+                                            <li class="rf-npc-card__meta-item">
+                                                <span class="rf-npc-card__meta-icon" aria-hidden="true">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="rf-npc-card__meta-content">
+                                                    <span class="rf-npc-card__meta-label">Локация</span>
+                                                    <span class="rf-npc-card__meta-value">Свалка</span>
+                                                </span>
+                                            </li>
+                                            <li class="rf-npc-card__meta-item">
+                                                <span class="rf-npc-card__meta-icon" aria-hidden="true">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v4M12 18v4M2 12h4M18 12h4M12 12m-3 0a3 3 0 106 0 3 3 0 10-6 0"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="rf-npc-card__meta-content">
+                                                    <span class="rf-npc-card__meta-label">Координаты</span>
+                                                    <span class="rf-npc-card__meta-value rf-npc-card__meta-value--mono">-399&nbsp;&nbsp;67&nbsp;&nbsp;-3146</span>
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="rf-receiver-block__preview-label">Игровой процесс взаимодействия с ресивером</span>
                         </div>
                     </div>
 
-                    <div class="rf-receiver-block__freq-header">
-                        <h3 class="rf-receiver-block__freq-title">Частоты локаций</h3>
-                        <p class="rf-receiver-block__freq-subtitle">Нажмите на канал, чтобы скопировать частоту</p>
-                    </div>
-                    <div class="rf-receiver-block__grid">
-                        <button type="button" class="rf-item" data-frequency="178" aria-label="Скопировать частоту Свалка 178 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Свалка</span>
-                            <span class="rf-item__freq">178 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="123" aria-label="Скопировать частоту Агропром 123 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Агропром</span>
-                            <span class="rf-item__freq">123 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="188" aria-label="Скопировать частоту Тёмная лощина 188 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Тёмная лощина</span>
-                            <span class="rf-item__freq">188 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="141" aria-label="Скопировать частоту Тёмная долина 141 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Тёмная долина</span>
-                            <span class="rf-item__freq">141 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="157" aria-label="Скопировать частоту Редколесье 157 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Редколесье</span>
-                            <span class="rf-item__freq">157 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="146" aria-label="Скопировать частоту Дикая территория 146 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Дикая территория</span>
-                            <span class="rf-item__freq">146 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="166" aria-label="Скопировать частоту Янтарь 166 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Янтарь</span>
-                            <span class="rf-item__freq">166 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="202" aria-label="Скопировать частоту Поляна 202 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Поляна</span>
-                            <span class="rf-item__freq">202 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="113" aria-label="Скопировать частоту Муравейник 113 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Муравейник</span>
-                            <span class="rf-item__freq">113 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="217" aria-label="Скопировать частоту Полесское 217 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Полесское</span>
-                            <span class="rf-item__freq">217 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="271" aria-label="Скопировать частоту Военные склады 271 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Военные склады</span>
-                            <span class="rf-item__freq">271 МГц</span>
-                        </button>
-                        <button type="button" class="rf-item" data-frequency="210" aria-label="Скопировать частоту Ледяная котловина 210 МГц">
-                            <span class="rf-item__signal" aria-hidden="true"><span></span><span></span><span></span></span>
-                            <span class="rf-item__location">Ледяная котловина</span>
-                            <span class="rf-item__freq">210 МГц</span>
-                        </button>
-                    </div>
+                    <div class="rf-receiver-block__live" id="rfReceiverLive" aria-live="polite" aria-atomic="true"></div>
                 </div>
 
                 <div class="updates-block">
                     <span class="updates-block__sweep"></span>
+
                     <div class="updates-block__header">
                         <div class="updates-block__title-wrap">
                             <div class="updates-block__icon">
@@ -437,11 +475,8 @@
                                 <p class="updates-block__subtitle">Журнал изменений и свежих правок базы</p>
                             </div>
                         </div>
-                        <div class="updates-block__status">
-                            <span></span>
-                            Live feed
-                        </div>
                     </div>
+
                     <div class="updates-block__content" id="updatesContent">
                         <div class="updates-block__loading">
                             <span class="updates-block__loader"></span>
@@ -466,6 +501,89 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
         </svg>
     </button>
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden">
+        <symbol id="rf-icon-copy" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5a3 3 0 116 0"/>
+        </symbol>
+        <symbol id="rf-icon-check" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/>
+        </symbol>
+    </svg>
+
+    <template id="rfItemTemplate">
+        <button type="button" class="rf-item" data-frequency="" data-location="" aria-label="">
+            <span class="rf-item__signal" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+
+            <span class="rf-item__content">
+                <span class="rf-item__location"></span>
+                <span class="rf-item__copy-state"></span>
+            </span>
+
+            <span class="rf-item__side">
+                <span class="rf-item__value">
+                    <span class="rf-item__value-number"></span>
+                    <span class="rf-item__value-unit">МГц</span>
+                </span>
+
+                <span class="rf-item__icon" aria-hidden="true">
+                    <svg class="rf-item__icon-copy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#rf-icon-copy"></use>
+                    </svg>
+                    <svg class="rf-item__icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#rf-icon-check"></use>
+                    </svg>
+                </span>
+            </span>
+        </button>
+    </template>
+
+    <script>
+        (function () {
+            const grid = document.getElementById('rfFrequenciesGrid');
+            const tpl = document.getElementById('rfItemTemplate');
+            if (!grid || !tpl) return;
+
+            const items = [
+                { frequency: 178, location: 'Свалка' },
+                { frequency: 123, location: 'Агропром' },
+                { frequency: 188, location: 'Тёмная лощина' },
+                { frequency: 141, location: 'Тёмная долина' },
+                { frequency: 157, location: 'Редколесье' },
+                { frequency: 146, location: 'Дикая территория' },
+                { frequency: 166, location: 'Янтарь' },
+                { frequency: 202, location: 'Поляна' },
+                { frequency: 113, location: 'Муравейник' },
+                { frequency: 217, location: 'Полесское' },
+                { frequency: 271, location: 'Военные склады' },
+                { frequency: 210, location: 'Ледяная котловина' }
+            ];
+
+            const fragment = document.createDocumentFragment();
+
+            items.forEach(({ frequency, location }, index) => {
+                const node = tpl.content.firstElementChild.cloneNode(true);
+                node.dataset.frequency = String(frequency);
+                node.dataset.location = location;
+                node.style.setProperty('--rf-delay', `${index * 42}ms`);
+                node.setAttribute('aria-label', `Скопировать частоту локации ${location} ${frequency} МГц`);
+
+                const locationEl = node.querySelector('.rf-item__location');
+                if (locationEl) locationEl.textContent = location;
+
+                const numberEl = node.querySelector('.rf-item__value-number');
+                if (numberEl) numberEl.textContent = String(frequency);
+
+                fragment.appendChild(node);
+            });
+
+            grid.appendChild(fragment);
+        })();
+    </script>
 
     <script src="shared.js"></script>
     <script src="script.js"></script>
