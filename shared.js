@@ -1,5 +1,9 @@
 'use strict';
 
+document.addEventListener('DOMContentLoaded', () => {
+    initLanguageState();
+});
+
 function initBurgerMenu() {
     const burger = document.getElementById('burger');
     const mobileMenu = document.getElementById('mobileMenu');
@@ -8,7 +12,7 @@ function initBurgerMenu() {
     burger.addEventListener('click', () => {
         const isActive = burger.classList.toggle('active');
         mobileMenu.classList.toggle('active');
-        burger.setAttribute('aria-expanded', isActive);
+        burger.setAttribute('aria-expanded', String(isActive));
         document.body.style.overflow = isActive ? 'hidden' : '';
 
         const langDropdown = document.getElementById('langDropdown');
@@ -19,19 +23,25 @@ function initBurgerMenu() {
         link.addEventListener('click', () => closeMobileMenu(burger, mobileMenu));
     });
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileMenu.classList.contains('active')) {
             closeMobileMenu(burger, mobileMenu);
             burger.focus();
         }
     });
 
     const mediaQuery = window.matchMedia('(min-width: 1025px)');
-    mediaQuery.addEventListener('change', (e) => {
-        if (e.matches && mobileMenu.classList.contains('active')) {
+    const closeOnDesktop = event => {
+        if (event.matches && mobileMenu.classList.contains('active')) {
             closeMobileMenu(burger, mobileMenu);
         }
-    });
+    };
+
+    if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', closeOnDesktop);
+    } else if (mediaQuery.addListener) {
+        mediaQuery.addListener(closeOnDesktop);
+    }
 }
 
 function closeMobileMenu(burger, mobileMenu) {
@@ -47,16 +57,23 @@ function initScrollEffects() {
     if (!header) return;
 
     let ticking = false;
+
+    const updateScrollState = () => {
+        const scrollY = window.scrollY;
+        header.classList.toggle('scrolled', scrollY > 50);
+
+        if (scrollTopBtn) {
+            scrollTopBtn.classList.toggle('visible', scrollY > 300);
+        }
+
+        ticking = false;
+    };
+
+    updateScrollState();
+
     window.addEventListener('scroll', () => {
         if (!ticking) {
-            requestAnimationFrame(() => {
-                const scrollY = window.scrollY;
-                header.classList.toggle('scrolled', scrollY > 50);
-                if (scrollTopBtn) {
-                    scrollTopBtn.classList.toggle('visible', scrollY > 300);
-                }
-                ticking = false;
-            });
+            window.requestAnimationFrame(updateScrollState);
             ticking = true;
         }
     }, { passive: true });
@@ -69,15 +86,30 @@ function initScrollEffects() {
 }
 
 function initLangDropdownClose() {
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (event) => {
         const langDropdown = document.getElementById('langDropdown');
         const langSwitcher = document.getElementById('langSwitcher');
+        const langButton = langSwitcher ? langSwitcher.querySelector('.lang-switcher__btn') : null;
 
-        if (langDropdown && langSwitcher && 
-            !langSwitcher.contains(e.target) && 
-            !langDropdown.contains(e.target)) {
+        if (langDropdown && langSwitcher && !langSwitcher.contains(event.target)) {
             langDropdown.classList.remove('active');
-            langSwitcher.setAttribute('aria-expanded', 'false');
+            if (langButton) langButton.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+
+        const langDropdown = document.getElementById('langDropdown');
+        const langSwitcher = document.getElementById('langSwitcher');
+        const langButton = langSwitcher ? langSwitcher.querySelector('.lang-switcher__btn') : null;
+
+        if (langDropdown && langDropdown.classList.contains('active')) {
+            langDropdown.classList.remove('active');
+            if (langButton) {
+                langButton.setAttribute('aria-expanded', 'false');
+                langButton.focus();
+            }
         }
     });
 }
@@ -85,14 +117,35 @@ function initLangDropdownClose() {
 function toggleLangDropdown() {
     const dropdown = document.getElementById('langDropdown');
     const switcher = document.getElementById('langSwitcher');
+    const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
     if (!dropdown || !switcher) return;
 
     const isActive = dropdown.classList.toggle('active');
-    switcher.setAttribute('aria-expanded', isActive);
+    if (button) button.setAttribute('aria-expanded', String(isActive));
+}
+
+function initLanguageState() {
+    const savedLang = normalizeLang(localStorage.getItem('wiki-lang') || 'ru');
+    applyLanguageState(savedLang);
 }
 
 function setLanguage(lang) {
-    localStorage.setItem('wiki-lang', lang);
+    const normalizedLang = normalizeLang(lang);
+    localStorage.setItem('wiki-lang', normalizedLang);
+    applyLanguageState(normalizedLang);
+
+    const dropdown = document.getElementById('langDropdown');
+    const switcher = document.getElementById('langSwitcher');
+    const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
+
+    if (dropdown) dropdown.classList.remove('active');
+    if (button) button.setAttribute('aria-expanded', 'false');
+
+    document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: normalizedLang } }));
+}
+
+function applyLanguageState(lang) {
+    document.documentElement.lang = lang;
 
     const currentLang = document.querySelector('.lang-switcher__current');
     if (currentLang) currentLang.textContent = lang.toUpperCase();
@@ -106,9 +159,8 @@ function setLanguage(lang) {
 
     if (activeDropdownItem) activeDropdownItem.classList.add('active');
     if (activeMobileBtn) activeMobileBtn.classList.add('active');
+}
 
-    const dropdown = document.getElementById('langDropdown');
-    if (dropdown) dropdown.classList.remove('active');
-
-    document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+function normalizeLang(lang) {
+    return lang === 'en' ? 'en' : 'ru';
 }
