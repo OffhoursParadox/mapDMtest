@@ -18,6 +18,10 @@ function initPageAnimations() {
         item.style.setProperty('--rf-delay', `${index * 42}ms`);
     });
 
+    document.querySelectorAll('.rf-guide-step').forEach((step, index) => {
+        step.style.setProperty('--guide-delay', `${index * 70}ms`);
+    });
+
     const targets = document.querySelectorAll('.content-grid > *');
     if (!targets.length) return;
 
@@ -28,7 +32,7 @@ function initPageAnimations() {
         return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('anim-visible');
@@ -41,45 +45,100 @@ function initPageAnimations() {
 }
 
 function initRfCopy() {
+    const liveRegion = document.getElementById('rfReceiverLive');
+    const applyDefaultText = () => {
+        const lang = localStorage.getItem('wiki-lang') || 'ru';
+        const defaultState = getRfCopyMessages(lang).defaultState;
+
+        document.querySelectorAll('.rf-item').forEach(item => {
+            if (item.classList.contains('rf-item--copied')) return;
+            const stateElement = item.querySelector('.rf-item__copy-state');
+            if (stateElement) stateElement.textContent = defaultState;
+        });
+    };
+
     document.querySelectorAll('.rf-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const freqEl = item.querySelector('.rf-item__freq');
-            const rawFrequency = item.dataset.frequency || (freqEl ? freqEl.textContent.trim() : '');
-            const match = String(rawFrequency).match(/\d+/);
-            if (!match) return;
+        item.addEventListener('click', async () => {
+            const frequency = item.dataset.frequency || '';
+            const locationElement = item.querySelector('.rf-item__location');
+            const location = item.dataset.location || (locationElement ? locationElement.textContent.trim() : '');
 
-            const freq = match[0];
-            const freqLabel = freqEl ? freqEl.textContent.trim() : `${freq} МГц`;
+            if (!frequency) return;
 
-            const showFeedback = () => {
-                const existing = item.querySelector('.rf-copied-tooltip');
-                if (existing) existing.remove();
-
-                item.classList.add('rf-item--copied');
-
-                const tooltip = document.createElement('span');
-                tooltip.className = 'rf-copied-tooltip';
-                const lang = localStorage.getItem('wiki-lang') || 'ru';
-                tooltip.textContent = lang === 'en' ? `Copied ${freq} MHz` : `Скопировано ${freqLabel}`;
-                item.appendChild(tooltip);
-
-                window.setTimeout(() => {
-                    item.classList.remove('rf-item--copied');
-                    if (tooltip.parentNode) tooltip.remove();
-                }, 1550);
-            };
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(freq).then(showFeedback).catch(() => {
-                    fallbackCopy(freq);
-                    showFeedback();
-                });
-            } else {
-                fallbackCopy(freq);
-                showFeedback();
-            }
+            const copied = await copyTextToClipboard(frequency);
+            showRfCopyFeedback(item, copied, location, frequency, liveRegion);
         });
     });
+
+    applyDefaultText();
+    document.addEventListener('languageChanged', applyDefaultText);
+}
+
+function showRfCopyFeedback(item, copied, location, frequency, liveRegion) {
+    const lang = localStorage.getItem('wiki-lang') || 'ru';
+    const messages = getRfCopyMessages(lang, location, frequency);
+    const stateElement = item.querySelector('.rf-item__copy-state');
+
+    if (item.copyResetTimeout) {
+        window.clearTimeout(item.copyResetTimeout);
+    }
+
+    item.classList.remove('rf-item--copied');
+
+    if (copied) {
+        void item.offsetWidth;
+        item.classList.add('rf-item--copied');
+    }
+
+    if (stateElement) {
+        stateElement.textContent = copied ? messages.copiedState : messages.failedState;
+    }
+
+    if (liveRegion) {
+        liveRegion.textContent = copied ? messages.successLive : messages.failedLive;
+    }
+
+    item.copyResetTimeout = window.setTimeout(() => {
+        item.classList.remove('rf-item--copied');
+        if (stateElement) {
+            stateElement.textContent = messages.defaultState;
+        }
+    }, 1700);
+}
+
+function getRfCopyMessages(lang, location = '', frequency = '') {
+    if (lang === 'en') {
+        return {
+            defaultState: 'Tap to copy',
+            copiedState: 'Copied',
+            failedState: 'Copy failed',
+            successTooltip: location ? `${location}: ${frequency} copied` : `${frequency} copied`,
+            failedTooltip: 'Unable to copy frequency',
+            successLive: location ? `Frequency ${frequency} for ${location} copied to clipboard` : `Frequency ${frequency} copied to clipboard`,
+            failedLive: 'Unable to copy frequency'
+        };
+    }
+
+    return {
+        defaultState: 'Нажмите, чтобы скопировать',
+        copiedState: 'Скопировано',
+        failedState: 'Не удалось скопировать',
+        successTooltip: location ? `${location}: ${frequency} скопировано` : `${frequency} скопировано`,
+        failedTooltip: 'Не удалось скопировать частоту',
+        successLive: location ? `Частота ${frequency} для локации ${location} скопирована` : `Частота ${frequency} скопирована`,
+        failedLive: 'Не удалось скопировать частоту'
+    };
+}
+
+async function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (error) {}
+    }
+
+    return fallbackCopy(text);
 }
 
 function fallbackCopy(text) {
@@ -89,10 +148,17 @@ function fallbackCopy(text) {
     textarea.style.cssText = 'position:fixed;opacity:0;left:-9999px;top:-9999px';
     document.body.appendChild(textarea);
     textarea.select();
+
+    let copied = false;
+
     try {
-        document.execCommand('copy');
-    } catch (error) {}
+        copied = document.execCommand('copy');
+    } catch (error) {
+        copied = false;
+    }
+
     document.body.removeChild(textarea);
+    return copied;
 }
 
 function loadUpdates() {
