@@ -76,6 +76,8 @@ function initRfFrequencies() {
         const locationEl = node.querySelector('.rf-item__location');
         if (locationEl) {
             locationEl.dataset.i18n = locationKey;
+            const translatedLocation = window.i18n ? window.i18n.t(locationKey) : locationKey;
+            locationEl.textContent = translatedLocation;
         }
 
         const numberEl = node.querySelector('.rf-item__value-number');
@@ -115,8 +117,23 @@ function initRfCopy() {
         });
     });
 
+    const updateLocationNames = () => {
+        document.querySelectorAll('.rf-item').forEach(item => {
+            const locationKey = item.dataset.locationKey;
+            const locationEl = item.querySelector('.rf-item__location');
+            if (locationEl && locationKey) {
+                const translatedLocation = window.i18n ? window.i18n.t(locationKey) : locationKey;
+                locationEl.textContent = translatedLocation;
+            }
+        });
+    };
+
     applyDefaultText();
-    document.addEventListener('languageChanged', applyDefaultText);
+    updateLocationNames();
+    document.addEventListener('languageChanged', () => {
+        applyDefaultText();
+        updateLocationNames();
+    });
 }
 
 function showRfCopyFeedback(item, copied, location, frequency, liveRegion) {
