@@ -8,10 +8,6 @@ class I18n {
 
     this.translations = {};
     this.loadedNamespaces = new Set();
-
-    // Важно для GitHub Pages:
-    // путь к locales теперь строится от расположения самого i18n.js,
-    // а не от текущей страницы.
     this.basePath = this._detectBasePath();
 
     this.ready = false;
@@ -39,8 +35,6 @@ class I18n {
 
     await this.loadNamespaces(this.currentLang, namespaces);
 
-    // Загружаем RU как fallback, чтобы при отсутствии ключа в EN
-    // не показывался сам ключ вида "rf.junkyard".
     if (this.currentLang !== 'ru') {
       await this.loadNamespaces('ru', namespaces);
     }
@@ -94,7 +88,6 @@ class I18n {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      // localStorage может быть недоступен в некоторых режимах браузера.
     }
   }
 
@@ -138,7 +131,6 @@ class I18n {
       }
     }
 
-    // Fallback, если по какой-то причине script.src недоступен.
     const nestedPages = ['map', 'table', 'calculator', 'ttk'];
     const isNestedPage = nestedPages.some(page => this._pathHasPageSegment(page));
     const relativeBase = isNestedPage ? '../locales/' : 'locales/';
@@ -154,7 +146,6 @@ class I18n {
     try {
       path = decodeURIComponent(path);
     } catch (error) {
-      // Оставляем исходный путь.
     }
 
     return path
@@ -358,8 +349,6 @@ class I18n {
       await this.loadNamespaces('ru', namespaces);
     }
 
-    // Если пользователь быстро переключил язык несколько раз,
-    // не применяем устаревший результат.
     if (token !== this.languageChangeToken) return;
 
     this.translatePage();
@@ -465,7 +454,6 @@ class I18n {
       return dict[key];
     }
 
-    // Fallback на русский, если ключа нет в текущем языке.
     if (normalizedLang !== 'ru') {
       const ruDict = this.translations.ru;
 
@@ -536,12 +524,10 @@ class I18n {
 const i18n = new I18n();
 window.i18n = i18n;
 
-// Совместимость с onclick="setLanguage('en')"
 window.setLanguage = function(lang) {
   return i18n.setLanguage(lang);
 };
 
-// Совместимость с onclick="toggleLangDropdown()"
 window.toggleLangDropdown = window.toggleLangDropdown || function() {
   const dropdown = document.getElementById('langDropdown');
   const switcher = document.getElementById('langSwitcher');
