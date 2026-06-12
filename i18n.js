@@ -91,30 +91,34 @@ class I18n {
     const langDropdown = document.getElementById('langDropdown');
 
     if (langSwitcher && langDropdown) {
-      langSwitcher.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isActive = langDropdown.classList.toggle('active');
-        langSwitcher.setAttribute('aria-expanded', isActive);
-      });
-
-      document.addEventListener('click', () => {
-        langDropdown.classList.remove('active');
-        if (langSwitcher) langSwitcher.setAttribute('aria-expanded', 'false');
-      });
-
-      langDropdown.querySelectorAll('.lang-dropdown__item').forEach(btn => {
+      const btn = langSwitcher.querySelector('.lang-switcher__btn');
+      if (btn) {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          this.setLanguage(btn.dataset.lang);
+          const isActive = langDropdown.classList.toggle('active');
+          btn.setAttribute('aria-expanded', isActive);
+        });
+      }
+
+      langDropdown.querySelectorAll('.lang-dropdown__item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const lang = item.dataset.lang;
+          if (lang) {
+            this.setLanguage(lang);
+          }
           langDropdown.classList.remove('active');
-          langSwitcher.setAttribute('aria-expanded', 'false');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
         });
       });
     }
 
     document.querySelectorAll('.mobile-lang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.setLanguage(btn.dataset.lang);
+        const lang = btn.dataset.lang;
+        if (lang) {
+          this.setLanguage(lang);
+        }
       });
     });
   }
@@ -161,7 +165,7 @@ class I18n {
       const key = el.dataset.i18n;
       const val = dict[key];
       if (val !== undefined) {
-        if (val.includes('<')) {
+        if (val.includes('<') || val.includes('&')) {
           el.innerHTML = val;
         } else {
           el.textContent = val;
