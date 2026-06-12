@@ -1,367 +1,573 @@
 'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
-    initBurgerMenu();
-    initScrollEffects();
-    initLangDropdownClose();
+class I18n {
+  constructor() {
+    this.currentLang = this.normalizeLang(
+      this._getStorageItem('wiki-lang') || document.documentElement.lang || 'ru'
+    );
 
-    if (window.i18n && typeof window.i18n.onReady === 'function') {
-        window.i18n.onReady(() => {
-            initRfFrequencies();
-            initRfCopy();
-        });
+    this.translations = {};
+    this.loadedNamespaces = new Set();
+
+    // Важно для GitHub Pages:
+    // путь к locales теперь строится от расположения самого i18n.js,
+    // а не от текущей страницы.
+    this.basePath = this._detectBasePath();
+
+    this.ready = false;
+    this.readyCallbacks = [];
+    this.eventsBound = false;
+    this.initPromise = null;
+    this.languageChangeToken = 0;
+  }
+
+  init() {
+    if (!this.initPromise) {
+      this.initPromise = this._init();
+    }
+
+    return this.initPromise;
+  }
+
+  async _init() {
+    document.documentElement.lang = this.currentLang;
+
+    this.setupEventListeners();
+    this.updateUIState();
+
+    const namespaces = this._detectPageNamespaces();
+
+    await this.loadNamespaces(this.currentLang, namespaces);
+
+    // Загружаем RU как fallback, чтобы при отсутствии ключа в EN
+    // не показывался сам ключ вида "rf.junkyard".
+    if (this.currentLang !== 'ru') {
+      await this.loadNamespaces('ru', namespaces);
+    }
+
+    this.translatePage();
+    this.updateArtifactNames();
+    this.updateUIState();
+
+    this.ready = true;
+
+    const callbacks = this.readyCallbacks.splice(0);
+    callbacks.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.error('[i18n] Ready callback failed:', error);
+      }
+    });
+
+    document.dispatchEvent(new CustomEvent('i18nReady', {
+      detail: {
+        lang: this.currentLang,
+        namespaces
+      }
+    }));
+  }
+
+  onReady(callback) {
+    if (typeof callback !== 'function') return;
+
+    if (this.ready) {
+      callback();
     } else {
-        document.addEventListener('languageChanged', () => {
-            if (!document.querySelector('.rf-item')) {
-                initRfFrequencies();
-                initRfCopy();
-            }
-        }, { once: true });
+      this.readyCallbacks.push(callback);
+    }
+  }
 
-        setTimeout(() => {
-            if (!document.querySelector('.rf-item')) {
-                initRfFrequencies();
-                initRfCopy();
-            }
-        }, 500);
+  normalizeLang(lang) {
+    return String(lang || 'ru').toLowerCase().startsWith('en') ? 'en' : 'ru';
+  }
+
+  _getStorageItem(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  _setStorageItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      // localStorage может быть недоступен в некоторых режимах браузера.
+    }
+  }
+
+  _ensureTrailingSlash(value) {
+    return value.endsWith('/') ? value : `${value}/`;
+  }
+
+  _getI18nScriptElement() {
+    if (document.currentScript) {
+      return document.currentScript;
     }
 
-    loadUpdates();
-    initPageAnimations();
-});
+    const scripts = Array.from(document.scripts).reverse();
 
-function initPageAnimations() {
-    document.querySelectorAll('.quick-card').forEach((card, index) => {
-        card.style.setProperty('--quick-delay', `${120 + index * 75}ms`);
-    });
-    document.querySelectorAll('.rf-item').forEach((item, index) => {
-        item.style.setProperty('--rf-delay', `${index * 42}ms`);
-    });
-    document.querySelectorAll('.rf-guide-step').forEach((step, index) => {
-        step.style.setProperty('--guide-delay', `${index * 70}ms`);
-    });
+    return scripts.find(script => {
+      const src = script.getAttribute('src') || script.src || '';
+      return /(^|\/)i18n\.js(?:[?#].*)?$/i.test(src);
+    }) || null;
+  }
 
-    const targets = document.querySelectorAll('.content-grid > *');
-    if (!targets.length) return;
-    targets.forEach(target => target.classList.add('reveal-pending'));
+  _detectBasePath() {
+    const script = this._getI18nScriptElement();
 
-    if (!('IntersectionObserver' in window)) {
-        targets.forEach(target => target.classList.add('anim-visible'));
-        return;
+    if (script) {
+      const customBase = script.getAttribute('data-locales-base');
+      const scriptSrc = script.src ||
+        (script.getAttribute('src')
+          ? new URL(script.getAttribute('src'), document.baseURI).href
+          : '');
+
+      if (customBase) {
+        return this._ensureTrailingSlash(
+          new URL(customBase, scriptSrc || document.baseURI).href
+        );
+      }
+
+      if (scriptSrc) {
+        return this._ensureTrailingSlash(
+          new URL('locales/', scriptSrc).href
+        );
+      }
     }
 
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('anim-visible');
-                observer.unobserve(entry.target);
-            }
+    // Fallback, если по какой-то причине script.src недоступен.
+    const nestedPages = ['map', 'table', 'calculator', 'ttk'];
+    const isNestedPage = nestedPages.some(page => this._pathHasPageSegment(page));
+    const relativeBase = isNestedPage ? '../locales/' : 'locales/';
+
+    return this._ensureTrailingSlash(
+      new URL(relativeBase, document.baseURI).href
+    );
+  }
+
+  _getPathSegments() {
+    let path = window.location.pathname || '';
+
+    try {
+      path = decodeURIComponent(path);
+    } catch (error) {
+      // Оставляем исходный путь.
+    }
+
+    return path
+      .toLowerCase()
+      .split('/')
+      .filter(Boolean);
+  }
+
+  _pathHasPageSegment(page) {
+    const normalizedPage = String(page || '').toLowerCase();
+    const segments = this._getPathSegments();
+
+    return segments.some(segment => (
+      segment === normalizedPage ||
+      segment === `${normalizedPage}.html`
+    ));
+  }
+
+  _detectPageNamespaces() {
+    const namespaces = ['common'];
+
+    const bodyPage =
+      (document.body && (document.body.dataset.i18nPage || document.body.dataset.page)) ||
+      document.documentElement.dataset.i18nPage ||
+      document.documentElement.dataset.page ||
+      '';
+
+    const page = String(bodyPage).toLowerCase();
+
+    if (page === 'map' || this._pathHasPageSegment('map')) {
+      namespaces.push('map');
+    } else if (page === 'table' || page === 'artifacts' || this._pathHasPageSegment('table')) {
+      namespaces.push('artifacts');
+    } else if (page === 'calculator' || this._pathHasPageSegment('calculator')) {
+      namespaces.push('calculator', 'artifacts');
+    } else if (page === 'ttk' || this._pathHasPageSegment('ttk')) {
+      namespaces.push('ttk');
+    } else {
+      namespaces.push('home');
+    }
+
+    return Array.from(new Set(namespaces));
+  }
+
+  async loadNamespaces(lang, namespaces) {
+    const normalizedLang = this.normalizeLang(lang);
+    const namespaceList = Array.isArray(namespaces) ? namespaces : [namespaces];
+
+    const uniqueNamespaces = Array.from(new Set(
+      namespaceList
+        .map(namespace => String(namespace || '').trim())
+        .filter(Boolean)
+    ));
+
+    if (!this.translations[normalizedLang]) {
+      this.translations[normalizedLang] = {};
+    }
+
+    const toLoad = uniqueNamespaces.filter(namespace => (
+      !this.loadedNamespaces.has(`${normalizedLang}:${namespace}`)
+    ));
+
+    if (toLoad.length === 0) return;
+
+    const results = await Promise.allSettled(
+      toLoad.map(namespace => this._fetchNamespace(normalizedLang, namespace))
+    );
+
+    results.forEach((result, index) => {
+      const namespace = toLoad[index];
+
+      if (result.status === 'fulfilled' && result.value) {
+        Object.assign(this.translations[normalizedLang], result.value);
+        this.loadedNamespaces.add(`${normalizedLang}:${namespace}`);
+      } else {
+        console.warn(
+          `[i18n] Failed to load ${normalizedLang}/${namespace}.json from ${this.basePath}`,
+          result.reason || ''
+        );
+      }
+    });
+  }
+
+  async _fetchNamespace(lang, namespace) {
+    const url = new URL(
+      `${encodeURIComponent(lang)}/${encodeURIComponent(namespace)}.json`,
+      this.basePath
+    ).href;
+
+    const response = await fetch(url, {
+      cache: 'no-cache'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${url}`);
+    }
+
+    return response.json();
+  }
+
+  setupEventListeners() {
+    if (this.eventsBound) return;
+    this.eventsBound = true;
+
+    const langSwitcher = document.getElementById('langSwitcher');
+    const langDropdown = document.getElementById('langDropdown');
+
+    if (langSwitcher && langDropdown) {
+      const btn = langSwitcher.querySelector('.lang-switcher__btn');
+
+      if (btn && btn.dataset.i18nBound !== 'true') {
+        btn.dataset.i18nBound = 'true';
+
+        btn.addEventListener('click', event => {
+          event.stopPropagation();
+
+          const isActive = langDropdown.classList.toggle('active');
+          btn.setAttribute('aria-expanded', String(isActive));
         });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      }
 
-    targets.forEach(target => observer.observe(target));
+      langDropdown.querySelectorAll('.lang-dropdown__item').forEach(item => {
+        if (item.dataset.i18nBound === 'true') return;
+
+        item.dataset.i18nBound = 'true';
+
+        item.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const lang = item.dataset.lang;
+
+          if (lang) {
+            this.setLanguage(lang);
+          }
+
+          langDropdown.classList.remove('active');
+
+          if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+
+      document.addEventListener('click', event => {
+        if (!langSwitcher.contains(event.target)) {
+          langDropdown.classList.remove('active');
+
+          if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+
+        if (langDropdown.classList.contains('active')) {
+          langDropdown.classList.remove('active');
+
+          if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+            btn.focus();
+          }
+        }
+      });
+    }
+
+    document.querySelectorAll('.mobile-lang-btn').forEach(btn => {
+      if (btn.dataset.i18nBound === 'true') return;
+
+      btn.dataset.i18nBound = 'true';
+
+      btn.addEventListener('click', event => {
+        event.preventDefault();
+
+        const lang = btn.dataset.lang;
+
+        if (lang) {
+          this.setLanguage(lang);
+        }
+      });
+    });
+  }
+
+  async setLanguage(lang) {
+    const normalizedLang = this.normalizeLang(lang);
+    const token = ++this.languageChangeToken;
+
+    this.currentLang = normalizedLang;
+    this._setStorageItem('wiki-lang', normalizedLang);
+
+    document.documentElement.lang = normalizedLang;
+    this.updateUIState();
+
+    const namespaces = this._detectPageNamespaces();
+
+    await this.loadNamespaces(normalizedLang, namespaces);
+
+    if (normalizedLang !== 'ru') {
+      await this.loadNamespaces('ru', namespaces);
+    }
+
+    // Если пользователь быстро переключил язык несколько раз,
+    // не применяем устаревший результат.
+    if (token !== this.languageChangeToken) return;
+
+    this.translatePage();
+    this.updateUIState();
+    this.updateArtifactNames();
+
+    document.dispatchEvent(new CustomEvent('languageChanged', {
+      detail: {
+        lang: normalizedLang
+      }
+    }));
+  }
+
+  updateUIState() {
+    document.querySelectorAll('#currentLang, .lang-switcher__current').forEach(currentLangEl => {
+      currentLangEl.textContent = this.currentLang.toUpperCase();
+    });
+
+    document.querySelectorAll('.lang-dropdown__item').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+    });
+
+    document.querySelectorAll('.mobile-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+    });
+  }
+
+  translatePage() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      const val = this._getTranslationValue(this.currentLang, key);
+
+      if (val === undefined) return;
+
+      const text = String(val);
+
+      if (el.hasAttribute('data-i18n-html') || text.includes('<') || text.includes('&')) {
+        el.innerHTML = text;
+      } else {
+        el.textContent = text;
+      }
+    });
+
+    document.querySelectorAll('[data-placeholder-i18n]').forEach(el => {
+      const key = el.dataset.placeholderI18n;
+      const val = this._getTranslationValue(this.currentLang, key);
+
+      if (val !== undefined) {
+        el.placeholder = String(val);
+      }
+    });
+
+    document.querySelectorAll('[data-title-i18n]').forEach(el => {
+      const key = el.dataset.titleI18n;
+      const val = this._getTranslationValue(this.currentLang, key);
+
+      if (val !== undefined) {
+        el.title = String(val);
+      }
+    });
+
+    document.querySelectorAll('[data-aria-label-i18n]').forEach(el => {
+      const key = el.dataset.ariaLabelI18n;
+      const val = this._getTranslationValue(this.currentLang, key);
+
+      if (val !== undefined) {
+        el.setAttribute('aria-label', String(val));
+      }
+    });
+  }
+
+  updateArtifactNames() {
+    const isEnglish = this.currentLang === 'en';
+
+    document.querySelectorAll('.artifact-name').forEach(nameEl => {
+      const ruName = nameEl.querySelector('.artifact-name__ru');
+      const enName = nameEl.querySelector('.artifact-name__en');
+
+      if (!ruName || !enName) return;
+
+      if (isEnglish) {
+        ruName.style.display = 'none';
+        enName.style.display = 'block';
+        enName.style.fontSize = '14px';
+        enName.style.color = 'var(--c-text)';
+      } else {
+        ruName.style.display = 'block';
+        enName.style.display = 'block';
+        enName.style.fontSize = '';
+        enName.style.color = '';
+      }
+    });
+  }
+
+  _getTranslationValue(lang, key) {
+    const normalizedLang = this.normalizeLang(lang);
+    const dict = this.translations[normalizedLang];
+
+    if (
+      dict &&
+      Object.prototype.hasOwnProperty.call(dict, key)
+    ) {
+      return dict[key];
+    }
+
+    // Fallback на русский, если ключа нет в текущем языке.
+    if (normalizedLang !== 'ru') {
+      const ruDict = this.translations.ru;
+
+      if (
+        ruDict &&
+        Object.prototype.hasOwnProperty.call(ruDict, key)
+      ) {
+        return ruDict[key];
+      }
+    }
+
+    return undefined;
+  }
+
+  _escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  t(key, params = {}) {
+    let val = this._getTranslationValue(this.currentLang, key);
+
+    if (val === undefined) {
+      val = key;
+    }
+
+    let text = String(val);
+
+    Object.keys(params || {}).forEach(param => {
+      const regex = new RegExp(`\\{${this._escapeRegExp(param)}\\}`, 'g');
+      text = text.replace(regex, () => String(params[param]));
+    });
+
+    return text;
+  }
+
+  getCurrentLang() {
+    return this.currentLang;
+  }
+
+  isEnglish() {
+    return this.currentLang === 'en';
+  }
+
+  isRussian() {
+    return this.currentLang === 'ru';
+  }
+
+  async loadAdditionalNamespace(namespace) {
+    const namespaces = Array.isArray(namespace) ? namespace : [namespace];
+
+    await this.loadNamespaces(this.currentLang, namespaces);
+
+    if (this.currentLang !== 'ru') {
+      await this.loadNamespaces('ru', namespaces);
+    }
+
+    this.translatePage();
+    this.updateArtifactNames();
+  }
+
+  refresh() {
+    this.translatePage();
+    this.updateUIState();
+    this.updateArtifactNames();
+  }
 }
 
-const rfItemsData = [
-    { frequency: 178, locationKey: 'rf.junkyard' },
-    { frequency: 123, locationKey: 'rf.agroprom' },
-    { frequency: 188, locationKey: 'rf.darkHollow' },
-    { frequency: 141, locationKey: 'rf.darkValley' },
-    { frequency: 157, locationKey: 'rf.redForest' },
-    { frequency: 146, locationKey: 'rf.wildTerritory' },
-    { frequency: 166, locationKey: 'rf.yantar' },
-    { frequency: 202, locationKey: 'rf.meadow' },
-    { frequency: 113, locationKey: 'rf.anthill' },
-    { frequency: 217, locationKey: 'rf.polissya' },
-    { frequency: 271, locationKey: 'rf.militaryWarehouses' },
-    { frequency: 210, locationKey: 'rf.crater' }
-];
+const i18n = new I18n();
+window.i18n = i18n;
 
-const rfFallbackNames = {
-    ru: {
-        'rf.junkyard': 'Свалка',
-        'rf.agroprom': 'Агропром',
-        'rf.darkHollow': 'Тёмная лощина',
-        'rf.darkValley': 'Тёмная долина',
-        'rf.redForest': 'Редколесье',
-        'rf.wildTerritory': 'Дикая территория',
-        'rf.yantar': 'Янтарь',
-        'rf.meadow': 'Поляна',
-        'rf.anthill': 'Муравейник',
-        'rf.polissya': 'Полесское',
-        'rf.militaryWarehouses': 'Военные склады',
-        'rf.crater': 'Ледяная котловина'
-    },
-    en: {
-        'rf.junkyard': 'Dump',
-        'rf.agroprom': 'Agroprom',
-        'rf.darkHollow': 'Dark Hollow',
-        'rf.darkValley': 'Dark Valley',
-        'rf.redForest': 'Thinwood',
-        'rf.wildTerritory': 'Wild Territory',
-        'rf.yantar': 'Yantar',
-        'rf.meadow': 'Glade',
-        'rf.anthill': 'Anthill',
-        'rf.polissya': 'Polesskoye',
-        'rf.militaryWarehouses': 'Army Warehouses',
-        'rf.crater': 'Frost Hollow'
-    }
+// Совместимость с onclick="setLanguage('en')"
+window.setLanguage = function(lang) {
+  return i18n.setLanguage(lang);
 };
 
-function getLocationName(locationKey) {
-    const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
+// Совместимость с onclick="toggleLangDropdown()"
+window.toggleLangDropdown = window.toggleLangDropdown || function() {
+  const dropdown = document.getElementById('langDropdown');
+  const switcher = document.getElementById('langSwitcher');
+  const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
 
-    if (window.i18n && typeof window.i18n.t === 'function') {
-        const translated = window.i18n.t(locationKey);
-        if (translated && translated !== locationKey) {
-            return translated;
-        }
-    }
+  if (!dropdown || !switcher) return;
 
-    const fallbackDict = rfFallbackNames[lang] || rfFallbackNames.ru;
-    return fallbackDict[locationKey] || locationKey;
+  const isActive = dropdown.classList.toggle('active');
+
+  if (button) {
+    button.setAttribute('aria-expanded', String(isActive));
+  }
+};
+
+function startI18n() {
+  i18n.init().catch(error => {
+    console.error('[i18n] Initialization failed:', error);
+  });
 }
 
-function initRfFrequencies() {
-    const grid = document.getElementById('rfFrequenciesGrid');
-    const tpl = document.getElementById('rfItemTemplate');
-    if (!grid || !tpl) return;
-
-    grid.innerHTML = '';
-
-    const fragment = document.createDocumentFragment();
-
-    rfItemsData.forEach(({ frequency, locationKey }, index) => {
-        const node = tpl.content.firstElementChild.cloneNode(true);
-        node.dataset.frequency = String(frequency);
-        node.dataset.locationKey = locationKey;
-        node.style.setProperty('--rf-delay', `${index * 42}ms`);
-
-        const locationEl = node.querySelector('.rf-item__location');
-        if (locationEl) {
-            locationEl.dataset.i18n = locationKey;
-            locationEl.textContent = getLocationName(locationKey);
-        }
-
-        const numberEl = node.querySelector('.rf-item__value-number');
-        if (numberEl) numberEl.textContent = String(frequency);
-
-        fragment.appendChild(node);
-    });
-
-    grid.appendChild(fragment);
-
-    if (window.i18n && typeof window.i18n.translatePage === 'function' && window.i18n.ready) {
-        window.i18n.translatePage();
-    }
-
-    document.addEventListener('languageChanged', updateRfLocationNames);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startI18n, { once: true });
+} else {
+  startI18n();
 }
 
-function updateRfLocationNames() {
-    document.querySelectorAll('.rf-item').forEach(item => {
-        const locationKey = item.dataset.locationKey;
-        const locationEl = item.querySelector('.rf-item__location');
-        if (locationKey && locationEl) {
-            locationEl.textContent = getLocationName(locationKey);
-        }
-    });
-}
-
-function initRfCopy() {
-    const liveRegion = document.getElementById('rfReceiverLive');
-
-    const applyDefaultText = () => {
-        const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
-        const defaultState = getRfCopyMessages(lang).defaultState;
-        document.querySelectorAll('.rf-item').forEach(item => {
-            if (item.classList.contains('rf-item--copied')) return;
-            const stateElement = item.querySelector('.rf-item__copy-state');
-            if (stateElement) stateElement.textContent = defaultState;
-        });
-    };
-
-    document.querySelectorAll('.rf-item').forEach(item => {
-        item.addEventListener('click', async () => {
-            const frequency = item.dataset.frequency || '';
-            const locationKey = item.dataset.locationKey || '';
-            const location = locationKey
-                ? getLocationName(locationKey)
-                : (item.dataset.location || '');
-
-            if (!frequency) return;
-            const copied = await copyTextToClipboard(frequency);
-            showRfCopyFeedback(item, copied, location, frequency, liveRegion);
-        });
-    });
-
-    applyDefaultText();
-    document.addEventListener('languageChanged', applyDefaultText);
-}
-
-function showRfCopyFeedback(item, copied, location, frequency, liveRegion) {
-    const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
-    const messages = getRfCopyMessages(lang, location, frequency);
-    const stateElement = item.querySelector('.rf-item__copy-state');
-
-    if (item.copyResetTimeout) {
-        window.clearTimeout(item.copyResetTimeout);
-    }
-
-    item.classList.remove('rf-item--copied');
-    if (copied) {
-        void item.offsetWidth;
-        item.classList.add('rf-item--copied');
-    }
-
-    if (stateElement) {
-        stateElement.textContent = copied ? messages.copiedState : messages.failedState;
-    }
-
-    if (liveRegion) {
-        liveRegion.textContent = copied ? messages.successLive : messages.failedLive;
-    }
-
-    item.copyResetTimeout = window.setTimeout(() => {
-        item.classList.remove('rf-item--copied');
-        if (stateElement) {
-            stateElement.textContent = messages.defaultState;
-        }
-    }, 1700);
-}
-
-function getRfCopyMessages(lang, location = '', frequency = '') {
-    if (lang === 'en') {
-        return {
-            defaultState: 'Tap to copy',
-            copiedState: 'Copied',
-            failedState: 'Copy failed',
-            successTooltip: location ? `${location}: ${frequency} copied` : `${frequency} copied`,
-            failedTooltip: 'Unable to copy frequency',
-            successLive: location
-                ? `Frequency ${frequency} for ${location} copied to clipboard`
-                : `Frequency ${frequency} copied to clipboard`,
-            failedLive: 'Unable to copy frequency'
-        };
-    }
-    return {
-        defaultState: 'Нажмите, чтобы скопировать',
-        copiedState: 'Скопировано',
-        failedState: 'Не удалось скопировать',
-        successTooltip: location ? `${location}: ${frequency} скопировано` : `${frequency} скопировано`,
-        failedTooltip: 'Не удалось скопировать частоту',
-        successLive: location
-            ? `Частота ${frequency} для локации ${location} скопирована`
-            : `Частота ${frequency} скопирована`,
-        failedLive: 'Не удалось скопировать частоту'
-    };
-}
-
-async function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-            await navigator.clipboard.writeText(text);
-            return true;
-        } catch (error) {}
-    }
-    return fallbackCopy(text);
-}
-
-function fallbackCopy(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.cssText = 'position:fixed;opacity:0;left:-9999px;top:-9999px';
-    document.body.appendChild(textarea);
-    textarea.select();
-    let copied = false;
-    try {
-        copied = document.execCommand('copy');
-    } catch (error) {
-        copied = false;
-    }
-    document.body.removeChild(textarea);
-    return copied;
-}
-
-function loadUpdates() {
-    const container = document.getElementById('updatesContent');
-    if (!container) return;
-
-    fetch('updates.json', { cache: 'no-cache' })
-        .then(response => {
-            if (!response.ok) throw new Error(String(response.status));
-            return response.json();
-        })
-        .then(updates => {
-            renderUpdates(updates, container);
-            document.addEventListener('languageChanged', () => renderUpdates(updates, container));
-        })
-        .catch(() => {
-            const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
-            const errorKey = 'updates.error';
-            const errorText = window.i18n ? window.i18n.t(errorKey) : (lang === 'en' ? 'Failed to load updates' : 'Не удалось загрузить обновления');
-            container.innerHTML = `
-                <div class="updates-block__error">
-                    <span>!</span>
-                    <p>${errorText}</p>
-                </div>
-            `;
-        });
-}
-
-function renderUpdates(updates, container) {
-    const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
-
-    if (!Array.isArray(updates) || updates.length === 0) {
-        const emptyKey = 'updates.empty';
-        const emptyText = window.i18n ? window.i18n.t(emptyKey) : (lang === 'en' ? 'No updates yet' : 'Обновлений пока нет');
-        container.innerHTML = `
-            <div class="updates-block__empty">
-                <p>${emptyText}</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = updates.map((entry, index) => {
-        const date = escapeHTML(localizeValue(entry.date, lang));
-        const items = Array.isArray(entry.items) ? entry.items : [];
-        const tag = `LOG ${String(index + 1).padStart(2, '0')}`;
-        return `
-            <article class="update-entry">
-                <div class="update-entry__rail"><span></span></div>
-                <div class="update-entry__body">
-                    <div class="update-entry__top">
-                        <span class="update-entry__date">${date}</span>
-                        <span class="update-entry__tag">${tag}</span>
-                    </div>
-                    <ul class="update-entry__list">
-                        ${items.map((item, itemIndex) => `
-                            <li>
-                                <span class="update-entry__bullet">${String(itemIndex + 1).padStart(2, '0')}</span>
-                                <span>${escapeHTML(localizeValue(item, lang))}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            </article>
-        `;
-    }).join('');
-
-    container.querySelectorAll('.update-entry').forEach((entry, index) => {
-        entry.style.setProperty('--update-delay', `${Math.min(index * 75, 450)}ms`);
-    });
-}
-
-function localizeValue(value, lang) {
-    if (value && typeof value === 'object') {
-        return value[lang] || value.ru || value.en || '';
-    }
-    return value || '';
-}
-
-function escapeHTML(value) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-    return String(value).replace(/[&<>"']/g, char => map[char]);
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { I18n };
 }
