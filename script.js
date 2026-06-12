@@ -140,7 +140,6 @@ function initRfFrequencies() {
         const locationEl = node.querySelector('.rf-item__location');
         if (locationEl) {
             locationEl.dataset.i18n = locationKey;
-            // ВАЖНО: сразу заполняем текстом (с фолбэком), не дожидаясь i18n
             locationEl.textContent = getLocationName(locationKey);
         }
 
