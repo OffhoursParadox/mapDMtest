@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initBurgerMenu();
     initScrollEffects();
     initLangDropdownClose();
+    initRfFrequencies();
     initRfCopy();
     loadUpdates();
     initPageAnimations();
@@ -44,10 +45,53 @@ function initPageAnimations() {
     targets.forEach(target => observer.observe(target));
 }
 
+const rfItemsData = [
+    { frequency: 178, locationKey: 'rf.junkyard' },
+    { frequency: 123, locationKey: 'rf.agroprom' },
+    { frequency: 188, locationKey: 'rf.darkHollow' },
+    { frequency: 141, locationKey: 'rf.darkValley' },
+    { frequency: 157, locationKey: 'rf.redForest' },
+    { frequency: 146, locationKey: 'rf.wildTerritory' },
+    { frequency: 166, locationKey: 'rf.yantar' },
+    { frequency: 202, locationKey: 'rf.meadow' },
+    { frequency: 113, locationKey: 'rf.anthill' },
+    { frequency: 217, locationKey: 'rf.polissya' },
+    { frequency: 271, locationKey: 'rf.militaryWarehouses' },
+    { frequency: 210, locationKey: 'rf.crater' }
+];
+
+function initRfFrequencies() {
+    const grid = document.getElementById('rfFrequenciesGrid');
+    const tpl = document.getElementById('rfItemTemplate');
+    if (!grid || !tpl) return;
+
+    const fragment = document.createDocumentFragment();
+
+    rfItemsData.forEach(({ frequency, locationKey }, index) => {
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        node.dataset.frequency = String(frequency);
+        node.dataset.locationKey = locationKey;
+        node.style.setProperty('--rf-delay', `${index * 42}ms`);
+
+        const locationEl = node.querySelector('.rf-item__location');
+        if (locationEl) {
+            locationEl.dataset.i18n = locationKey;
+        }
+
+        const numberEl = node.querySelector('.rf-item__value-number');
+        if (numberEl) numberEl.textContent = String(frequency);
+
+        fragment.appendChild(node);
+    });
+
+    grid.appendChild(fragment);
+}
+
 function initRfCopy() {
     const liveRegion = document.getElementById('rfReceiverLive');
+    
     const applyDefaultText = () => {
-        const lang = localStorage.getItem('wiki-lang') || 'ru';
+        const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
         const defaultState = getRfCopyMessages(lang).defaultState;
 
         document.querySelectorAll('.rf-item').forEach(item => {
@@ -60,8 +104,9 @@ function initRfCopy() {
     document.querySelectorAll('.rf-item').forEach(item => {
         item.addEventListener('click', async () => {
             const frequency = item.dataset.frequency || '';
+            const locationKey = item.dataset.locationKey || '';
             const locationElement = item.querySelector('.rf-item__location');
-            const location = item.dataset.location || (locationElement ? locationElement.textContent.trim() : '');
+            const location = locationKey && window.i18n ? window.i18n.t(locationKey) : (item.dataset.location || (locationElement ? locationElement.textContent.trim() : ''));
 
             if (!frequency) return;
 
@@ -75,7 +120,7 @@ function initRfCopy() {
 }
 
 function showRfCopyFeedback(item, copied, location, frequency, liveRegion) {
-    const lang = localStorage.getItem('wiki-lang') || 'ru';
+    const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
     const messages = getRfCopyMessages(lang, location, frequency);
     const stateElement = item.querySelector('.rf-item__copy-state');
 
@@ -175,17 +220,20 @@ function loadUpdates() {
             document.addEventListener('languageChanged', () => renderUpdates(updates, container));
         })
         .catch(() => {
-            container.innerHTML = '<div class="updates-block__error"><span>!</span><p>Не удалось загрузить обновления</p></div>';
+            const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
+            const errorKey = 'updates.error';
+            const errorText = window.i18n ? window.i18n.t(errorKey) : (lang === 'en' ? 'Failed to load updates' : 'Не удалось загрузить обновления');
+            container.innerHTML = `<div class="updates-block__error"><span>!</span><p>${errorText}</p></div>`;
         });
 }
 
 function renderUpdates(updates, container) {
-    const lang = localStorage.getItem('wiki-lang') || 'ru';
+    const lang = window.i18n ? window.i18n.getCurrentLang() : (localStorage.getItem('wiki-lang') || 'ru');
 
     if (!Array.isArray(updates) || updates.length === 0) {
-        container.innerHTML = lang === 'en'
-            ? '<div class="updates-block__empty">No updates yet</div>'
-            : '<div class="updates-block__empty">Обновлений пока нет</div>';
+        const emptyKey = 'updates.empty';
+        const emptyText = window.i18n ? window.i18n.t(emptyKey) : (lang === 'en' ? 'No updates yet' : 'Обновлений пока нет');
+        container.innerHTML = `<div class="updates-block__empty">${emptyText}</div>`;
         return;
     }
 
@@ -230,10 +278,10 @@ function localizeValue(value, lang) {
 
 function escapeHTML(value) {
     const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
         "'": '&#39;'
     };
 
