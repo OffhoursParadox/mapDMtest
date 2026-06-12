@@ -114,34 +114,20 @@ function initLangDropdownClose() {
     });
 }
 
-function toggleLangDropdown() {
-    const dropdown = document.getElementById('langDropdown');
-    const switcher = document.getElementById('langSwitcher');
-    const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
-    if (!dropdown || !switcher) return;
-
-    const isActive = dropdown.classList.toggle('active');
-    if (button) button.setAttribute('aria-expanded', String(isActive));
-}
-
 function initLanguageState() {
     const savedLang = normalizeLang(localStorage.getItem('wiki-lang') || 'ru');
     applyLanguageState(savedLang);
 }
 
 function setLanguage(lang) {
-    const normalizedLang = normalizeLang(lang);
-    localStorage.setItem('wiki-lang', normalizedLang);
-    applyLanguageState(normalizedLang);
-
-    const dropdown = document.getElementById('langDropdown');
-    const switcher = document.getElementById('langSwitcher');
-    const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
-
-    if (dropdown) dropdown.classList.remove('active');
-    if (button) button.setAttribute('aria-expanded', 'false');
-
-    document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: normalizedLang } }));
+    if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+        window.i18n.setLanguage(lang);
+    } else {
+        const normalizedLang = normalizeLang(lang);
+        localStorage.setItem('wiki-lang', normalizedLang);
+        applyLanguageState(normalizedLang);
+        document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: normalizedLang } }));
+    }
 }
 
 function applyLanguageState(lang) {
@@ -154,8 +140,8 @@ function applyLanguageState(lang) {
         item.classList.remove('active');
     });
 
-    const activeDropdownItem = document.querySelector(`.lang-dropdown__item[onclick="setLanguage('${lang}')"]`);
-    const activeMobileBtn = document.querySelector(`.mobile-lang-btn[onclick="setLanguage('${lang}')"]`);
+    const activeDropdownItem = document.querySelector(`.lang-dropdown__item[data-lang="${lang}"]`);
+    const activeMobileBtn = document.querySelector(`.mobile-lang-btn[data-lang="${lang}"]`);
 
     if (activeDropdownItem) activeDropdownItem.classList.add('active');
     if (activeMobileBtn) activeMobileBtn.classList.add('active');
@@ -164,3 +150,15 @@ function applyLanguageState(lang) {
 function normalizeLang(lang) {
     return lang === 'en' ? 'en' : 'ru';
 }
+
+window.toggleLangDropdown = function() {
+    const dropdown = document.getElementById('langDropdown');
+    const switcher = document.getElementById('langSwitcher');
+    const button = switcher ? switcher.querySelector('.lang-switcher__btn') : null;
+    if (!dropdown || !switcher) return;
+
+    const isActive = dropdown.classList.toggle('active');
+    if (button) button.setAttribute('aria-expanded', String(isActive));
+};
+
+window.setLanguage = setLanguage;
