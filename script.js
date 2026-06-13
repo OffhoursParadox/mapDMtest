@@ -327,7 +327,8 @@ function renderUpdates(updates, container) {
     container.innerHTML = updates.map((entry, index) => {
         const date = escapeHTML(localizeValue(entry.date, lang));
         const items = Array.isArray(entry.items) ? entry.items : [];
-        const tag = `LOG ${String(index + 1).padStart(2, '0')}`;
+        const version = entry.version ? escapeHTML(entry.version) : `1.0.${updates.length - index}`;
+        const tag = `v${version}`;
         return `
             <article class="update-entry">
                 <div class="update-entry__rail"><span></span></div>
