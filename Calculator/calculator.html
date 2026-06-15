@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Калькулятор сборок — Project Cataclysm Wiki</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="keywords" content="Project Cataclysm калькулятор, Project Cataclysm сборки, Project Cataclysm артефакты билд">
+    <meta name="description" content="Калькулятор сборок артефактов Project Cataclysm. Собери оптимальный билд с учётом брони, контейнера и артефактов.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="calculator.css">
+</head>
+<body>
+    <div class="bg-overlay">
+        <div class="bg-overlay__content"></div>
+    </div>
+
+    <header class="header" id="mainHeader">
+        <div class="header__container">
+            <a href="../index.html" class="header__logo">
+                <div class="logo-mark">
+                    <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-text__cataclysm">CATACLYSM</span>
+                    <span class="logo-text__wiki">WIKI</span>
+                </div>
+            </a>
+
+            <nav class="header__nav">
+                <a href="../Map/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="../Table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span data-i18n="nav.items">Предметы</span>
+                </a>
+                <a href="calculator.html" class="nav-link nav-link--current">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="../TTK/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="nav.ttk">ТТК</span>
+                </a>
+            </nav>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
+        <nav class="mobile-menu__nav">
+            <a href="../Map/map.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../Table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="calculator.html" class="mobile-menu__link mobile-menu__link--current">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../TTK/ttk.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
+                </button>
+                <button class="mobile-lang-btn" data-lang="en">
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section class="page-hero">
+            <div class="container">
+            </div>
+        </section>
+
+        <section class="calculator">
+            <div class="container">
+                <div class="calc-layout">
+                    <!-- Левая колонка: Артефакты + Контейнер + Броня -->
+                    <div class="calc-col calc-col--left">
+                        <div class="calc-card calc-card--artifacts">
+                            <div class="calc-card__head">
+                                <div class="calc-card__head-icon calc-card__head-icon--artifacts">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+                                    </svg>
+                                </div>
+                                <h2 class="calc-card__title" data-i18n="calc.artifactBuild">Слот сборки артефактов</h2>
+                                <span class="calc-card__badge" id="artifactCounter">0/0</span>
+                            </div>
+                            <div class="calc-card__body">
+                                <div class="artifact-slots" id="artifactSlots">
+                                    <div class="artifact-slots__placeholder">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+                                        </svg>
+                                        <span data-i18n="calc.selectContainerHint">Выберите контейнер для добавления артефактов</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="container-bar">
+                            <button class="container-bar__select" type="button" id="containerPickerBtn">
+                                <div class="container-bar__preview" id="containerPickerPreview"></div>
+                                <div class="container-bar__text">
+                                    <span class="container-bar__name" id="containerPickerName" data-placeholder-i18n="calc.selectContainer" data-i18n="calc.selectContainer">Выберите контейнер...</span>
+                                    <span class="container-bar__hint" id="containerPickerHint" hidden></span>
+                                </div>
+                            </button>
+                            <button class="container-bar__clear" id="clearArtifactsBtn" type="button" style="display:none;" data-title-i18n="calc.clearArtifacts" title="Очистить артефакты">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <select id="containerSelect" style="display:none;">
+                            <option value="">Выберите контейнер...</option>
+                        </select>
+
+                        <div class="calc-card calc-card--armor">
+                            <div class="calc-card__body">
+                                <div class="armor-panel__row" id="armorPanelRow">
+                                    <div class="calc-preview calc-preview--armor" id="armorPreview">
+                                        <img class="calc-preview__img" src="../Table/Armors/empty.png" alt="">
+                                        <div class="calc-preview__fallback calc-preview__placeholder" hidden>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="enhancement-block enhancement-block--compact" id="enhancementBlock" style="display:none;">
+                                        <div class="enhancement-block__header">
+                                            <span class="enhancement-block__title" data-i18n="calc.enhancementLevel">Уровень заточки</span>
+                                            <span class="enhancement-block__value" id="enhancementValue">0</span>
+                                        </div>
+                                        <div class="enhancement-block__slider-container">
+                                            <input type="range" class="enhancement-slider" id="enhancementSlider" min="0" max="15" value="0" step="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="armor-bar">
+                                    <button class="armor-bar__select" type="button" id="armorPickerBtn">
+                                        <span class="armor-bar__name" id="armorPickerName" data-placeholder-i18n="calc.selectArmor" data-i18n="calc.selectArmor">Выберите броню...</span>
+                                    </button>
+                                    <button class="armor-bar__clear" id="armorClearBtn" type="button" style="display:none;" data-title-i18n="calc.resetSelection" title="Сбросить выбор">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M18 6L6 18M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <select id="armorSelect" style="display:none;">
+                                    <option value="">Выберите броню...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка: Итоговые характеристики -->
+                    <div class="calc-col calc-col--right">
+                        <div class="stats-panel" id="statsPanel">
+                            <div class="stats-panel__head">
+                                <h2 class="stats-panel__title" data-i18n="calc.totalStats">Итоговые характеристики</h2>
+                                <button class="stats-panel__reset" id="resetBtn" data-title-i18n="calc.resetBuild" title="Сбросить сборку">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                        <path d="M3 3v5h5"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="stats-panel__body">
+                                <div class="stats-panel__warnings" id="warningsContainer"></div>
+
+                                <div class="stats-panel__hero">
+                                    <div class="hero-stat hero-stat--primary">
+                                        <span class="hero-stat__label" data-i18n="calc.effectiveHealth">Приведённое здоровье</span>
+                                        <div class="hero-stat__row">
+                                            <span class="hero-stat__value" id="effectiveHealth">100</span>
+                                            <span class="hero-stat__unit">HP</span>
+                                        </div>
+                                    </div>
+                                    <div class="hero-stat hero-stat--primary">
+                                        <span class="hero-stat__label" data-i18n="calc.effectiveBulletResistance">Приведённая пулестойкость</span>
+                                        <div class="hero-stat__row">
+                                            <span class="hero-stat__value" id="effectiveBulletResistance">0</span>
+                                            <span class="hero-stat__sub">(<span id="bulletResistancePercent">0.00%</span>)</span>
+                                        </div>
+                                        <div class="hero-stat__bar">
+                                            <div class="hero-stat__bar-fill hero-stat__bar-fill--low" id="bulletResistanceBar" style="width:0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="hero-stat">
+                                        <span class="hero-stat__label" data-i18n="calc.stat.regeneration">Регенерация</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="regeneration">0%/сек</span>
+                                    </div>
+                                    <div class="hero-stat">
+                                        <span class="hero-stat__label" data-i18n="calc.stat.bulletResistance">Пулестойкость</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="bulletResistance">0</span>
+                                    </div>
+                                    <div class="hero-stat">
+                                        <span class="hero-stat__label" data-i18n="calc.stat.impactResistance">Гашение удара</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="impactResistance">0</span>
+                                    </div>
+                                    <div class="hero-stat">
+                                        <span class="hero-stat__label" data-i18n="calc.stat.tearProtection">Защита от разрывов</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="tearProtection">0</span>
+                                    </div>
+                                </div>
+
+                                <div class="stats-panel__divider"></div>
+
+                                <div class="stats-panel__list" id="statsList">
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.radiation">Радиация</span><span class="stats-panel__value" data-stat="radiation">0 мЗв/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.cold">Холод</span><span class="stats-panel__value" data-stat="cold">0/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.bleeding">Кровотечение</span><span class="stats-panel__value" data-stat="bleeding">0/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.saturation">Насыщение</span><span class="stats-panel__value" data-stat="saturation">0%/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.radiationProtection">Защита от радиации</span><span class="stats-panel__value" data-stat="radiationProtection">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.bioProtection">Защита от биозаражения</span><span class="stats-panel__value" data-stat="bioProtection">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.thermalProtection">Защита от температуры</span><span class="stats-panel__value" data-stat="thermalProtection">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.psiProtection">Защита от пси-излучения</span><span class="stats-panel__value" data-stat="psiProtection">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.frostProtection">Защита от обморожения</span><span class="stats-panel__value" data-stat="frostProtection">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.heatResistance">Термозащита</span><span class="stats-panel__value" data-stat="heatResistance">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.chemResistance">Химзащита</span><span class="stats-panel__value" data-stat="chemResistance">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.electroResistance">Электрозащита</span><span class="stats-panel__value" data-stat="electroResistance">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.maxStamina">Макс. выносливость</span><span class="stats-panel__value" data-stat="maxStamina">0%</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.staminaRegen">Восстановление сил</span><span class="stats-panel__value" data-stat="staminaRegen">0%/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.moveSpeed">Скорость передвижения</span><span class="stats-panel__value" data-stat="moveSpeed">0%</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.maxWeight">Макс. вес</span><span class="stats-panel__value" data-stat="maxWeight">0 кг</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подтверждение очистки артефактов -->
+    <div class="confirm-dialog" id="clearArtifactsConfirm">
+        <div class="confirm-dialog__backdrop"></div>
+        <div class="confirm-dialog__box">
+            <div class="confirm-dialog__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h4 class="confirm-dialog__title" data-i18n="calc.clearArtifacts.title">Очистить артефакты?</h4>
+            <p class="confirm-dialog__text" data-i18n="calc.clearArtifacts.message">Все артефакты в слотах контейнера будут удалены. Контейнер останется выбранным.</p>
+            <div class="confirm-dialog__actions">
+                <button class="confirm-dialog__btn confirm-dialog__btn--cancel" id="clearArtifactsCancel" type="button" data-i18n="calc.clearArtifacts.cancel">Отмена</button>
+                <button class="confirm-dialog__btn confirm-dialog__btn--confirm" id="clearArtifactsConfirmBtn" type="button" data-i18n="calc.clearArtifacts.confirm">Очистить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно выбора контейнера -->
+    <div class="modal modal--container" id="containerModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__container modal__container--container">
+            <div class="modal__header">
+                <div class="modal__header-content">
+                    <h3 class="modal__title">
+                        <span data-i18n="calc.containerModal.title">Выбор контейнера</span>
+                    </h3>
+                </div>
+                <button class="modal__close" id="containerModalClose" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal__toolbar">
+                <div class="modal__search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="containerModalSearch" data-placeholder-i18n="calc.searchContainer" placeholder="Поиск контейнера...">
+                    <button class="modal__search-clear" id="containerSearchClear" style="display:none;" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal__body modal__body--containers">
+                <div class="containers-grid" id="containerModalList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно выбора брони -->
+    <div class="modal modal--armor" id="armorModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__container modal__container--armor">
+            <div class="modal__header">
+                <div class="modal__header-content">
+                    <h3 class="modal__title">
+                        <span data-i18n="calc.armorModal.title">Выбор брони</span>
+                    </h3>
+                </div>
+                <button class="modal__close" id="armorModalClose" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal__toolbar">
+                <div class="modal__search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="armorModalSearch" data-placeholder-i18n="calc.searchArmor" placeholder="Поиск брони...">
+                    <button class="modal__search-clear" id="armorSearchClear" style="display:none;" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal__categories" id="armorTypeTabs">
+                    <button class="category-tab category-tab--active" data-armor-type="all">
+                        <span class="category-tab__label" data-i18n="calc.armorModal.typeAll">Все</span>
+                    </button>
+                    <button class="category-tab" data-armor-type="light">
+                        <span class="category-tab__label" data-i18n="calc.armorType.light">Лёгкие</span>
+                    </button>
+                    <button class="category-tab" data-armor-type="scientific">
+                        <span class="category-tab__label" data-i18n="calc.armorType.scientific">Научные</span>
+                    </button>
+                    <button class="category-tab" data-armor-type="combat">
+                        <span class="category-tab__label" data-i18n="calc.armorType.combat">Боевые</span>
+                    </button>
+                    <button class="category-tab" data-armor-type="combined">
+                        <span class="category-tab__label" data-i18n="calc.armorType.combined">Комбинированные</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal__body modal__body--armor">
+                <div class="armor-modal__layout">
+                    <div class="armors-grid" id="armorModalList"></div>
+                    <div class="armor-detail" id="armorModalDetail">
+                        <div class="armor-detail__placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            <span data-i18n="calc.armorModal.selectHint">Выберите броню для просмотра характеристик</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно выбора артефакта -->
+    <div class="modal" id="artifactModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__container">
+            <div class="modal__header">
+                <div class="modal__header-content">
+                    <h3 class="modal__title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span data-i18n="calc.modal.title">Выбор артефакта</span>
+                    </h3>
+                    <span class="modal__slot-info" id="modalSlotInfo">Слот #1</span>
+                </div>
+                <button class="modal__close" id="modalClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal__toolbar">
+                <div class="modal__search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="artifactSearch" data-placeholder-i18n="calc.modal.searchPlaceholder" placeholder="Название артефакта...">
+                    <button class="modal__search-clear" id="searchClear" style="display:none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal__categories" id="categoryTabs">
+                    <button class="category-tab category-tab--active" data-category="all">
+                        <span class="category-tab__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                            </svg>
+                        </span>
+                        <span class="category-tab__label" data-i18n="calc.modal.catAll">Все</span>
+                    </button>
+                    <button class="category-tab" data-category="gravity"><span class="category-tab__dot" style="background:#b8860b"></span><span class="category-tab__label" data-i18n="calc.modal.catGravity">Грави</span></button>
+                    <button class="category-tab" data-category="chemical"><span class="category-tab__dot" style="background:#10b981"></span><span class="category-tab__label" data-i18n="calc.modal.catChemical">Хим</span></button>
+                    <button class="category-tab" data-category="electric"><span class="category-tab__dot" style="background:#3b82f6"></span><span class="category-tab__label" data-i18n="calc.modal.catElectric">Электро</span></button>
+                    <button class="category-tab" data-category="thermal"><span class="category-tab__dot" style="background:#ef4444"></span><span class="category-tab__label" data-i18n="calc.modal.catThermal">Терм</span></button>
+                    <button class="category-tab" data-category="unique"><span class="category-tab__dot" style="background:#a855f7"></span><span class="category-tab__label" data-i18n="calc.modal.catUnique">Уник</span></button>
+                    <button class="category-tab" data-category="frost"><span class="category-tab__dot" style="background:#38bdf8"></span><span class="category-tab__label" data-i18n="calc.modal.catFrost">Мороз</span></button>
+                </div>
+            </div>
+            <div class="modal__results-info" id="resultsInfo">
+                <span class="results-count"><span data-i18n="calc.modal.found">Найдено:</span> <strong id="artifactCount">57</strong> <span data-i18n="calc.modal.artifactsCount">артефактов</span></span>
+            </div>
+            <div class="modal__body">
+                <div class="artifacts-grid" id="artifactList"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__copy">© 2026 Project Cataclysm Wiki. <span data-i18n="footer.official">Официальный сайт.</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop" aria-label="Вверх">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden">
+        <symbol id="rf-icon-copy" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5a3 3 0 116 0"/>
+        </symbol>
+        <symbol id="rf-icon-check" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/>
+        </symbol>
+    </svg>
+
+    <script src="../data/data.js"></script>
+    <script src="../i18n.js"></script>
+    <script src="../shared.js"></script>
+    <script src="calculator.js"></script>
+</body>
+</html>
