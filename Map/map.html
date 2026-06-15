@@ -1,122 +1,258 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="canonical" href="https://offhoursparadox.github.io/projectcataclysmwiki/Map/map.html">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../favicon.svg">
     <title>Интерактивная карта — Project Cataclysm Wiki</title>
-    <link rel="icon" href="../favicon.png" type="image/png">
+    <meta property="og:title" content="Интерактивная карта — Project Cataclysm Wiki">
+    <meta property="og:description" content="Интерактивная карта Project Cataclysm. Ящики с лутом, точки спавна мутантов, торговцы и другие метки.">
+    <meta property="og:image" content="https://offhoursparadox.github.io/projectcataclysmwiki/images/og-image.png">
+    <meta property="og:url" content="https://offhoursparadox.github.io/projectcataclysmwiki/Map/map.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ru_RU">
     <meta name="keywords" content="Project Cataclysm карта, интерактивная карта Project Cataclysm, ящики Project Cataclysm, мутанты Project Cataclysm">
     <meta name="description" content="Интерактивная карта Project Cataclysm. Ящики с лутом, точки спавна мутантов, торговцы и другие метки.">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="../main.css">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#0a0a0b">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="../shared.css">
     <link rel="stylesheet" href="map.css">
-    <link rel="stylesheet" href="dynmap.css">
 </head>
 <body>
-    <header class="header">
+    <div class="bg-overlay">
+        <div class="bg-overlay__content"></div>
+    </div>
+
+    <header class="header" id="mainHeader">
         <div class="header__container">
             <a href="../index.html" class="header__logo">
-                <span class="header__logo-text">CATACLYSM<span class="header__logo-accent">WIKI</span></span>
+                <div class="logo-mark">
+                    <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-text__cataclysm">CATACLYSM</span>
+                    <span class="logo-text__wiki">WIKI</span>
+                </div>
             </a>
+
             <nav class="header__nav">
-                <span class="nav-link nav-link--current">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>
+                <a href="../map/map.html" class="nav-link nav-link--current">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                     </svg>
                     <span data-i18n="nav.map">Карта</span>
-                </span>
-                <a href="../Table/table.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                </a>
+                <a href="../table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
-                    <span data-i18n="nav.artifacts">Артефакты</span>
+                    <span data-i18n="nav.items">Предметы</span>
                 </a>
                 <a href="../Calculator/calculator.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/>
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
                     <span data-i18n="nav.calculator">Калькулятор</span>
                 </a>
-                <a href="../DPS/dps.html" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
+                <a href="../ttk/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    <span data-i18n="nav.dps">DPS</span>
+                    <span data-i18n="nav.ttk">ТТК</span>
                 </a>
-                
-                <!-- Переключатель языка -->
-                <div class="lang-switcher">
-                    <button class="lang-switcher__btn" id="langSwitcher">
-                        <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M2 12h20"/>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                        </svg>
-                        <span class="lang-switcher__current" id="currentLang">RU</span>
-                    </button>
-                    <div class="lang-dropdown" id="langDropdown">
-                        <button class="lang-dropdown__item" data-lang="ru">
-                            <span class="lang-dropdown__flag">🇷🇺</span>
-                            <span class="lang-dropdown__text">Русский</span>
-                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                        </button>
-                        <button class="lang-dropdown__item" data-lang="en">
-                            <span class="lang-dropdown__flag">🇬🇧</span>
-                            <span class="lang-dropdown__text">English</span>
-                            <svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
             </nav>
-            <button class="header__burger" id="burger"><span></span><span></span><span></span></button>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
     <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
         <nav class="mobile-menu__nav">
-            <span class="mobile-menu__link mobile-menu__link--current" data-i18n="nav.mapFull">Интерактивная карта</span>
-            <a href="../Table/table.html" class="mobile-menu__link" data-i18n="nav.artifactsTable">Таблица артефактов</a>
-            <a href="../Calculator/calculator.html" class="mobile-menu__link" data-i18n="nav.buildsCalculator">Калькулятор сборок</a>
-            <a href="../DPS/dps.html" class="mobile-menu__link" data-i18n="nav.dpsCalculator">Калькулятор DPS</a>
-            
-            <!-- Мобильный переключатель языка -->
-            <div class="mobile-lang-switcher">
-                <button class="mobile-lang-btn" data-lang="ru">
-                    <span class="lang-dropdown__flag">🇷🇺</span> Русский
+            <a href="../map/map.html" class="mobile-menu__link mobile-menu__link--current">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../Calculator/calculator.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../ttk/ttk.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
                 </button>
                 <button class="mobile-lang-btn" data-lang="en">
-                    <span class="lang-dropdown__flag">🇬🇧</span> English
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
                 </button>
             </div>
-        </nav>
+        </div>
     </div>
 
-    <!-- Боковая панель с фильтрами -->
+    <!-- Mobile Filter Button -->
+    <button class="mobile-filter-btn" id="mobileFilterBtn" aria-label="Открыть фильтры">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/>
+            <line x1="9" y1="8" x2="15" y2="8"/>
+            <line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+        <span class="mobile-filter-btn__badge" id="mobileFilterBadge">0</span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <aside class="sidebar" id="sidebar">
         <button class="sidebar__toggle" id="sidebarToggle" data-title-i18n="map.sidebar.toggle" title="Свернуть/развернуть">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M15 18l-6-6 6-6"/>
             </svg>
         </button>
-        
         <div class="sidebar__content">
             <div class="sidebar__header">
                 <h2 class="sidebar__title" data-i18n="map.filters.title">Фильтры</h2>
-                <button class="sidebar__reset" id="resetFilters" data-title-i18n="map.filters.resetAll" title="Сбросить всё">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-                    </svg>
-                </button>
+                <div class="sidebar__header-actions">
+                    <button class="sidebar__reset" id="resetFilters" data-title-i18n="map.filters.resetAll" title="Сбросить всё">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                    <button class="sidebar__close-mobile" id="sidebarCloseMobile" aria-label="Закрыть фильтры">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- Категория: Контейнеры -->
-            <div class="filter-group" data-category="containers">
+            <!-- ===== АСТРОЛИТ ===== -->
+            <div class="filter-group" data-category="astrolite" style="--group-index: 0">
+                <button class="filter-group__header">
+                    <div class="filter-group__icon filter-group__icon--astrolite">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </div>
+                    <span class="filter-group__title" data-i18n="map.category.astrolite">Астролит</span>
+                    <span class="filter-group__count" id="countAstrolite">0</span>
+                    <svg class="filter-group__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+                <div class="filter-group__content">
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="catalyst" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.catalyst">Катализаторы</span>
+                        <span class="filter-item__count" data-count="catalyst">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="wormhole" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.wormhole">Червоточины</span>
+                        <span class="filter-item__count" data-count="wormhole">0</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ===== КОНТЕЙНЕРЫ ===== -->
+            <div class="filter-group" data-category="containers" style="--group-index: 1">
                 <button class="filter-group__header">
                     <div class="filter-group__icon filter-group__icon--containers">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -166,11 +302,29 @@
                         <span class="filter-item__label" data-i18n="map.marker.stash">Тайники</span>
                         <span class="filter-item__count" data-count="stash">0</span>
                     </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="wooden_crate" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.wooden_crate">Деревянные ящики</span>
+                        <span class="filter-item__count" data-count="wooden_crate">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="safe" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.safe">Сейфы</span>
+                        <span class="filter-item__count" data-count="safe">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="stash_hidden" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.stash_hidden">Схроны</span>
+                        <span class="filter-item__count" data-count="stash_hidden">0</span>
+                    </label>
                 </div>
             </div>
 
-            <!-- Категория: Мутанты -->
-            <div class="filter-group" data-category="mutants">
+            <!-- ===== МУТАНТЫ ===== -->
+            <div class="filter-group" data-category="mutants" style="--group-index: 2">
                 <button class="filter-group__header">
                     <div class="filter-group__icon filter-group__icon--mutants">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -195,6 +349,12 @@
                         <span class="filter-item__checkmark"></span>
                         <span class="filter-item__label" data-i18n="map.marker.pseudodog">Псевдособаки</span>
                         <span class="filter-item__count" data-count="pseudodog">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="psy_dog" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.psy_dog">Пси-собака</span>
+                        <span class="filter-item__count" data-count="psy_dog">0</span>
                     </label>
                     <label class="filter-item">
                         <input type="checkbox" class="filter-checkbox" data-filter="flesh" checked>
@@ -244,35 +404,17 @@
                         <span class="filter-item__label" data-i18n="map.marker.chimera">Химера</span>
                         <span class="filter-item__count" data-count="chimera">0</span>
                     </label>
-                </div>
-            </div>
-
-            <!-- Категория: Торговцы -->
-            <div class="filter-group" data-category="traders">
-                <button class="filter-group__header">
-                    <div class="filter-group__icon filter-group__icon--traders">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                        </svg>
-                    </div>
-                    <span class="filter-group__title" data-i18n="map.category.traders">Торговцы</span>
-                    <span class="filter-group__count" id="countTraders">0</span>
-                    <svg class="filter-group__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9l6 6 6-6"/>
-                    </svg>
-                </button>
-                <div class="filter-group__content">
                     <label class="filter-item">
-                        <input type="checkbox" class="filter-checkbox" data-filter="trader" checked>
+                        <input type="checkbox" class="filter-checkbox" data-filter="controller" checked>
                         <span class="filter-item__checkmark"></span>
-                        <span class="filter-item__label" data-i18n="map.marker.trader">Маклак</span>
-                        <span class="filter-item__count" data-count="trader">0</span>
+                        <span class="filter-item__label" data-i18n="map.marker.controller">Контролёр</span>
+                        <span class="filter-item__count" data-count="controller">0</span>
                     </label>
                 </div>
             </div>
 
-            <!-- Категория: НПС -->
-            <div class="filter-group" data-category="npc">
+            <!-- ===== НПС ===== -->
+            <div class="filter-group" data-category="npc" style="--group-index: 3">
                 <button class="filter-group__header">
                     <div class="filter-group__icon filter-group__icon--npc">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -293,16 +435,52 @@
                         <span class="filter-item__count" data-count="zombified">0</span>
                     </label>
                     <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="zombified_cluster" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.zombified_cluster">Скопление зомбированных</span>
+                        <span class="filter-item__count" data-count="zombified_cluster">0</span>
+                    </label>
+                    <label class="filter-item">
                         <input type="checkbox" class="filter-checkbox" data-filter="bandits" checked>
                         <span class="filter-item__checkmark"></span>
                         <span class="filter-item__label" data-i18n="map.marker.bandits">Бандиты</span>
                         <span class="filter-item__count" data-count="bandits">0</span>
                     </label>
                     <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="bandit_camp" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.bandit_camp">Стоянка бандитов</span>
+                        <span class="filter-item__count" data-count="bandit_camp">0</span>
+                    </label>
+                    <label class="filter-item">
                         <input type="checkbox" class="filter-checkbox" data-filter="military" checked>
                         <span class="filter-item__checkmark"></span>
                         <span class="filter-item__label" data-i18n="map.marker.military">Военные</span>
                         <span class="filter-item__count" data-count="military">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="monolith_outpost" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.monolith_outpost">Аванпост монолита</span>
+                        <span class="filter-item__count" data-count="monolith_outpost">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="monolith" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.monolith">Монолит / Апостаты</span>
+                        <span class="filter-item__count" data-count="monolith">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="mercenary" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.mercenary">Наёмники / ЧВК «Асгард»</span>
+                        <span class="filter-item__count" data-count="mercenary">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="stalkers" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.stalkers">Сталкеры</span>
+                        <span class="filter-item__count" data-count="stalkers">0</span>
                     </label>
                     <label class="filter-item">
                         <input type="checkbox" class="filter-checkbox" data-filter="freedom" checked>
@@ -317,38 +495,138 @@
                         <span class="filter-item__count" data-count="duty">0</span>
                     </label>
                     <label class="filter-item">
-                        <input type="checkbox" class="filter-checkbox" data-filter="mercs" checked>
+                        <input type="checkbox" class="filter-checkbox" data-filter="duty_freedom_spawn" checked>
                         <span class="filter-item__checkmark"></span>
-                        <span class="filter-item__label" data-i18n="map.marker.mercs">Наемники</span>
-                        <span class="filter-item__count" data-count="mercs">0</span>
+                        <span class="filter-item__label" data-i18n="map.marker.duty_freedom_spawn">Спавн Долга/Свободы</span>
+                        <span class="filter-item__count" data-count="duty_freedom_spawn">0</span>
                     </label>
                     <label class="filter-item">
-                        <input type="checkbox" class="filter-checkbox" data-filter="sins" checked>
+                        <input type="checkbox" class="filter-checkbox" data-filter="sinner" checked>
                         <span class="filter-item__checkmark"></span>
-                        <span class="filter-item__label" data-i18n="map.marker.sins">Греховцы</span>
-                        <span class="filter-item__count" data-count="sins">0</span>
+                        <span class="filter-item__label" data-i18n="map.marker.sinner">Грешники</span>
+                        <span class="filter-item__count" data-count="sinner">0</span>
                     </label>
                     <label class="filter-item">
-                        <input type="checkbox" class="filter-checkbox" data-filter="monolith" checked>
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_foxtrot" checked>
                         <span class="filter-item__checkmark"></span>
-                        <span class="filter-item__label" data-i18n="map.marker.monolith">Монолитовцы</span>
-                        <span class="filter-item__count" data-count="monolith">0</span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_foxtrot">Босс: Разведчик Фокстрот</span>
+                        <span class="filter-item__count" data-count="boss_foxtrot">0</span>
                     </label>
                     <label class="filter-item">
-                        <input type="checkbox" class="filter-checkbox" data-filter="obliterator" checked>
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_prince" checked>
                         <span class="filter-item__checkmark"></span>
-                        <span class="filter-item__label" data-i18n="map.marker.obliterator">Облитератор</span>
-                        <span class="filter-item__count" data-count="obliterator">0</span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_prince">Босс: Князь</span>
+                        <span class="filter-item__count" data-count="boss_prince">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_pharaoh" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_pharaoh">Босс: Банда Фараона</span>
+                        <span class="filter-item__count" data-count="boss_pharaoh">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_sumrak" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_sumrak">Босс: Депо Сумрака</span>
+                        <span class="filter-item__count" data-count="boss_sumrak">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_iskatel" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_iskatel">Босс: Искатель</span>
+                        <span class="filter-item__count" data-count="boss_iskatel">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_invincible" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_invincible">Босс: Непробиваемый</span>
+                        <span class="filter-item__count" data-count="boss_invincible">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_illusionist" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_illusionist">Босс: Иллюзионист</span>
+                        <span class="filter-item__count" data-count="boss_illusionist">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_king" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_king">Босс: Король и Свита</span>
+                        <span class="filter-item__count" data-count="boss_king">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="boss_kastet" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.boss_kastet">Босс: Банда Кастета</span>
+                        <span class="filter-item__count" data-count="boss_kastet">0</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ===== ЛОКАЦИИ ===== -->
+            <div class="filter-group" data-category="locations" style="--group-index: 4">
+                <button class="filter-group__header">
+                    <div class="filter-group__icon filter-group__icon--locations">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </div>
+                    <span class="filter-group__title" data-i18n="map.category.locations">Локации</span>
+                    <span class="filter-group__count" id="countLocations">0</span>
+                    <svg class="filter-group__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+                <div class="filter-group__content">
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_orden" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_orden">База Ордена</span>
+                        <span class="filter-item__count" data-count="base_orden">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_legion" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_legion">База Легиона</span>
+                        <span class="filter-item__count" data-count="base_legion">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_duty" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_duty">База Долга</span>
+                        <span class="filter-item__count" data-count="base_duty">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_freedom" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_freedom">База Свободы</span>
+                        <span class="filter-item__count" data-count="base_freedom">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_spawn" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_spawn">Базы (сохранение)</span>
+                        <span class="filter-item__count" data-count="base_spawn">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_nospawn" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_nospawn">Базы (без сохранения)</span>
+                        <span class="filter-item__count" data-count="base_nospawn">0</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" class="filter-checkbox" data-filter="base_hostile" checked>
+                        <span class="filter-item__checkmark"></span>
+                        <span class="filter-item__label" data-i18n="map.marker.base_hostile">Враждебные базы</span>
+                        <span class="filter-item__count" data-count="base_hostile">0</span>
                     </label>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- Контейнер карты -->
     <div id="map" class="map-container"></div>
 
-    <!-- Координаты курсора -->
     <div class="coordinates" id="coordinates">
         <span class="coordinates__label">X:</span>
         <span class="coordinates__value" id="coordX">0</span>
@@ -356,7 +634,23 @@
         <span class="coordinates__value" id="coordY">0</span>
     </div>
 
-    <!-- Кнопки управления -->
+    <div class="level-switcher" id="levelSwitcher">
+        <button class="level-switcher__btn level-switcher__btn--active" data-level="surface" id="levelSurface">
+            <svg class="level-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+            </svg>
+            <span data-i18n="map.level.surface">Поверхность</span>
+        </button>
+        <button class="level-switcher__btn" data-level="underground" id="levelUnderground">
+            <svg class="level-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7h18M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/>
+                <path d="M8 11h2v2H8zM14 11h2v2h-2z"/>
+                <path d="M10 15h4"/>
+            </svg>
+            <span data-i18n="map.level.underground">Подземелье</span>
+        </button>
+    </div>
+
     <div class="map-controls">
         <button class="map-control" id="zoomIn" data-title-i18n="map.controls.zoomIn" title="Приблизить">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -380,236 +674,7 @@
         </button>
     </div>
 
-    <!-- Кнопка режима добавления меток -->
-    <button class="user-marker-toggle" id="userMarkerToggle" data-title-i18n="map.userMarkers.addMarker" title="Добавить свою метку">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span data-i18n="map.userMarkers.addMarker">Добавить метку</span>
-    </button>
-
-    <!-- Панель пользовательских меток -->
-    <div class="user-markers-panel" id="userMarkersPanel">
-        <div class="user-markers-panel__header">
-            <h3 data-i18n="map.userMarkers.yourMarkers">Ваши метки</h3>
-            <div class="user-markers-panel__actions">
-                <button class="user-markers-panel__btn" id="copyAllMarkers" data-title-i18n="map.userMarkers.copyAll" title="Копировать все">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                    </svg>
-                </button>
-                <button class="user-markers-panel__btn user-markers-panel__btn--danger" id="clearAllMarkers" data-title-i18n="map.userMarkers.deleteAll" title="Удалить все">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-                <button class="user-markers-panel__close" id="closeMarkersPanel">×</button>
-            </div>
-        </div>
-        <div class="user-markers-panel__list" id="userMarkersList">
-            <div class="user-markers-panel__empty" data-i18n="map.userMarkers.clickToAdd">
-                Нажмите на карту, чтобы добавить метку
-            </div>
-        </div>
-        <div class="user-markers-panel__footer">
-            <button class="user-markers-panel__copy-btn" id="copyForDiscord">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span data-i18n="map.userMarkers.copyForSharing">Копировать для отправки</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Модальное окно добавления метки -->
-    <div class="marker-modal" id="markerModal">
-        <div class="marker-modal__overlay" id="modalOverlay"></div>
-        <div class="marker-modal__content">
-            <div class="marker-modal__header">
-                <h3 data-i18n="map.modal.newMarker">Новая метка</h3>
-                <button class="marker-modal__close" id="closeModal">×</button>
-            </div>
-            <div class="marker-modal__body">
-                <div class="marker-modal__coords">
-                    <span data-i18n="map.modal.coordinates">Координаты:</span>
-                    <span id="modalCoords">X: 0, Y: 0</span>
-                </div>
-                
-                <div class="marker-modal__field">
-                    <label data-i18n="map.modal.category">Категория:</label>
-                    <div class="custom-select" id="categorySelect">
-                        <div class="custom-select__trigger">
-                            <span class="custom-select__placeholder" data-i18n="map.modal.selectCategory">Выберите категорию</span>
-                            <svg class="custom-select__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M6 9l6 6 6-6"/>
-                            </svg>
-                        </div>
-                        <div class="custom-select__dropdown">
-                            <div class="custom-select__group">
-                                <div class="custom-select__group-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                    </svg>
-                                    <span data-i18n="map.category.containers">Контейнеры</span>
-                                </div>
-                                <div class="custom-select__option" data-value="ammo">
-                                    <img src="markers/ammo.png" alt="">
-                                    <span data-i18n="map.marker.ammo">Патроны</span>
-                                </div>
-                                <div class="custom-select__option" data-value="supply">
-                                    <img src="markers/supply.png" alt="">
-                                    <span data-i18n="map.marker.supply">Припасы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="tools">
-                                    <img src="markers/tool.svg" alt="">
-                                    <span data-i18n="map.marker.tools">Инструменты</span>
-                                </div>
-                                <div class="custom-select__option" data-value="barrels">
-                                    <img src="markers/barrel.png" alt="">
-                                    <span data-i18n="map.marker.barrels">Бочки</span>
-                                </div>
-                                <div class="custom-select__option" data-value="science">
-                                    <img src="markers/science.png" alt="">
-                                    <span data-i18n="map.marker.science">Научное оборудование</span>
-                                </div>
-                                <div class="custom-select__option" data-value="stash">
-                                    <img src="markers/stash.png" alt="">
-                                    <span data-i18n="map.marker.stash">Тайник</span>
-                                </div>
-                            </div>
-                            
-                            <div class="custom-select__group">
-                                <div class="custom-select__group-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
-                                    </svg>
-                                    <span data-i18n="map.category.mutants">Мутанты</span>
-                                </div>
-                                <div class="custom-select__option" data-value="blind_dog">
-                                    <img src="markers/mutants/blinddog.png" alt="">
-                                    <span data-i18n="map.marker.blind_dog">Слепые псы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="pseudodog">
-                                    <img src="markers/mutants/pseudodog.png" alt="">
-                                    <span data-i18n="map.marker.pseudodog">Псевдособаки</span>
-                                </div>
-                                <div class="custom-select__option" data-value="flesh">
-                                    <img src="markers/mutants/flesh.png" alt="">
-                                    <span data-i18n="map.marker.flesh">Плоти</span>
-                                </div>
-                                <div class="custom-select__option" data-value="boar">
-                                    <img src="markers/mutants/boar.png" alt="">
-                                    <span data-i18n="map.marker.boar">Кабаны</span>
-                                </div>
-                                <div class="custom-select__option" data-value="rat">
-                                    <img src="markers/mutants/rat.png" alt="">
-                                    <span data-i18n="map.marker.rat">Крысы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="snork">
-                                    <img src="markers/mutants/snork.png" alt="">
-                                    <span data-i18n="map.marker.snork">Снорки</span>
-                                </div>
-                                <div class="custom-select__option" data-value="zombie">
-                                    <img src="markers/mutants/zombie.png" alt="">
-                                    <span data-i18n="map.marker.zombie">Зомби</span>
-                                </div>
-                                <div class="custom-select__option" data-value="bloodsucker">
-                                    <img src="markers/mutants/bloodsucker.png" alt="">
-                                    <span data-i18n="map.marker.bloodsucker">Кровосос</span>
-                                </div>
-                                <div class="custom-select__option" data-value="bloodsucker_strong">
-                                    <img src="markers/mutants/strongbloodsucker.png" alt="">
-                                    <span data-i18n="map.marker.bloodsucker_strong">Матёрый кровосос</span>
-                                </div>
-                                <div class="custom-select__option" data-value="chimera">
-                                    <img src="markers/mutants/chimera.png" alt="">
-                                    <span data-i18n="map.marker.chimera">Химера</span>
-                                </div>
-                            </div>
-                            
-                            <div class="custom-select__group">
-                                <div class="custom-select__group-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                                    </svg>
-                                    <span data-i18n="map.category.traders">Торговцы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="trader">
-                                    <img src="markers/dealer.png" alt="">
-                                    <span data-i18n="map.marker.trader">Маклак</span>
-                                </div>
-                            </div>
-                            
-                            <div class="custom-select__group">
-                                <div class="custom-select__group-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                    </svg>
-                                    <span data-i18n="map.category.npc">НПС</span>
-                                </div>
-                                <div class="custom-select__option" data-value="zombified">
-                                    <img src="markers/NPC/Zombified.png" alt="">
-                                    <span data-i18n="map.marker.zombified">Зомбированные</span>
-                                </div>
-                                <div class="custom-select__option" data-value="bandits">
-                                    <img src="markers/NPC/Bandits.png" alt="">
-                                    <span data-i18n="map.marker.bandits">Бандиты</span>
-                                </div>
-                                <div class="custom-select__option" data-value="military">
-                                    <img src="markers/NPC/military.png" alt="">
-                                    <span data-i18n="map.marker.military">Военные</span>
-                                </div>
-                                <div class="custom-select__option" data-value="freedom">
-                                    <img src="markers/NPC/freedom.png" alt="">
-                                    <span data-i18n="map.marker.freedom">Свободовцы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="duty">
-                                    <img src="markers/NPC/Duty.png" alt="">
-                                    <span data-i18n="map.marker.duty">Долговцы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="mercs">
-                                    <img src="markers/NPC/Mercs.png" alt="">
-                                    <span data-i18n="map.marker.mercs">Наемники</span>
-                                </div>
-                                <div class="custom-select__option" data-value="sins">
-                                    <img src="markers/NPC/Sin.png" alt="">
-                                    <span data-i18n="map.marker.sins">Греховцы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="monolith">
-                                    <img src="markers/NPC/Monolith.png" alt="">
-                                    <span data-i18n="map.marker.monolith">Монолитовцы</span>
-                                </div>
-                                <div class="custom-select__option" data-value="obliterator">
-                                    <img src="markers/NPC/Obliterator.png" alt="">
-                                    <span data-i18n="map.marker.obliterator">Облитератор</span>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="markerCategory" value="">
-                    </div>
-                </div>
-                
-                <div class="marker-modal__field">
-                    <label data-i18n="map.modal.description">Описание / Комментарий:</label>
-                    <textarea id="markerDescription" class="marker-modal__textarea" data-placeholder-i18n="map.modal.descriptionPlaceholder" placeholder="Например: На втором этаже, за ящиками..."></textarea>
-                </div>
-                
-                <div class="marker-modal__field">
-                    <label data-i18n="map.modal.gameCoords">Игровые координаты (если знаете):</label>
-                    <input type="text" id="markerGameCoords" class="marker-modal__input" data-placeholder-i18n="map.modal.gameCoordsPlaceholder" placeholder="Например: -426, 69, -370">
-                </div>
-            </div>
-            <div class="marker-modal__footer">
-                <button class="marker-modal__btn marker-modal__btn--cancel" id="cancelMarker" data-i18n="map.modal.cancel">Отмена</button>
-                <button class="marker-modal__btn marker-modal__btn--save" id="saveMarker" data-i18n="map.modal.add">Добавить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Уведомление о копировании -->
-    <div class="copy-toast" id="copyToast">
+    <div class="copy-toast" id="copyToast" role="alert" aria-live="polite">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="20 6 9 17 4 12"/>
         </svg>
@@ -618,8 +683,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../i18n.js"></script>
+    <script src="../shared.js"></script>
     <script src="mapData.js"></script>
     <script src="map.js"></script>
-    <script src="dynmap.js"></script>
 </body>
 </html>
