@@ -8,20 +8,24 @@ const state = {
     previousStats: null,
     enhancementLevel: 0,
     filters: {
-        category: 'all',
         search: '',
-        positiveEffect: '',
-        negativeEffect: ''
+        positiveEffects: [],
+        negativeEffects: []
     },
     filtersExpanded: false,
     armorModalPreviewId: null,
-    armorModalTypeFilter: 'all'
+    containerModalPreviewId: null,
+    selectedArtifactSlotIndex: null,
+    artifactCopyMode: false,
 };
 
 let armorModalSearchTimer = null;
 let lastArmorDetailId = null;
+let lastContainerDetailId = null;
+let artifactSlotsSortable = null;
 
 let elements = {};
+let statFilterOptions = { positive: [], negative: [] };
 
 const STORAGE_KEY = 'cataclysmCalculatorState';
 const DEFAULT_CONTAINER_ID = 'container_radiy';
@@ -91,17 +95,7 @@ function getStatIcon(statKey) {
 }
 
 const ARMOR_DEFAULT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-const ARMOR_EMPTY_IMAGE = '../Table/Armors/empty.png';
-
-function getArmorImagePath(armor) {
-    if (armor?.image && armor?.imageFolder) {
-        return `../Table/${armor.imageFolder}/${armor.image}`;
-    }
-    if (armor?.id) {
-        return `../Table/Armors/${armor.id}.png`;
-    }
-    return null;
-}
+const ARMOR_EMPTY_IMAGE = `../${ITEMS_IMAGES_DIR}Armors/empty.png`;
 
 function getArmorCardIcon(armor, iconClass = 'armor-card__icon', imgClass = 'armor-card__img', fallbackClass = 'armor-card__icon-fallback') {
     const imagePath = getArmorImagePath(armor);
@@ -123,7 +117,7 @@ function bindArmorCardFallbacks(listElement, imgClass = 'armor-card__img', fallb
 }
 
 function getContainerDropdownIcon(container) {
-    const imagePath = getContainerImagePath(container, '../Table/');
+    const imagePath = getContainerImagePath(container);
     const typeIcon = CONTAINER_TYPE_ICONS[container.type] || CONTAINER_TYPE_ICONS.standard;
 
     if (!imagePath) return `<span class="container-card__icon">${typeIcon}</span>`;
@@ -145,7 +139,7 @@ function bindContainerIconFallbacks(listElement) {
 const CONTAINER_BAR_DEFAULT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>`;
 
 function renderContainerBarPreviewContent(container) {
-    const imagePath = getContainerImagePath(container, '../Table/');
+    const imagePath = getContainerImagePath(container);
     const typeIcon = CONTAINER_TYPE_ICONS[container.type] || CONTAINER_TYPE_ICONS.standard;
 
     if (imagePath) {
@@ -153,6 +147,13 @@ function renderContainerBarPreviewContent(container) {
     }
 
     return `<span class="container-bar__icon">${typeIcon}</span>`;
+}
+
+function renderContainerSlotDots(slots) {
+    const count = Math.max(0, slots || 0);
+    if (!count) return '';
+    const dots = Array.from({ length: count }, () => '<span class="container-card__slot-dot"></span>').join('');
+    return `<div class="container-card__slots" title="${getSlotsText(count)}" aria-label="${getSlotsText(count)}">${dots}</div>`;
 }
 
 function bindContainerBarPreviewFallbacks() {
@@ -202,6 +203,8 @@ function sortContainersByRarity(containers) {
     return [...containers].sort((a, b) => {
         const diff = getRaritySortIndex(a.rarity) - getRaritySortIndex(b.rarity);
         if (diff !== 0) return diff;
+        const slotsDiff = (b.slots || 0) - (a.slots || 0);
+        if (slotsDiff !== 0) return slotsDiff;
         return getLocalizedName(a).localeCompare(getLocalizedName(b), undefined, { sensitivity: 'base' });
     });
 }
@@ -301,6 +304,12 @@ function renderContainerBar() {
     updateClearArtifactsButton();
 }
 
+function buildContainerDetailSection(title, statEntries) {
+    if (!statEntries.length) return '';
+    const rows = statEntries.map(([key, value]) => buildCompactStatRow(key, value, 0, { compact: true })).join('');
+    return `<div class="container-detail__section"><div class="container-detail__section-title">${title}</div><div class="container-detail__stats">${rows}</div></div>`;
+}
+
 function buildCompactStatRow(statKey, value, enhancementBonus = 0, options = {}) {
     const totalValue = value + enhancementBonus;
     const { displayValue, colorClass } = formatStatValue(statKey, totalValue);
@@ -337,7 +346,6 @@ function initElements() {
         armorSearchClear: document.getElementById('armorSearchClear'),
         armorModalList: document.getElementById('armorModalList'),
         armorModalDetail: document.getElementById('armorModalDetail'),
-        armorTypeTabs: document.querySelectorAll('#armorTypeTabs .category-tab'),
         containerSelect: document.getElementById('containerSelect'),
         containerPickerBtn: document.getElementById('containerPickerBtn'),
         containerPickerPreview: document.getElementById('containerPickerPreview'),
@@ -357,7 +365,6 @@ function initElements() {
         searchClear: document.getElementById('searchClear'),
         artifactList: document.getElementById('artifactList'),
         artifactCount: document.getElementById('artifactCount'),
-        categoryTabs: document.querySelectorAll('#categoryTabs .category-tab'),
         scrollTop: document.getElementById('scrollTop'),
         warningsContainer: document.getElementById('warningsContainer'),
         effectiveHealth: document.getElementById('effectiveHealth'),
@@ -369,7 +376,10 @@ function initElements() {
         containerModalClose: document.getElementById('containerModalClose'),
         containerModalSearch: document.getElementById('containerModalSearch'),
         containerSearchClear: document.getElementById('containerSearchClear'),
-        containerModalList: document.getElementById('containerModalList')
+        containerModalList: document.getElementById('containerModalList'),
+        containerModalDetail: document.getElementById('containerModalDetail'),
+        artifactDetailPanel: document.getElementById('artifactDetailPanel'),
+        artifactCopyHint: document.getElementById('artifactCopyHint'),
     };
 
     elements.statValueElements = {};
@@ -513,7 +523,8 @@ document.addEventListener('languageChanged', () => {
     }
 
     if (elements.containerModal?.classList.contains('active')) {
-        renderContainerModalList();
+        renderContainerModalList(elements.containerModalSearch?.value.toLowerCase().trim() || '');
+        renderContainerModalDetail(state.containerModalPreviewId, true);
     }
 
     if (elements.modal.classList.contains('active')) {
@@ -584,61 +595,17 @@ function injectStatFilterStyles() {
     const style = document.createElement('style');
     style.id = 'stat-filter-styles';
     style.textContent = `
-.filters-toggle{display:none;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--color-text-muted);font-family:var(--font-main);font-size:13px;cursor:pointer;transition:all 0.2s ease;margin-bottom:0}
-.filters-toggle:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15)}
-.filters-toggle.active{background:rgba(196,163,90,0.1);border-color:rgba(196,163,90,0.3);color:var(--color-accent)}
-.filters-toggle__left{display:flex;align-items:center;gap:8px}
-.filters-toggle__icon{display:flex;align-items:center;justify-content:center}
-.filters-toggle__icon svg{width:16px;height:16px}
-.filters-toggle__text{font-weight:500}
-.filters-toggle__badge{display:none;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;background:var(--color-accent);color:#000;font-size:11px;font-weight:700;border-radius:10px}
-.filters-toggle__badge.visible{display:flex}
-.filters-toggle__arrow{display:flex;align-items:center;transition:transform 0.2s ease}
-.filters-toggle__arrow svg{width:18px;height:18px}
-.filters-toggle.active .filters-toggle__arrow{transform:rotate(180deg)}
-.stat-filters-wrapper{overflow:hidden;transition:max-height 0.3s ease,opacity 0.2s ease}
-.stat-filters-wrapper.collapsed{max-height:0!important;opacity:0}
-.stat-filters{display:flex;gap:12px;flex-wrap:wrap;padding-top:12px}
-.stat-filter{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px}
-.stat-filter__label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px}
-.stat-filter__label svg{width:14px;height:14px}
-.stat-filter--positive .stat-filter__label{color:#4ade80}
-.stat-filter--negative .stat-filter__label{color:#f87171}
-.stat-filter__select{padding:10px 32px 10px 12px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--color-text);font-family:var(--font-main);font-size:13px;cursor:pointer;transition:all 0.2s ease;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888899' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
-.stat-filter__select:hover{border-color:rgba(255,255,255,0.2);background-color:rgba(0,0,0,0.5)}
-.stat-filter__select:focus{outline:none;border-color:var(--color-accent)}
-.stat-filter--positive .stat-filter__select:focus{border-color:#4ade80}
-.stat-filter--negative .stat-filter__select:focus{border-color:#f87171}
-.stat-filter__select option{background:#1a1a24;color:var(--color-text);padding:8px}
-.stat-filters__reset{display:flex;align-items:flex-end;padding-bottom:2px}
-.stat-filters__reset-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--color-text-muted);font-family:var(--font-main);font-size:12px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap}
-.stat-filters__reset-btn:hover{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.3);color:#f87171}
-.stat-filters__reset-btn svg{width:14px;height:14px}
-.stat-filters__reset-btn:disabled{opacity:0.3;cursor:not-allowed}
-.stat-filters__reset-btn:disabled:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:var(--color-text-muted)}
 .calculator-error{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 20px 80px;text-align:center}
 .calculator-error__icon{width:48px;height:48px;color:var(--color-text-muted);margin-bottom:16px}
 .calculator-error__text{font-size:18px;color:var(--color-text-muted);margin-bottom:24px}
 .calculator-error__btn{color:var(--color-accent);background:none;border:1px solid var(--color-accent);padding:12px 28px;border-radius:10px;cursor:pointer;font-size:14px;font-family:var(--font-main);transition:var(--transition)}
 .calculator-error__btn:hover{background:rgba(196,163,90,0.15)}
 @media(max-width:768px){
-.filters-toggle{display:flex}
 .modal__toolbar{padding:10px 14px;gap:10px}
 .modal__search-box{padding:0 12px}
 .modal__search-box input{padding:10px 8px;font-size:14px}
-.modal__categories{gap:4px;padding-bottom:2px}
-.category-tab{padding:6px 10px;font-size:12px;border-radius:8px}
-.category-tab__label{font-size:11px}
-.category-tab__dot{width:8px;height:8px}
-.category-tab__icon svg{width:14px;height:14px}
 .modal__results-info{padding:8px 14px}
 .results-count{font-size:12px}
-.stat-filters{flex-direction:column;gap:10px;padding-top:10px}
-.stat-filter{min-width:100%;gap:4px}
-.stat-filter__label{font-size:10px}
-.stat-filter__select{padding:8px 28px 8px 10px;font-size:12px}
-.stat-filters__reset{width:100%}
-.stat-filters__reset-btn{width:100%;justify-content:center;padding:8px 12px;font-size:11px}
 .modal__header{padding:12px 14px}
 .modal__title{font-size:16px}
 .modal__close{width:36px;height:36px}
@@ -654,10 +621,6 @@ function injectStatFilterStyles() {
 @media(max-width:480px){
 .modal__toolbar{padding:8px 12px;gap:8px}
 .modal__search-box input{padding:8px 6px;font-size:13px}
-.category-tab{padding:5px 8px}
-.category-tab__label{display:none}
-.category-tab__dot,.category-tab__icon{margin:0}
-.category-tab[data-category="all"] .category-tab__label{display:inline}
 .modal__body{padding:10px}
 .artifact-card__top{gap:10px}
 .artifact-card__image-wrapper{width:48px;height:48px}
@@ -666,8 +629,224 @@ function injectStatFilterStyles() {
     document.head.appendChild(style);
 }
 
+function getStatFilterTagMaxLength(selectedCount) {
+    if (selectedCount <= 1) return 14;
+    if (selectedCount === 2) return 9;
+    if (selectedCount <= 4) return 6;
+    return 4;
+}
+
+function truncateStatFilterName(name, maxLength = 12) {
+    if (!name || name.length <= maxLength) return name;
+    return `${name.slice(0, maxLength - 1)}…`;
+}
+
+function updateStatFilterInputPlaceholder(combobox, filterKey) {
+    const input = combobox?.querySelector('.stat-filter-combobox__input');
+    if (!input) return;
+
+    const placeholderKey = combobox.dataset.placeholderKey;
+    input.placeholder = state.filters[filterKey].length ? '' : (placeholderKey ? t(placeholderKey) : '');
+}
+
+function renderStatFilterTags(combobox, filterKey, variant) {
+    const tagsEl = combobox.querySelector('.stat-filter-combobox__tags');
+    if (!tagsEl) return;
+
+    const selectedCount = state.filters[filterKey].length;
+    const maxLength = getStatFilterTagMaxLength(selectedCount);
+
+    tagsEl.innerHTML = state.filters[filterKey].map(statKey => {
+        const fullName = getStatName(statKey);
+        const shortName = truncateStatFilterName(fullName, maxLength);
+        return `<span class="stat-filter-tag stat-filter-tag--${variant}" title="${fullName}"><span class="stat-filter-tag__label">${shortName}</span><button type="button" class="stat-filter-tag__remove" data-stat="${statKey}" aria-label="${t('calc.filter.remove')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button></span>`;
+    }).join('');
+
+    updateStatFilterInputPlaceholder(combobox, filterKey);
+}
+
+function getFilteredStatOptions(statsMap, selectedEffects, query) {
+    const q = query.toLowerCase().trim();
+    return statsMap.filter(([statKey]) => {
+        if (selectedEffects.includes(statKey)) return false;
+        if (!q) return true;
+        const nameRu = STAT_NAMES[statKey] || '';
+        const nameEn = STAT_NAMES_EN[statKey] || '';
+        return nameRu.toLowerCase().includes(q) || nameEn.toLowerCase().includes(q) || statKey.toLowerCase().includes(q);
+    });
+}
+
+function renderStatFilterComboboxList(combobox, statsMap, filterKey, query) {
+    const list = combobox.querySelector('.stat-filter-combobox__list');
+    if (!list) return;
+
+    const available = getFilteredStatOptions(statsMap, state.filters[filterKey], query);
+    if (!available.length) {
+        list.innerHTML = `<div class="stat-filter-combobox__empty">${query ? t('calc.modal.noResults') : t('calc.filter.allSelected')}</div>`;
+        return;
+    }
+
+    list.innerHTML = available.map(([statKey, count]) => `<button type="button" class="stat-filter-combobox__option" data-value="${statKey}"><span class="stat-filter-combobox__option-name">${getStatName(statKey)}</span><span class="stat-filter-combobox__option-count">${count}</span></button>`).join('');
+}
+
+function openStatFilterCombobox(combobox) {
+    closeStatFilterComboboxes(combobox);
+    combobox.classList.add('open');
+}
+
+function closeStatFilterComboboxes(except) {
+    document.querySelectorAll('#statFiltersContainer .stat-filter-combobox.open').forEach(combobox => {
+        if (combobox !== except) combobox.classList.remove('open');
+    });
+}
+
+function openStatFilterComboboxMenu(combobox, statsMap, filterKey, input) {
+    openStatFilterCombobox(combobox);
+    renderStatFilterComboboxList(combobox, statsMap, filterKey, input.value);
+}
+
+function handleStatFilterOutsideClick(e) {
+    if (!e.target.closest('.stat-filter-combobox')) closeStatFilterComboboxes();
+}
+
+function addStatFilterFromCombobox(filterKey, combobox, variant, statKey) {
+    if (!statKey || state.filters[filterKey].includes(statKey)) return;
+
+    state.filters[filterKey].push(statKey);
+    renderStatFilterTags(combobox, filterKey, variant);
+    updateFiltersBadge();
+    updateStatFilterClearButtons();
+    applyFilters();
+}
+
+function removeStatFilterFromCombobox(filterKey, combobox, variant, statKey) {
+    state.filters[filterKey] = state.filters[filterKey].filter(key => key !== statKey);
+    renderStatFilterTags(combobox, filterKey, variant);
+    updateFiltersBadge();
+    updateStatFilterClearButtons();
+    applyFilters();
+}
+
+function clearStatFilterGroup(filterKey, combobox, variant, statsMap) {
+    state.filters[filterKey] = [];
+    renderStatFilterTags(combobox, filterKey, variant);
+
+    const input = combobox.querySelector('.stat-filter-combobox__input');
+    if (input) input.value = '';
+
+    renderStatFilterComboboxList(combobox, statsMap, filterKey, '');
+    combobox.classList.remove('open');
+    updateFiltersBadge();
+    updateStatFilterClearButtons();
+    applyFilters();
+}
+
+function resetStatFilterComboboxes() {
+    const configs = [
+        { comboboxId: 'positiveEffectCombobox', filterKey: 'positiveEffects', variant: 'positive', statsMap: statFilterOptions.positive },
+        { comboboxId: 'negativeEffectCombobox', filterKey: 'negativeEffects', variant: 'negative', statsMap: statFilterOptions.negative }
+    ];
+
+    configs.forEach(({ comboboxId, filterKey, variant, statsMap }) => {
+        const combobox = document.getElementById(comboboxId);
+        if (!combobox) return;
+
+        renderStatFilterTags(combobox, filterKey, variant);
+        const input = combobox.querySelector('.stat-filter-combobox__input');
+        if (input) input.value = '';
+        updateStatFilterInputPlaceholder(combobox, filterKey);
+        renderStatFilterComboboxList(combobox, statsMap, filterKey, '');
+        combobox.classList.remove('open');
+    });
+
+    updateStatFilterClearButtons();
+}
+
+function initStatFilterCombobox({ comboboxId, inputId, filterKey, variant, statsMap }) {
+    const combobox = document.getElementById(comboboxId);
+    const input = document.getElementById(inputId);
+    if (!combobox || !input) return;
+
+    renderStatFilterTags(combobox, filterKey, variant);
+    updateStatFilterClearButtons();
+
+    const clearBtn = combobox.querySelector('.stat-filter-combobox__clear');
+    clearBtn?.addEventListener('mousedown', (e) => e.preventDefault());
+    clearBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearStatFilterGroup(filterKey, combobox, variant, statsMap);
+    });
+
+    combobox.querySelector('.stat-filter-combobox__field').addEventListener('mousedown', (e) => {
+        if (e.target.closest('.stat-filter-tag__remove')) return;
+        e.preventDefault();
+        input.focus();
+        openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    });
+
+    input.addEventListener('focus', () => {
+        openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    });
+
+    input.addEventListener('input', () => {
+        openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    });
+
+    combobox.querySelector('.stat-filter-combobox__list').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+    });
+
+    combobox.querySelector('.stat-filter-combobox__list').addEventListener('click', (e) => {
+        const option = e.target.closest('.stat-filter-combobox__option');
+        if (!option) return;
+
+        addStatFilterFromCombobox(filterKey, combobox, variant, option.dataset.value);
+        input.value = '';
+        openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+        input.focus();
+    });
+
+    combobox.querySelector('.stat-filter-combobox__tags').addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('.stat-filter-tag__remove');
+        if (!removeBtn) return;
+
+        removeStatFilterFromCombobox(filterKey, combobox, variant, removeBtn.dataset.stat);
+        openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+        input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            combobox.classList.remove('open');
+            input.blur();
+            return;
+        }
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const first = combobox.querySelector('.stat-filter-combobox__option');
+            if (first) {
+                addStatFilterFromCombobox(filterKey, combobox, variant, first.dataset.value);
+                input.value = '';
+                openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+            }
+            return;
+        }
+
+        if (e.key === 'Backspace' && !input.value && state.filters[filterKey].length) {
+            const last = state.filters[filterKey][state.filters[filterKey].length - 1];
+            removeStatFilterFromCombobox(filterKey, combobox, variant, last);
+            openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+        }
+    });
+}
+
+function createStatFilterComboboxMarkup(comboboxId, variant, inputId, placeholderKey) {
+    return `<div class="stat-filter-combobox stat-filter-combobox--${variant}" id="${comboboxId}" data-variant="${variant}" data-placeholder-key="${placeholderKey}"><div class="stat-filter-combobox__row"><div class="stat-filter-combobox__field"><div class="stat-filter-combobox__tags"></div><input type="text" class="stat-filter-combobox__input" id="${inputId}" placeholder="${t(placeholderKey)}" autocomplete="off" spellcheck="false"></div><button type="button" class="stat-filter-combobox__clear" aria-label="${t('calc.filter.clearType')}" disabled hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div class="stat-filter-combobox__menu"><div class="stat-filter-combobox__list"></div></div></div>`;
+}
+
 function createStatFilters() {
-    const toolbar = document.querySelector('.modal__toolbar');
+    const toolbar = document.querySelector('#artifactModal .modal__toolbar');
     if (!toolbar || document.getElementById('statFiltersContainer')) return;
 
     const positiveStats = new Map();
@@ -682,20 +861,14 @@ function createStatFilters() {
 
     const sortedPositive = [...positiveStats.entries()].sort((a, b) => b[1] - a[1]);
     const sortedNegative = [...negativeStats.entries()].sort((a, b) => b[1] - a[1]);
-
-    const createOptions = (statsMap) => {
-        let options = `<option value="">${t('calc.filter.any')}</option>`;
-        statsMap.forEach(([statKey, count]) => {
-            options += `<option value="${statKey}">${getStatName(statKey)} (${count})</option>`;
-        });
-        return options;
-    };
+    statFilterOptions.positive = sortedPositive;
+    statFilterOptions.negative = sortedNegative;
 
     const toggleBtn = document.createElement('button');
     toggleBtn.id = 'filtersToggle';
     toggleBtn.className = 'filters-toggle';
     toggleBtn.type = 'button';
-    toggleBtn.innerHTML = `<div class="filters-toggle__left"><span class="filters-toggle__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><span class="filters-toggle__text">${t('calc.filter.byProperties')}</span><span class="filters-toggle__badge" id="filtersBadge">0</span></div><span class="filters-toggle__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>`;
+    toggleBtn.innerHTML = `<div class="filters-toggle__left"><span class="filters-toggle__text">${t('calc.filter.byProperties')}</span><span class="filters-toggle__badge" id="filtersBadge">0</span></div><span class="filters-toggle__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>`;
 
     const wrapper = document.createElement('div');
     wrapper.id = 'statFiltersWrapper';
@@ -704,7 +877,7 @@ function createStatFilters() {
     const container = document.createElement('div');
     container.id = 'statFiltersContainer';
     container.className = 'stat-filters';
-    container.innerHTML = `<div class="stat-filter stat-filter--positive"><label class="stat-filter__label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>${t('calc.filter.positive')}</label><select class="stat-filter__select" id="positiveEffectFilter">${createOptions(sortedPositive)}</select></div><div class="stat-filter stat-filter--negative"><label class="stat-filter__label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>${t('calc.filter.negative')}</label><select class="stat-filter__select" id="negativeEffectFilter">${createOptions(sortedNegative)}</select></div><div class="stat-filters__reset"><button class="stat-filters__reset-btn" id="resetFiltersBtn" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>${t('calc.filter.resetAll')}</button></div>`;
+    container.innerHTML = `<div class="stat-filter stat-filter--positive">${createStatFilterComboboxMarkup('positiveEffectCombobox', 'positive', 'positiveEffectInput', 'calc.filter.selectPositive')}</div><div class="stat-filter stat-filter--negative">${createStatFilterComboboxMarkup('negativeEffectCombobox', 'negative', 'negativeEffectInput', 'calc.filter.selectNegative')}</div>`;
 
     wrapper.appendChild(container);
     toolbar.appendChild(toggleBtn);
@@ -712,21 +885,27 @@ function createStatFilters() {
 
     toggleBtn.addEventListener('click', toggleFiltersPanel);
 
-    document.getElementById('positiveEffectFilter').addEventListener('change', (e) => {
-        state.filters.positiveEffect = e.target.value;
-        updateFiltersBadge();
-        updateResetButtonState();
-        applyFilters();
+    initStatFilterCombobox({
+        comboboxId: 'positiveEffectCombobox',
+        inputId: 'positiveEffectInput',
+        filterKey: 'positiveEffects',
+        variant: 'positive',
+        statsMap: sortedPositive
+    });
+    initStatFilterCombobox({
+        comboboxId: 'negativeEffectCombobox',
+        inputId: 'negativeEffectInput',
+        filterKey: 'negativeEffects',
+        variant: 'negative',
+        statsMap: sortedNegative
     });
 
-    document.getElementById('negativeEffectFilter').addEventListener('change', (e) => {
-        state.filters.negativeEffect = e.target.value;
-        updateFiltersBadge();
-        updateResetButtonState();
-        applyFilters();
-    });
+    if (!createStatFilters.outsideClickBound) {
+        document.addEventListener('click', handleStatFilterOutsideClick);
+        createStatFilters.outsideClickBound = true;
+    }
 
-    document.getElementById('resetFiltersBtn').addEventListener('click', resetAllFilters);
+    updateStatFilterClearButtons();
 }
 
 function toggleFiltersPanel() {
@@ -743,38 +922,26 @@ function toggleFiltersPanel() {
 function updateFiltersBadge() {
     const badge = document.getElementById('filtersBadge');
     if (!badge) return;
-    let count = 0;
-    if (state.filters.positiveEffect) count++;
-    if (state.filters.negativeEffect) count++;
+    let count = state.filters.positiveEffects.length + state.filters.negativeEffects.length;
     badge.textContent = count;
     badge.classList.toggle('visible', count > 0);
 }
 
-function updateResetButtonState() {
-    const resetBtn = document.getElementById('resetFiltersBtn');
-    if (!resetBtn) return;
-    const hasActiveFilters = state.filters.search !== '' || state.filters.category !== 'all' || state.filters.positiveEffect !== '' || state.filters.negativeEffect !== '';
-    resetBtn.disabled = !hasActiveFilters;
-}
+function updateStatFilterClearButtons() {
+    const configs = [
+        { comboboxId: 'positiveEffectCombobox', filterKey: 'positiveEffects' },
+        { comboboxId: 'negativeEffectCombobox', filterKey: 'negativeEffects' }
+    ];
 
-function resetAllFilters() {
-    state.filters.search = '';
-    state.filters.category = 'all';
-    state.filters.positiveEffect = '';
-    state.filters.negativeEffect = '';
+    configs.forEach(({ comboboxId, filterKey }) => {
+        const combobox = document.getElementById(comboboxId);
+        const clearBtn = combobox?.querySelector('.stat-filter-combobox__clear');
+        if (!clearBtn) return;
 
-    elements.artifactSearch.value = '';
-    if (elements.searchClear) elements.searchClear.style.display = 'none';
-    elements.categoryTabs.forEach(tab => tab.classList.toggle('category-tab--active', tab.dataset.category === 'all'));
-
-    const positiveSelect = document.getElementById('positiveEffectFilter');
-    const negativeSelect = document.getElementById('negativeEffectFilter');
-    if (positiveSelect) positiveSelect.value = '';
-    if (negativeSelect) negativeSelect.value = '';
-
-    updateFiltersBadge();
-    updateResetButtonState();
-    applyFilters();
+        const hasFilters = state.filters[filterKey].length > 0;
+        clearBtn.disabled = !hasFilters;
+        clearBtn.hidden = !hasFilters;
+    });
 }
 
 function isPositiveEffect(statKey, value) {
@@ -819,22 +986,11 @@ function initArmorPicker() {
             elements.armorModalSearch.focus();
         });
     }
-    elements.armorTypeTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            state.armorModalTypeFilter = tab.dataset.armorType || 'all';
-            elements.armorTypeTabs.forEach(t => t.classList.toggle('category-tab--active', t === tab));
-            renderArmorModalList();
-        });
-    });
 }
 
 function openArmorModal() {
     state.armorModalPreviewId = state.selectedArmor?.id || null;
-    state.armorModalTypeFilter = 'all';
     elements.armorModal.classList.add('active');
-    elements.armorTypeTabs.forEach(tab => {
-        tab.classList.toggle('category-tab--active', tab.dataset.armorType === 'all');
-    });
     if (elements.armorModalSearch) {
         elements.armorModalSearch.value = '';
         if (elements.armorSearchClear) elements.armorSearchClear.style.display = 'none';
@@ -902,10 +1058,6 @@ function renderArmorModalList(searchQuery = getArmorModalSearchQuery()) {
                               (armor.nameEn && armor.nameEn.toLowerCase().includes(searchQuery));
             if (!nameMatch) return false;
         }
-        if (state.armorModalTypeFilter !== 'all') {
-            const typeName = ARMOR_TYPES[state.armorModalTypeFilter];
-            if (typeName && armor.type !== typeName) return false;
-        }
         return true;
     });
     armors = sortArmorsByRarity(armors);
@@ -951,7 +1103,8 @@ function renderArmorModalDetail(armorId, force = false) {
     const statsHtml = Object.entries(armor.stats).map(([key, value]) => buildCompactStatRow(key, value, 0, { compact: true })).join('');
     const isEquipped = state.selectedArmor?.id === armor.id;
 
-    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__meta"><div class="armor-detail__name">${getLocalizedName(armor)}</div><div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>${armor.rarity ? `<span class="armor-detail__rarity rarity--${rarityClass}">${getLocalizedRarity(armor)}</span>` : ''}</div></div><div class="armor-detail__stats">${statsHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button>`;
+    const typeHtml = armor.type ? `<div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>` : '';
+    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div></div><div class="armor-detail__stats">${statsHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button>`;
 
     const img = elements.armorModalDetail.querySelector('.armor-detail__img');
     if (img) {
@@ -1026,7 +1179,7 @@ function initContainerPicker() {
     elements.containerPickerBtn.addEventListener('click', openContainerModal);
     elements.containerModalClose.addEventListener('click', closeContainerModal);
     elements.containerModal.querySelector('.modal__backdrop').addEventListener('click', closeContainerModal);
-    elements.containerModalList.addEventListener('click', handleContainerModalClick);
+    elements.containerModal.querySelector('.container-modal__layout')?.addEventListener('click', handleContainerModalClick);
     elements.containerModal.addEventListener('input', (e) => {
         if (e.target.id === 'containerModalSearch') handleContainerModalSearch();
     });
@@ -1074,6 +1227,7 @@ function confirmClearArtifacts() {
     }
 
     state.previousStats = calculateTotalStats();
+    exitArtifactCopyMode();
     state.artifacts = new Array(state.selectedContainer.slots).fill(null);
     closeClearArtifactsConfirm();
     renderArtifactSlots();
@@ -1083,12 +1237,14 @@ function confirmClearArtifacts() {
 }
 
 function openContainerModal() {
+    state.containerModalPreviewId = state.selectedContainer?.id || null;
     elements.containerModal.classList.add('active');
     if (elements.containerModalSearch) {
         elements.containerModalSearch.value = '';
         if (elements.containerSearchClear) elements.containerSearchClear.style.display = 'none';
     }
     renderContainerModalList();
+    renderContainerModalDetail(state.containerModalPreviewId);
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
     if (!isMobile && elements.containerModalSearch) elements.containerModalSearch.focus();
     document.body.style.overflow = 'hidden';
@@ -1096,6 +1252,7 @@ function openContainerModal() {
 
 function closeContainerModal() {
     elements.containerModal.classList.remove('active');
+    lastContainerDetailId = null;
     if (!elements.armorModal.classList.contains('active') &&
         !elements.modal.classList.contains('active') &&
         !elements.clearArtifactsConfirm.classList.contains('active')) {
@@ -1112,9 +1269,88 @@ function handleContainerModalSearch() {
 }
 
 function handleContainerModalClick(e) {
+    const selectBtn = e.target.closest('.container-detail__select');
+    if (selectBtn) {
+        if (!selectBtn.disabled) confirmContainerSelection();
+        return;
+    }
+
     const card = e.target.closest('.container-card');
-    if (card && !card.classList.contains('container-card--incompatible') && card.dataset.containerId) {
-        selectContainer(card.dataset.containerId);
+    if (card?.dataset.containerId) {
+        const nextId = card.dataset.containerId;
+        if (nextId === state.containerModalPreviewId) return;
+        state.containerModalPreviewId = nextId;
+        updateContainerModalCardStates();
+        renderContainerModalDetail(state.containerModalPreviewId);
+    }
+}
+
+function updateContainerModalCardStates() {
+    if (!elements.containerModalList) return;
+    elements.containerModalList.querySelectorAll('.container-card').forEach(card => {
+        const id = card.dataset.containerId;
+        card.classList.toggle('container-card--preview', id === state.containerModalPreviewId);
+        card.classList.toggle('container-card--selected', id === state.selectedContainer?.id);
+    });
+}
+
+function confirmContainerSelection() {
+    if (!state.containerModalPreviewId) return;
+    const container = CONTAINERS.find(c => c.id === state.containerModalPreviewId);
+    if (!container || !isContainerAvailable(container)) return;
+    if (state.selectedContainer?.id === state.containerModalPreviewId) {
+        closeContainerModal();
+        return;
+    }
+    selectContainer(state.containerModalPreviewId);
+}
+
+function renderContainerModalDetail(containerId, force = false) {
+    if (!elements.containerModalDetail) return;
+
+    if (!containerId) {
+        lastContainerDetailId = null;
+        elements.containerModalDetail.innerHTML = `<div class="container-detail__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>${t('calc.containerModal.selectHint')}</span></div>`;
+        return;
+    }
+
+    if (!force && containerId === lastContainerDetailId) return;
+
+    const container = CONTAINERS.find(c => c.id === containerId);
+    if (!container) return;
+
+    lastContainerDetailId = containerId;
+
+    const rarityClass = container.rarity || 'none';
+    const imagePath = getContainerImagePath(container);
+    const typeIcon = CONTAINER_TYPE_ICONS[container.type] || CONTAINER_TYPE_ICONS.standard;
+    const imageHtml = imagePath
+        ? `<img class="container-detail__img" src="${imagePath}" alt="${getLocalizedName(container)}"><span class="container-detail__icon-fallback" hidden>${typeIcon}</span>`
+        : `<span class="container-detail__icon">${typeIcon}</span>`;
+
+    const shieldingEntries = Object.entries(container.shielding || {}).filter(([, value]) => value !== 0);
+    const statEntries = Object.entries(container.stats || {}).filter(([, value]) => value !== 0);
+    const shieldingHtml = buildContainerDetailSection(t('calc.shieldingTitle'), shieldingEntries);
+    const statsHtml = buildContainerDetailSection(t('calc.containerModal.properties'), statEntries);
+    const noEffectsHtml = !shieldingEntries.length && !statEntries.length
+        ? `<div class="container-detail__empty">${t('calc.noShieldingFull')}</div>`
+        : '';
+
+    const isEquipped = state.selectedContainer?.id === container.id;
+    const isAvailable = isContainerAvailable(container);
+    const incompatNote = !isAvailable
+        ? `<div class="container-detail__incompat">${t('calc.containerIncompatible')}</div>`
+        : '';
+
+    elements.containerModalDetail.innerHTML = `<div class="container-detail__head"><div class="container-detail__preview">${imageHtml}</div><div class="container-detail__meta"><div class="container-detail__name rarity--${rarityClass}">${getLocalizedName(container)}</div><div class="container-detail__type">${getContainerTypeName(container.type)} · ${getSlotsText(container.slots)}</div></div></div>${incompatNote}<div class="container-detail__body">${shieldingHtml}${statsHtml}${noEffectsHtml}</div><button class="container-detail__select ${isEquipped ? 'container-detail__select--equipped' : ''}" type="button" ${!isAvailable ? 'disabled' : ''}>${isEquipped ? t('calc.containerModal.equipped') : t('calc.containerModal.select')}</button>`;
+
+    const img = elements.containerModalDetail.querySelector('.container-detail__img');
+    if (img) {
+        img.onerror = () => {
+            img.hidden = true;
+            const fallback = img.parentElement?.querySelector('.container-detail__icon-fallback');
+            if (fallback) fallback.hidden = false;
+        };
     }
 }
 
@@ -1143,16 +1379,18 @@ function renderContainerModalList(searchQuery = '') {
 
     if (containers.length === 0) {
         elements.containerModalList.innerHTML = `<div class="containers-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>${t('calc.containerNotFound')}</span></div>`;
+        renderContainerModalDetail(null, true);
         return;
     }
 
     const html = containers.map(container => {
+        const isPreview = state.containerModalPreviewId === container.id;
         const isSelected = state.selectedContainer?.id === container.id;
         const isAvailable = isContainerAvailable(container);
         const rarityClass = container.rarity || 'none';
         const incompatBadge = !isAvailable ? `<div class="container-card__incompat" title="${t('calc.containerIncompatible')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 9l6 6M15 9l-6 6"/></svg></div>` : '';
 
-        return `<button class="container-card container-card--${rarityClass} ${isSelected ? 'container-card--selected' : ''} ${!isAvailable ? 'container-card--incompatible' : ''}" type="button" data-container-id="${container.id}"><div class="container-card__image">${getContainerDropdownIcon(container)}${incompatBadge}</div><div class="container-card__name">${getLocalizedName(container)}</div><span class="container-card__rarity rarity--${rarityClass}">${getLocalizedRarity(container)}</span></button>`;
+        return `<button class="container-card container-card--${rarityClass} ${isPreview ? 'container-card--preview' : ''} ${isSelected ? 'container-card--selected' : ''} ${!isAvailable ? 'container-card--incompatible' : ''}" type="button" data-container-id="${container.id}"><div class="container-card__image">${getContainerDropdownIcon(container)}${incompatBadge}</div><div class="container-card__name">${getLocalizedName(container)}</div>${renderContainerSlotDots(container.slots)}</button>`;
     }).join('');
 
     elements.containerModalList.innerHTML = html;
@@ -1192,6 +1430,7 @@ function setSelectedContainer(container, { preserveArtifacts = false, closeModal
     updateStats();
     if (elements.containerModal?.classList.contains('active')) {
         renderContainerModalList(elements.containerModalSearch?.value.toLowerCase().trim() || '');
+        renderContainerModalDetail(state.containerModalPreviewId, true);
     }
     if (save) saveStateToStorage();
     return true;
@@ -1227,23 +1466,12 @@ function initEventListeners() {
         elements.enhancementSlider.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
     }
 
-    elements.categoryTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            if (!tab.dataset.category) return;
-            elements.categoryTabs.forEach(t => t.classList.remove('category-tab--active'));
-            tab.classList.add('category-tab--active');
-            state.filters.category = tab.dataset.category;
-            updateResetButtonState();
-            applyFilters();
-        });
-    });
-
     if (elements.searchClear) {
         elements.searchClear.addEventListener('click', () => {
             elements.artifactSearch.value = '';
             state.filters.search = '';
             elements.searchClear.style.display = 'none';
-            updateResetButtonState();
+            updateStatFilterClearButtons();
             applyFilters();
             elements.artifactSearch.focus();
         });
@@ -1252,6 +1480,7 @@ function initEventListeners() {
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
         if (elements.clearArtifactsConfirm.classList.contains('active')) closeClearArtifactsConfirm();
+        else if (state.artifactCopyMode) exitArtifactCopyMode();
         else if (elements.armorModal.classList.contains('active')) closeArmorModal();
         else if (elements.containerModal.classList.contains('active')) closeContainerModal();
         else if (elements.modal.classList.contains('active')) closeModal();
@@ -1260,78 +1489,7 @@ function initEventListeners() {
     // Определяем, поддерживает ли устройство тач
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-if (isTouchDevice) {
-    // На тач-устройствах используем touchend для мгновенной реакции без ожидания hover
-    let touchStartTarget = null;
-    let touchMoved = false;
-
-    elements.artifactSlots.addEventListener('touchstart', (e) => {
-        touchStartTarget = e.target;
-        touchMoved = false;
-    }, { passive: true });
-
-    elements.artifactSlots.addEventListener('touchmove', () => {
-        touchMoved = true;
-    }, { passive: true });
-
-    elements.artifactSlots.addEventListener('touchend', (e) => {
-        // Если палец двигался — это скролл, не обрабатываем
-        if (touchMoved) return;
-
-        const target = e.target;
-
-        // Обработка кнопки удаления
-        const removeBtn = target.closest('.artifact-slot-card__remove');
-        if (removeBtn) {
-            e.preventDefault();
-            const slot = removeBtn.closest('.artifact-slot-card');
-            if (slot) removeArtifact(parseInt(slot.dataset.index));
-            return;
-        }
-
-        const filledSlot = target.closest('.artifact-slot-card:not(.artifact-slot-card--empty)');
-        if (filledSlot) {
-            e.preventDefault();
-            openArtifactModal(parseInt(filledSlot.dataset.index));
-            return;
-        }
-
-        const emptySlot = target.closest('.artifact-slot-card--empty');
-        if (emptySlot) {
-            e.preventDefault();
-            openArtifactModal(parseInt(emptySlot.dataset.index));
-        }
-    });
-
-    elements.artifactSlots.addEventListener('click', (e) => {
-            const slot = e.target.closest('.artifact-slot-card');
-            if (slot) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-    } else {
-        elements.artifactSlots.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.artifact-slot-card__remove');
-            if (removeBtn) {
-                e.stopPropagation();
-                const slot = removeBtn.closest('.artifact-slot-card');
-                if (slot) removeArtifact(parseInt(slot.dataset.index));
-                return;
-            }
-
-            const filledSlot = e.target.closest('.artifact-slot-card:not(.artifact-slot-card--empty)');
-            if (filledSlot) {
-                openArtifactModal(parseInt(filledSlot.dataset.index));
-                return;
-            }
-
-            const emptySlot = e.target.closest('.artifact-slot-card--empty');
-            if (emptySlot) {
-                openArtifactModal(parseInt(emptySlot.dataset.index));
-            }
-        });
-    }
+initArtifactSlotListeners(isTouchDevice);
 
     elements.artifactList.addEventListener('click', (e) => {
         const card = e.target.closest('.artifact-card');
@@ -1344,14 +1502,12 @@ if (isTouchDevice) {
 function handleSearchChange(e) {
     state.filters.search = e.target.value.trim();
     if (elements.searchClear) elements.searchClear.style.display = state.filters.search ? 'flex' : 'none';
-    updateResetButtonState();
+    updateStatFilterClearButtons();
     applyFilters();
 }
 
 function applyFilters() {
     let filtered = [...ARTIFACTS];
-
-    if (state.filters.category !== 'all') filtered = filtered.filter(a => a.category === state.filters.category);
 
     if (state.filters.search) {
         const searchLower = state.filters.search.toLowerCase();
@@ -1368,18 +1524,18 @@ function applyFilters() {
         });
     }
 
-    if (state.filters.positiveEffect) {
-        filtered = filtered.filter(a => {
-            const value = a.stats[state.filters.positiveEffect];
-            return value !== undefined && isPositiveEffect(state.filters.positiveEffect, value);
-        });
+    if (state.filters.positiveEffects.length) {
+        filtered = filtered.filter(a => state.filters.positiveEffects.every(statKey => {
+            const value = a.stats[statKey];
+            return value !== undefined && isPositiveEffect(statKey, value);
+        }));
     }
 
-    if (state.filters.negativeEffect) {
-        filtered = filtered.filter(a => {
-            const value = a.stats[state.filters.negativeEffect];
-            return value !== undefined && isNegativeEffect(state.filters.negativeEffect, value);
-        });
+    if (state.filters.negativeEffects.length) {
+        filtered = filtered.filter(a => state.filters.negativeEffects.every(statKey => {
+            const value = a.stats[statKey];
+            return value !== undefined && isNegativeEffect(statKey, value);
+        }));
     }
 
     renderArtifactList(filtered);
@@ -1407,6 +1563,7 @@ function updateContainerOptions() {
 
     if (elements.containerModal?.classList.contains('active')) {
         renderContainerModalList(elements.containerModalSearch?.value.toLowerCase().trim() || '');
+        renderContainerModalDetail(state.containerModalPreviewId, true);
     }
     elements.containerSelect.disabled = false;
 }
@@ -1471,6 +1628,8 @@ function resetBuild() {
     state.selectedContainer = null;
     state.artifacts = [];
     state.enhancementLevel = 0;
+    state.selectedArtifactSlotIndex = null;
+    exitArtifactCopyMode();
 
     updateArmorBar();
     if (elements.armorModalSearch) elements.armorModalSearch.value = '';
@@ -1487,6 +1646,7 @@ function resetBuild() {
     }
     if (elements.containerModal?.classList.contains('active')) {
         renderContainerModalList();
+        renderContainerModalDetail(state.containerModalPreviewId, true);
     }
     updateStats();
 
@@ -1502,39 +1662,307 @@ function renderArtifactSlotStats(artifact) {
         let displayValue, valueClass;
         if (value > 0) {
             displayValue = `+${formatNumber(value)}${getStatUnit(key)}`;
-            valueClass = isInverted ? 'artifact-slot-card__stat-value--neg' : 'artifact-slot-card__stat-value--pos';
+            valueClass = isInverted ? 'artifact-detail__stat-value--neg' : 'artifact-detail__stat-value--pos';
         } else if (value < 0) {
             displayValue = `${formatNumber(value)}${getStatUnit(key)}`;
-            valueClass = isInverted ? 'artifact-slot-card__stat-value--pos' : 'artifact-slot-card__stat-value--neg';
+            valueClass = isInverted ? 'artifact-detail__stat-value--pos' : 'artifact-detail__stat-value--neg';
         } else {
             displayValue = `0${getStatUnit(key)}`;
             valueClass = '';
         }
-        return `<div class="artifact-slot-card__stat"><span class="artifact-slot-card__stat-name">${getStatName(key)}</span><span class="artifact-slot-card__stat-value ${valueClass}">${displayValue}</span></div>`;
+        return `<div class="artifact-detail__stat"><span class="artifact-detail__stat-name">${getStatName(key)}</span><span class="artifact-detail__stat-value ${valueClass}">${displayValue}</span></div>`;
     }).join('');
+}
+
+function syncSelectedArtifactSlot() {
+    const idx = state.selectedArtifactSlotIndex;
+    if (idx !== null && state.artifacts[idx]) return;
+
+    const firstFilled = state.artifacts.findIndex(a => a !== null);
+    state.selectedArtifactSlotIndex = firstFilled === -1 ? null : firstFilled;
+}
+
+function renderArtifactSlotGrip() {
+    return `<span class="artifact-slot-card__grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`;
+}
+
+function renderArtifactSlotActions(index) {
+    const copyActive = state.artifactCopyMode && state.selectedArtifactSlotIndex === index;
+    const copyActiveClass = copyActive ? ' artifact-slot-card__action--active' : '';
+
+    return `<div class="artifact-slot-card__actions"><button class="artifact-slot-card__action artifact-slot-card__action--delete" type="button" data-slot-action="delete" title="${t('calc.artifactActions.delete')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button><button class="artifact-slot-card__action artifact-slot-card__action--copy${copyActiveClass}" type="button" data-slot-action="copy" title="${t('calc.artifactActions.copy')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><button class="artifact-slot-card__action artifact-slot-card__action--replace" type="button" data-slot-action="replace" title="${t('calc.artifactActions.replace')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg></button></div>`;
+}
+
+function initArtifactSlotListeners(isTouchDevice) {
+    elements.artifactSlots.addEventListener('click', (e) => {
+        const actionBtn = e.target.closest('[data-slot-action]');
+        if (actionBtn) {
+            e.stopPropagation();
+            const slot = actionBtn.closest('.artifact-slot-card');
+            if (!slot) return;
+            handleArtifactSlotAction(actionBtn.dataset.slotAction, parseInt(slot.dataset.index, 10));
+            return;
+        }
+
+        const slotCard = e.target.closest('.artifact-slot-card');
+        if (!slotCard) return;
+
+        if (isTouchDevice) e.preventDefault();
+
+        handleArtifactSlotClick(
+            parseInt(slotCard.dataset.index, 10),
+            slotCard.classList.contains('artifact-slot-card--empty')
+        );
+    });
+}
+
+function clearArtifactDragFocus() {
+    window.getSelection()?.removeAllRanges();
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+}
+
+function initArtifactSlotsSortable() {
+    const grid = elements.artifactSlots?.querySelector('.artifact-slots__grid');
+
+    if (artifactSlotsSortable) {
+        artifactSlotsSortable.destroy();
+        artifactSlotsSortable = null;
+    }
+
+    if (!grid || typeof Sortable === 'undefined') return;
+
+    artifactSlotsSortable = new Sortable(grid, {
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        forceFallback: true,
+        fallbackClass: 'sortable-drag',
+        fallbackOnBody: true,
+        fallbackTolerance: 5,
+        draggable: '.artifact-slot-card:not(.artifact-slot-card--empty)',
+        filter: '.artifact-slot-card--empty, [data-slot-action]',
+        preventOnFilter: true,
+        disabled: state.artifactCopyMode,
+        onStart() {
+            exitArtifactCopyMode();
+            clearArtifactDragFocus();
+        },
+        onEnd(evt) {
+            clearArtifactDragFocus();
+            if (evt.oldIndex !== evt.newIndex) {
+                reorderArtifactSlot(evt.oldIndex, evt.newIndex);
+            }
+        },
+    });
+}
+
+function setArtifactSlotsSortableDisabled(disabled) {
+    if (artifactSlotsSortable) {
+        artifactSlotsSortable.option('disabled', disabled);
+    }
+}
+
+function handleArtifactSlotAction(action, index) {
+    if (action === 'delete') {
+        removeArtifact(index);
+        return;
+    }
+
+    if (state.selectedArtifactSlotIndex !== index) {
+        selectArtifactSlot(index);
+    }
+
+    if (action === 'copy') {
+        toggleArtifactCopyMode();
+        return;
+    }
+
+    if (action === 'replace') {
+        exitArtifactCopyMode();
+        openArtifactModal(index);
+    }
+}
+
+function reorderArtifactSlot(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || toIndex < 0) return;
+    if (fromIndex >= state.artifacts.length || toIndex >= state.artifacts.length) return;
+
+    state.previousStats = calculateTotalStats();
+
+    const items = [...state.artifacts];
+    const [moved] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, moved);
+    state.artifacts = items;
+
+    if (state.selectedArtifactSlotIndex === fromIndex) {
+        state.selectedArtifactSlotIndex = toIndex;
+    } else if (fromIndex < state.selectedArtifactSlotIndex && toIndex >= state.selectedArtifactSlotIndex) {
+        state.selectedArtifactSlotIndex--;
+    } else if (fromIndex > state.selectedArtifactSlotIndex && toIndex <= state.selectedArtifactSlotIndex) {
+        state.selectedArtifactSlotIndex++;
+    }
+
+    renderArtifactSlots();
+    updateStats();
+    saveStateToStorage();
+}
+
+function selectArtifactSlot(index) {
+    if (index < 0 || index >= state.artifacts.length || !state.artifacts[index]) return;
+    state.selectedArtifactSlotIndex = index;
+    renderArtifactDetailPanel();
+    updateArtifactSlotSelectionHighlight();
+    updateArtifactActions();
+}
+
+function updateArtifactActions() {
+    const index = state.selectedArtifactSlotIndex;
+    const hasSelection = index !== null && state.artifacts[index];
+
+    if (elements.artifactCopyHint) {
+        elements.artifactCopyHint.hidden = !(state.artifactCopyMode && hasSelection);
+        if (!elements.artifactCopyHint.hidden) {
+            elements.artifactCopyHint.textContent = t('calc.artifactActions.copyHint');
+        }
+    }
+}
+
+function toggleArtifactCopyMode() {
+    const index = state.selectedArtifactSlotIndex;
+    if (index === null || !state.artifacts[index]) return;
+
+    state.artifactCopyMode = !state.artifactCopyMode;
+    setArtifactSlotsSortableDisabled(state.artifactCopyMode);
+    updateArtifactActions();
+    updateArtifactSlotSelectionHighlight();
+}
+
+function exitArtifactCopyMode() {
+    if (!state.artifactCopyMode) return;
+    state.artifactCopyMode = false;
+    setArtifactSlotsSortableDisabled(false);
+    updateArtifactActions();
+    updateArtifactSlotSelectionHighlight();
+}
+
+function handleArtifactSlotClick(index, isEmpty) {
+    if (state.artifactCopyMode && state.selectedArtifactSlotIndex !== null && state.artifacts[state.selectedArtifactSlotIndex]) {
+        if (index !== state.selectedArtifactSlotIndex) {
+            copyArtifactToSlot(index);
+        }
+        return;
+    }
+
+    if (isEmpty) {
+        openArtifactModal(index);
+        return;
+    }
+
+    selectArtifactSlot(index);
+}
+
+function copyArtifactToSlot(targetIndex) {
+    const sourceIndex = state.selectedArtifactSlotIndex;
+    if (sourceIndex === null || !state.artifacts[sourceIndex]) return;
+    if (targetIndex < 0 || targetIndex >= state.artifacts.length) return;
+    if (targetIndex === sourceIndex) return;
+
+    state.previousStats = calculateTotalStats();
+    state.artifacts[targetIndex] = state.artifacts[sourceIndex];
+    state.selectedArtifactSlotIndex = targetIndex;
+    renderArtifactSlots();
+    updateStats();
+    saveStateToStorage();
+}
+
+function updateArtifactSlotSelectionHighlight() {
+    if (!elements.artifactSlots) return;
+    const sourceIndex = state.artifactCopyMode ? state.selectedArtifactSlotIndex : null;
+    elements.artifactSlots.querySelectorAll('.artifact-slot-card').forEach(card => {
+        const idx = parseInt(card.dataset.index, 10);
+        const isSelected = idx === state.selectedArtifactSlotIndex;
+        const hasArtifact = Boolean(state.artifacts[idx]);
+
+        card.classList.toggle('artifact-slot-card--selected', isSelected);
+        card.classList.toggle('artifact-slot-card--copy-source', sourceIndex !== null && idx === sourceIndex);
+        card.classList.toggle('artifact-slot-card--copy-target', sourceIndex !== null && idx !== sourceIndex);
+
+        const actions = card.querySelector('.artifact-slot-card__actions');
+        if (actions) {
+            actions.hidden = !hasArtifact;
+            const copyBtn = actions.querySelector('[data-slot-action="copy"]');
+            if (copyBtn) {
+                copyBtn.classList.toggle(
+                    'artifact-slot-card__action--active',
+                    state.artifactCopyMode && idx === state.selectedArtifactSlotIndex
+                );
+                copyBtn.title = t('calc.artifactActions.copy');
+            }
+            const deleteBtn = actions.querySelector('[data-slot-action="delete"]');
+            if (deleteBtn) deleteBtn.title = t('calc.artifactActions.delete');
+            const replaceBtn = actions.querySelector('[data-slot-action="replace"]');
+            if (replaceBtn) replaceBtn.title = t('calc.artifactActions.replace');
+        }
+    });
+}
+
+function renderArtifactDetailPanel() {
+    if (!elements.artifactDetailPanel) return;
+
+    if (!state.selectedContainer) {
+        elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg><span>${t('calc.selectContainerHint')}</span></div>`;
+        return;
+    }
+
+    const index = state.selectedArtifactSlotIndex;
+    const artifact = index !== null ? state.artifacts[index] : null;
+
+    if (!artifact) {
+        elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>${t('calc.artifactDetail.selectHint')}</span></div>`;
+        return;
+    }
+
+    const imageSrc = getArtifactImagePath(artifact);
+    elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="category-tag category-tag--${artifact.category}">${getCategoryName(artifact.category)}</span></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
 }
 
 function renderArtifactSlots() {
     if (!state.selectedContainer) {
         elements.artifactSlots.innerHTML = `<div class="artifact-slots__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg><span>${t('calc.selectContainerHint')}</span></div>`;
         elements.artifactCounter.textContent = '0/0';
+        state.selectedArtifactSlotIndex = null;
+        exitArtifactCopyMode();
+        initArtifactSlotsSortable();
+        renderArtifactDetailPanel();
         updateClearArtifactsButton();
+        updateArtifactActions();
         return;
     }
 
     const filledSlots = state.artifacts.filter(a => a !== null).length;
     elements.artifactCounter.textContent = `${filledSlots}/${state.selectedContainer.slots}`;
     updateClearArtifactsButton();
+    syncSelectedArtifactSlot();
 
     const slotsHtml = state.artifacts.map((artifact, index) => {
+        const isSelected = state.selectedArtifactSlotIndex === index;
+        const isCopySource = state.artifactCopyMode && isSelected;
+        const isCopyTarget = state.artifactCopyMode && state.selectedArtifactSlotIndex !== null && index !== state.selectedArtifactSlotIndex;
+        const copyClasses = `${isCopySource ? ' artifact-slot-card--copy-source' : ''}${isCopyTarget ? ' artifact-slot-card--copy-target' : ''}`;
         if (artifact) {
-            const imageSrc = `../Table/${artifact.imageFolder}/${artifact.image}`;
-            return `<div class="artifact-slot-card" data-index="${index}"><button class="artifact-slot-card__select" type="button"><div class="artifact-slot-card__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__name">${getLocalizedName(artifact)}</div><div class="artifact-slot-card__slot-num">${t('calc.modal.slot')} #${index + 1}</div></div></button><span class="category-tag category-tag--${artifact.category}">${getCategoryName(artifact.category)}</span><div class="artifact-slot-card__stats">${renderArtifactSlotStats(artifact)}</div><button class="artifact-slot-card__remove" data-action="remove" title="${t('calc.removeArtifact')}" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>`;
+            const imageSrc = getArtifactImagePath(artifact);
+            return `<div class="artifact-slot-card${isSelected ? ' artifact-slot-card--selected' : ''}${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button">${renderArtifactSlotGrip()}<div class="artifact-slot-card__preview artifact-slot-card__preview--filled"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" draggable="false" onerror="this.style.display='none'"></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__name">${getLocalizedName(artifact)}</div></div></button>${renderArtifactSlotActions(index)}</div></div>`;
         }
-        return `<div class="artifact-slot-card artifact-slot-card--empty" data-index="${index}"><button class="artifact-slot-card__select" type="button"><div class="artifact-slot-card__preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__hint">${t('calc.slot.clickToAdd')}</div><div class="artifact-slot-card__slot-num">${t('calc.modal.slot')} #${index + 1}</div></div></button></div>`;
+        return `<div class="artifact-slot-card artifact-slot-card--empty${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button"><div class="artifact-slot-card__preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__hint">${t('calc.slot.clickToAdd')}</div></div></button></div></div>`;
     }).join('');
 
     elements.artifactSlots.innerHTML = `<div class="artifact-slots__grid">${slotsHtml}</div>`;
+    initArtifactSlotsSortable();
+    renderArtifactDetailPanel();
+    updateArtifactActions();
 }
 
 function updateArtifactCount(count) {
@@ -1553,7 +1981,6 @@ function renderArtifactList(artifacts) {
     const listHtml = artifacts.map(artifact => {
         const tierClass = artifact.tier === 'unique' ? 'unique' : artifact.tier;
         const tierDisplay = artifact.tier === 'unique' ? '★' : `T${artifact.tier}`;
-        const priceDisplay = artifact.price ? formatPrice(artifact.price) : (getLocalizedField(artifact, 'priceText') || '—');
 
         const statsHtml = Object.entries(artifact.stats).map(([key, value]) => {
             const isInverted = INVERTED_STATS.includes(key);
@@ -1568,7 +1995,7 @@ function renderArtifactList(artifacts) {
             return `<div class="artifact-stat-row"><span class="artifact-stat-row__name">${getStatName(key)}</span><span class="artifact-stat-row__value ${valueClass}">${displayValue}</span></div>`;
         }).join('');
 
-        return `<div class="artifact-card artifact-card--${artifact.category}" data-artifact-id="${artifact.id}"><div class="artifact-card__top"><div class="artifact-card__image-wrapper"><img src="../Table/${artifact.imageFolder}/${artifact.image}" alt="${getLocalizedName(artifact)}" class="artifact-card__image" onerror="this.src='../images/placeholder.png'"></div><div class="artifact-card__info"><div class="artifact-card__name">${getLocalizedName(artifact)}</div><div class="artifact-card__meta"><span class="artifact-card__tier artifact-card__tier--${tierClass}">${tierDisplay}</span><span class="artifact-card__category">${getCategoryName(artifact.category)}</span><span class="artifact-card__price">${priceDisplay}</span></div></div></div><div class="artifact-card__divider"></div><div class="artifact-card__stats">${statsHtml}</div></div>`;
+        return `<div class="artifact-card artifact-card--${artifact.category}" data-artifact-id="${artifact.id}"><div class="artifact-card__top"><div class="artifact-card__image-wrapper"><img src="${getArtifactImagePath(artifact)}" alt="${getLocalizedName(artifact)}" class="artifact-card__image" onerror="this.src='../images/placeholder.png'"></div><div class="artifact-card__info"><div class="artifact-card__name">${getLocalizedName(artifact)}</div><div class="artifact-card__meta"><span class="artifact-card__tier artifact-card__tier--${tierClass}">${tierDisplay}</span><span class="artifact-card__category">${getCategoryName(artifact.category)}</span></div></div></div><div class="artifact-card__divider"></div><div class="artifact-card__stats">${statsHtml}</div></div>`;
     }).join('');
 
     elements.artifactList.innerHTML = listHtml;
@@ -1581,24 +2008,19 @@ function openArtifactModal(slotIndex) {
     if (elements.modalSlotInfo) elements.modalSlotInfo.textContent = `${t('calc.modal.slot')} #${slotIndex + 1}`;
 
     state.filters.search = '';
-    state.filters.category = 'all';
-    state.filters.positiveEffect = '';
-    state.filters.negativeEffect = '';
+    state.filters.positiveEffects = [];
+    state.filters.negativeEffects = [];
     state.filtersExpanded = false;
 
     elements.artifactSearch.value = '';
-    elements.categoryTabs.forEach(tab => tab.classList.toggle('category-tab--active', tab.dataset.category === 'all'));
     if (elements.searchClear) elements.searchClear.style.display = 'none';
 
     recreateStatFilters();
 
-    const positiveSelect = document.getElementById('positiveEffectFilter');
-    const negativeSelect = document.getElementById('negativeEffectFilter');
     const filtersToggle = document.getElementById('filtersToggle');
     const filtersWrapper = document.getElementById('statFiltersWrapper');
 
-    if (positiveSelect) positiveSelect.value = '';
-    if (negativeSelect) negativeSelect.value = '';
+    closeStatFilterComboboxes();
     if (filtersToggle) filtersToggle.classList.remove('active');
     if (filtersWrapper) {
         filtersWrapper.classList.add('collapsed');
@@ -1606,7 +2028,7 @@ function openArtifactModal(slotIndex) {
     }
 
     updateFiltersBadge();
-    updateResetButtonState();
+    updateStatFilterClearButtons();
     renderArtifactList(ARTIFACTS);
 
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
@@ -1616,6 +2038,7 @@ function openArtifactModal(slotIndex) {
 }
 
 function closeModal() {
+    closeStatFilterComboboxes();
     elements.modal.classList.remove('active');
     state.currentSlotIndex = null;
     if (!elements.containerModal.classList.contains('active') &&
@@ -1630,6 +2053,8 @@ function selectArtifact(artifactId) {
     if (artifact && state.currentSlotIndex !== null) {
         state.previousStats = calculateTotalStats();
         state.artifacts[state.currentSlotIndex] = artifact;
+        state.selectedArtifactSlotIndex = state.currentSlotIndex;
+        exitArtifactCopyMode();
         renderArtifactSlots();
         updateStats();
         closeModal();
@@ -1640,6 +2065,9 @@ function selectArtifact(artifactId) {
 function removeArtifact(index) {
     state.previousStats = calculateTotalStats();
     state.artifacts[index] = null;
+    if (state.selectedArtifactSlotIndex === index) {
+        exitArtifactCopyMode();
+    }
     renderArtifactSlots();
     updateStats();
     saveStateToStorage();
