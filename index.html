@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Cataclysm Wiki</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-overlay">
+        <div class="bg-overlay__content"></div>
+    </div>
+
+    <header class="header" id="mainHeader">
+        <div class="header__container">
+            <a href="index.html" class="header__logo">
+                <div class="logo-mark">
+                    <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-text__cataclysm">CATACLYSM</span>
+                    <span class="logo-text__wiki">WIKI</span>
+                </div>
+            </a>
+
+            <nav class="header__nav">
+                <a href="map/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span data-i18n="nav.items">Предметы</span>
+                </a>
+                <a href="Calculator/calculator.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="ttk/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="nav.ttk">ТТК</span>
+                </a>
+            </nav>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
+        <nav class="mobile-menu__nav">
+            <a href="map/map.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="Calculator/calculator.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="ttk/ttk.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
+                </button>
+                <button class="mobile-lang-btn" data-lang="en">
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section class="hero-compact">
+            <div class="container">
+                <div class="hero-compact__content">
+                    <div class="hero-logo">
+                        <div class="hero-logo__hazard">
+                            <svg viewBox="0 0 120 120" fill="none" class="hero-logo__hexagon" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="hero-hex-grad" x1="10" y1="10" x2="110" y2="110">
+                                        <stop offset="0%" stop-color="#d4a040"/>
+                                        <stop offset="50%" stop-color="#9a7028"/>
+                                        <stop offset="100%" stop-color="#6a4c1a"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M60 5L110 32.5v55L60 115 10 87.5v-55L60 5z" stroke="url(#hero-hex-grad)" stroke-width="1.2" fill="none"/>
+                                <path d="M60 18L97 38.5v43L60 102 23 81.5v-43L60 18z" stroke="url(#hero-hex-grad)" stroke-width="0.6" fill="none" opacity="0.25"/>
+                                <circle cx="60" cy="60" r="7" fill="url(#hero-hex-grad)" opacity="0.7"/>
+                                <circle cx="60" cy="60" r="2.5" fill="#0a0908"/>
+                                <line x1="60" y1="5" x2="60" y2="53" stroke="url(#hero-hex-grad)" stroke-width="0.4" opacity="0.3"/>
+                                <line x1="60" y1="67" x2="60" y2="115" stroke="url(#hero-hex-grad)" stroke-width="0.4" opacity="0.3"/>
+                                <line x1="10" y1="60" x2="53" y2="60" stroke="url(#hero-hex-grad)" stroke-width="0.4" opacity="0.3"/>
+                                <line x1="67" y1="60" x2="110" y2="60" stroke="url(#hero-hex-grad)" stroke-width="0.4" opacity="0.3"/>
+                                <circle cx="60" cy="5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                                <circle cx="110" cy="32.5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                                <circle cx="110" cy="87.5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                                <circle cx="60" cy="115" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                                <circle cx="10" cy="87.5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                                <circle cx="10" cy="32.5" r="1.5" fill="url(#hero-hex-grad)" opacity="0.4"/>
+                            </svg>
+                        </div>
+
+                        <div class="hero-logo__text">
+                            <div class="hero-logo__line1">
+                                <span class="hero-logo__pre">PROJECT</span>
+                            </div>
+                            <div class="hero-logo__line2">
+                                <span class="hero-logo__main">CATACLYSM</span>
+                            </div>
+                            <div class="hero-logo__line3">
+                                <div class="hero-logo__divider"></div>
+                                <span class="hero-logo__sub">W&#8202;I&#8202;K&#8202;I</span>
+                                <div class="hero-logo__divider"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-compact__tagline">
+                        <span class="hero-tagline__wing hero-tagline__wing--left"></span>
+                        <span class="hero-tagline__text" data-i18n="hero.desc">Официальная база знаний по миру Project Cataclysm</span>
+                        <span class="hero-tagline__wing hero-tagline__wing--right"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-nav">
+            <div class="container">
+                <div class="quick-nav__grid">
+                    <a href="table/table.html" class="quick-card quick-card--encyclopedia" style="--quick-delay:120ms;">
+                        <img src="images/previews/items.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.artifacts.label">Энциклопедия Зоны</span>
+                            <span class="quick-card__title" data-i18n="cards.artifacts.title">База данных предметов</span>
+                            <span class="quick-card__desc" data-i18n="cards.artifacts.desc">Оружие, броня, артефакты, медицина и весь лут — в одном справочнике.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.explore">Изучить каталог</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="Calculator/calculator.html" class="quick-card quick-card--calculator" style="--quick-delay:195ms;">
+                        <img src="images/previews/calculator.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.calculator.label">Твой идеальный билд</span>
+                            <span class="quick-card__title" data-i18n="cards.calculator.title">Калькулятор сборок</span>
+                            <span class="quick-card__desc" data-i18n="cards.calculator.desc">Настрой артефакты под себя, сравни сборки и добейся максимума.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.build">Собрать билд</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="ttk/ttk.html" class="quick-card quick-card--ttk" style="--quick-delay:270ms;">
+                        <img src="images/previews/ttk.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.ttk.label">Числа решают</span>
+                            <span class="quick-card__title" data-i18n="cards.ttk.title">Калькулятор ТТК</span>
+                            <span class="quick-card__desc" data-i18n="cards.ttk.desc">Узнай, какое оружие убьёт быстрее. Сравни урон в сухих цифрах.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.compare">Сравнить оружие</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="map/map.html" class="quick-card quick-card--map" style="--quick-delay:345ms;">
+                        <img src="images/previews/map.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.map.label">Путь сталкера</span>
+                            <span class="quick-card__title" data-i18n="cards.map.title">Интерактивная карта</span>
+                            <span class="quick-card__desc" data-i18n="cards.map.desc">Спавны мутантов, тайники, сейфы и ключевые точки — не заблудись в Зоне.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.openMap">Открыть карту</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="#" class="quick-card quick-card--guides quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:420ms;">
+                        <img src="images/previews/guides.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.guides.label">Опыт выживших</span>
+                            <span class="quick-card__title" data-i18n="cards.guides.title">Руководства и гайды</span>
+                            <span class="quick-card__desc" data-i18n="cards.guides.desc">Прохождение квестов, тактики боя и советы, которые спасут твою жизнь.</span>
+                            <span class="quick-card__badge" data-i18n="cards.inDevelopment">В разработке</span>
+                        </span>
+                    </a>
+
+                    <a href="#" class="quick-card quick-card--barter quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:495ms;">
+                        <img src="images/previews/barter.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.barter.label">Золотые руки</span>
+                            <span class="quick-card__title" data-i18n="cards.barter.title">Калькулятор бартера</span>
+                            <span class="quick-card__desc" data-i18n="cards.barter.desc">Рассчитай цепочки обменов, траты и нужный уровень для желаемой экипировки.</span>
+                            <span class="quick-card__badge" data-i18n="cards.inDevelopment">В разработке</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="rf-receiver-block">
+                    <span class="rf-receiver-block__sweep"></span>
+
+                    <div class="rf-receiver-block__header">
+                        <div class="rf-receiver-block__title-wrap">
+                            <div class="rf-receiver-block__icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="rf-receiver-block__title">
+                                    <span class="rf-receiver-block__title-latin">RF</span>
+                                    <span class="rf-receiver-block__title-dash">-</span>
+                                    <span class="rf-receiver-block__title-cyrillic" data-i18n="rf.titleCyrillic">ресивер</span>
+                                </h2>
+                                <p class="rf-receiver-block__subtitle" data-i18n="rf.subtitle">Специальный детектор, предназначенный для поиска схронов.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rf-receiver-block__top">
+                        <div class="rf-receiver-block__left-column">
+                            <div class="rf-receiver-block__device-panel">
+                                <div class="rf-receiver-block__device-frame">
+                                    <img src="images/devices/rf-receiver.png" alt="Изображение RF-ресивера" class="rf-receiver-block__device-image">
+                                </div>
+
+                                <div class="rf-receiver-block__panel-copy">
+                                    <span class="rf-receiver-block__panel-label" data-i18n="rf.quickStart">Быстрый старт</span>
+                                    <h3 class="rf-receiver-block__section-title" data-i18n="rf.quickStartDesc">Скопируйте частоту и введите её в устройство</h3>
+                                    <p class="rf-receiver-block__section-text" data-i18n="rf.quickStartInstruction">Нажмите на нужную карточку справа — частота сразу попадёт в буфер обмена. После этого вставьте её в RF-ресивер в игре.</p>
+                                </div>
+                            </div>
+
+                            <div class="rf-receiver-block__guide-stack">
+                                <div class="rf-receiver-block__guide-head">
+                                    <div>
+                                        <span class="rf-receiver-block__panel-label" data-i18n="rf.guide.title">Пошаговый гайд</span>
+                                        <h3 class="rf-receiver-block__section-title" data-i18n="rf.guide.subtitle">Как пользоваться RF-ресивером</h3>
+                                        <p class="rf-receiver-block__section-text" data-i18n="rf.guide.desc">Короткий гайд: от установки устройства до получения ящика с наградой.</p>
+                                    </div>
+                                </div>
+
+                                <div class="rf-guide-cards">
+                                    <article class="rf-guide-card" style="--guide-card-delay:0ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-1.jpg" alt="Установка RF-ресивера" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">01</span>
+                                            <h4 class="rf-guide-card__title" data-i18n="rf.guide.step1.title">Экипируйте ресивер</h4>
+                                            <p class="rf-guide-card__text" data-i18n="rf.guide.step1.desc">Поместите устройство в слот детектора и возьмите его в руки.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:90ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-2.jpg" alt="Включение RF-ресивера" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">02</span>
+                                            <h4 class="rf-guide-card__title" data-i18n="rf.guide.step2.title">Введите частоту</h4>
+                                            <p class="rf-guide-card__text" data-i18n="rf.guide.step2.desc">В инвентаре нажмите ПКМ по устройству, включите его и введите частоту нужной локации.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:180ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-3.jpg" alt="Поиск по сигналу" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">03</span>
+                                            <h4 class="rf-guide-card__title" data-i18n="rf.guide.step3.title">Идите по сигналу</h4>
+                                            <p class="rf-guide-card__text" data-i18n="rf.guide.step3.desc">Зелёный индикатор должен гореть, а не мигать. Ускорение звука говорит о близости тайника.</p>
+                                        </div>
+                                    </article>
+
+                                    <article class="rf-guide-card" style="--guide-card-delay:270ms;">
+                                        <div class="rf-guide-card__media">
+                                            <img src="images/devices/rf-guide-4.jpg" alt="Награда на сейвзоне" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="rf-guide-card__body">
+                                            <span class="rf-guide-card__badge">04</span>
+                                            <h4 class="rf-guide-card__title" data-i18n="rf.guide.step4.title">Заберите награду</h4>
+                                            <p class="rf-guide-card__text" data-i18n="rf.guide.step4.desc">В конечной точке появится ящик с лутом. Отнесите его в безопасную зону, чтобы открыть и забрать содержимое.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rf-receiver-block__frequencies-panel">
+                            <div class="rf-receiver-block__grid" id="rfFrequenciesGrid"></div>
+
+                            <div class="rf-receiver-block__npc-block">
+                                <div class="rf-npc-card">
+                                    <div class="rf-npc-card__media">
+                                        <img src="images/npc/mastak.jpg" alt="НПС Мастак" class="rf-npc-card__image" loading="lazy" decoding="async">
+                                        <span class="rf-npc-card__media-overlay" aria-hidden="true"></span>
+                                    </div>
+
+                                    <div class="rf-npc-card__body">
+                                        <span class="rf-receiver-block__panel-label" data-i18n="rf.npc.title">Где взять ресивер</span>
+                                        <h3 class="rf-npc-card__title" data-i18n="rf.npc.name">НПС Мастак</h3>
+                                        <p class="rf-npc-card__text" data-i18n="rf.npc.desc">RF-ресивер можно получить у техника по имени Мастак. Он выдаёт короткое задание, после принятия которого вы сразу получаете устройство.</p>
+                                        <ul class="rf-npc-card__meta">
+                                            <li class="rf-npc-card__meta-item">
+                                                <span class="rf-npc-card__meta-icon" aria-hidden="true">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="rf-npc-card__meta-content">
+                                                    <span class="rf-npc-card__meta-label" data-i18n="rf.npc.location">Локация</span>
+                                                    <span class="rf-npc-card__meta-value" data-i18n="rf.npc.locationValue">Свалка</span>
+                                                </span>
+                                            </li>
+                                            <li class="rf-npc-card__meta-item">
+                                                <span class="rf-npc-card__meta-icon" aria-hidden="true">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v4M12 18v4M2 12h4M18 12h4M12 12m-3 0a3 3 0 106 0 3 3 0 10-6 0"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="rf-npc-card__meta-content">
+                                                    <span class="rf-npc-card__meta-label" data-i18n="rf.npc.coordinates">Координаты</span>
+                                                    <span class="rf-npc-card__meta-value rf-npc-card__meta-value--mono" data-i18n="rf.npc.coordinatesValue">-399&nbsp;&nbsp;67&nbsp;&nbsp;-3146</span>
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rf-receiver-block__live" id="rfReceiverLive" aria-live="polite" aria-atomic="true"></div>
+                </div>
+
+                <div class="updates-block">
+                    <span class="updates-block__sweep"></span>
+
+                    <div class="updates-block__header">
+                        <div class="updates-block__title-wrap">
+                            <div class="updates-block__icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="updates-block__title" data-i18n="updates.title">Патч-ноуты</h2>
+                                <p class="updates-block__subtitle" data-i18n="updates.subtitle">Журнал изменений и свежих правок базы</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="updates-block__content" id="updatesContent">
+                        <div class="updates-block__loading">
+                            <span class="updates-block__loader"></span>
+                            <span data-i18n="updates.loading">Загрузка журнала...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__copy">© 2026 Project Cataclysm Wiki. <span data-i18n="footer.official">Официальный сайт.</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop" aria-label="Вверх">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden">
+        <symbol id="rf-icon-copy" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5a3 3 0 116 0"/>
+        </symbol>
+        <symbol id="rf-icon-check" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/>
+        </symbol>
+    </svg>
+
+    <template id="rfItemTemplate">
+        <button type="button" class="rf-item" data-frequency="" data-location="" aria-label="">
+            <span class="rf-item__signal" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+
+            <span class="rf-item__content">
+                <span class="rf-item__location"></span>
+                <span class="rf-item__copy-state"></span>
+            </span>
+
+            <span class="rf-item__side">
+                <span class="rf-item__value">
+                    <span class="rf-item__value-number"></span>
+                    <span class="rf-item__value-unit" data-i18n="rf.mhz">МГц</span>
+                </span>
+
+                <span class="rf-item__icon" aria-hidden="true">
+                    <svg class="rf-item__icon-copy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#rf-icon-copy"></use>
+                    </svg>
+                    <svg class="rf-item__icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#rf-icon-check"></use>
+                    </svg>
+                </span>
+            </span>
+        </button>
+    </template>
+
+    <script src="i18n.js"></script>
+    <script src="shared.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
