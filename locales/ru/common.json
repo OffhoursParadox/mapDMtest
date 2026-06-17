@@ -1,0 +1,13 @@
+{
+  "nav.home": "Главная",
+  "nav.map": "Карта",
+  "nav.items": "Предметы",
+  "nav.artifacts": "Артефакты",
+  "nav.calculator": "Калькулятор",
+  "nav.ttk": "ТТК",
+  "nav.mapFull": "Интерактивная карта",
+  "nav.artifactsTable": "Таблица артефактов",
+  "nav.buildsCalculator": "Калькулятор сборок",
+  "nav.ttkCalculator": "Калькулятор ТТК",
+  "footer.copy": "© 2026 Project Cataclysm Wiki. Официальный сайт."
+}
