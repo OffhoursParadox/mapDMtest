@@ -15,13 +15,18 @@ const state = {
     filtersExpanded: false,
     armorModalPreviewId: null,
     containerModalPreviewId: null,
+    artifactModalPreviewId: null,
     selectedArtifactSlotIndex: null,
     artifactCopyMode: false,
 };
 
 let armorModalSearchTimer = null;
+let pickerGridLayoutTimer = null;
+const PICKER_GRID_GAP = 8;
+const ARTIFACT_GRID_ROW_STRIDE = 92 + PICKER_GRID_GAP;
 let lastArmorDetailId = null;
 let lastContainerDetailId = null;
+let lastArtifactDetailId = null;
 let artifactSlotsSortable = null;
 
 let elements = {};
@@ -31,7 +36,15 @@ const STORAGE_KEY = 'cataclysmCalculatorState';
 const DEFAULT_CONTAINER_ID = 'container_radiy';
 const PRIORITY_STATS = ['regeneration', 'bleeding', 'radiation', 'saturation', 'cold'];
 const HERO_STATS = ['regeneration', 'bulletResistance', 'impactResistance', 'tearProtection'];
-const BASE_HP = 100;
+const ARMOR_REGULAR_STAT_KEYS = [
+    'radiationProtection', 'bioProtection', 'thermalProtection', 'psiProtection', 'frostProtection',
+    'heatResistance', 'chemResistance', 'electroResistance',
+    'impactResistance', 'tearProtection'
+];
+const ARMOR_EXTRA_STAT_KEYS = [
+    'regeneration', 'bleeding', 'radiation', 'saturation', 'cold',
+    'maxStamina', 'staminaRegen', 'moveSpeed', 'maxWeight'
+];
 const BULLET_RESISTANCE_CONSTANT = 166.67;
 const RARITY_ORDER = ['legendary', 'unique', 'rare', 'collection', 'uncommon', 'common', 'none'];
 
@@ -65,6 +78,11 @@ function t(key, params = {}) {
         return window.i18n.t(key, params);
     }
     return key;
+}
+
+function getArtifactTierDisplay(tier) {
+    if (tier === 'unique') return '★';
+    return t('calc.artifactModal.tierLevel', { level: tier });
 }
 
 const STAT_ICONS = {
@@ -182,21 +200,25 @@ function sortArmorsByRarity(armors) {
 }
 
 function updateArmorBar() {
-    if (!elements.armorPickerName) return;
+    if (!elements.armorPanelName) return;
 
-    RARITY_ORDER.forEach(r => elements.armorPickerName.classList.remove(`rarity--${r}`));
+    RARITY_ORDER.forEach(r => elements.armorPanelName.classList.remove(`rarity--${r}`));
 
     if (!state.selectedArmor) {
-        elements.armorPickerName.textContent = t('calc.selectArmor');
-        elements.armorPickerName.classList.remove('has-value');
-        if (elements.armorClearBtn) elements.armorClearBtn.style.display = 'none';
+        elements.armorPanelName.textContent = t('calc.selectArmor');
+        elements.armorPanelName.classList.remove('has-value');
+        elements.armorPanel?.classList.remove('armor-panel--has-armor');
+        if (elements.armorPanelActionsEmpty) elements.armorPanelActionsEmpty.hidden = false;
+        if (elements.armorPanelActionsSelected) elements.armorPanelActionsSelected.hidden = true;
         return;
     }
 
-    elements.armorPickerName.textContent = getLocalizedName(state.selectedArmor);
-    elements.armorPickerName.classList.add('has-value');
-    elements.armorPickerName.classList.add(`rarity--${state.selectedArmor.rarity || 'none'}`);
-    if (elements.armorClearBtn) elements.armorClearBtn.style.display = 'flex';
+    elements.armorPanelName.textContent = getLocalizedName(state.selectedArmor);
+    elements.armorPanelName.classList.add('has-value');
+    elements.armorPanelName.classList.add(`rarity--${state.selectedArmor.rarity || 'none'}`);
+    elements.armorPanel?.classList.add('armor-panel--has-armor');
+    if (elements.armorPanelActionsEmpty) elements.armorPanelActionsEmpty.hidden = true;
+    if (elements.armorPanelActionsSelected) elements.armorPanelActionsSelected.hidden = false;
 }
 
 function sortContainersByRarity(containers) {
@@ -238,9 +260,9 @@ function renderArmorPreview() {
     const shieldSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
 
     if (!state.selectedArmor) {
-        elements.armorPreview.innerHTML = `<img class="calc-preview__img" src="${ARMOR_EMPTY_IMAGE}" alt=""><div class="calc-preview__fallback calc-preview__placeholder">${shieldSvg}</div>`;
+        elements.armorPreview.innerHTML = `<img class="armor-panel__img" src="${ARMOR_EMPTY_IMAGE}" alt=""><div class="armor-panel__fallback">${shieldSvg}</div>`;
         const img = elements.armorPreview.querySelector('img');
-        const fallback = elements.armorPreview.querySelector('.calc-preview__fallback');
+        const fallback = elements.armorPreview.querySelector('.armor-panel__fallback');
         if (img && fallback) {
             fallback.hidden = true;
             img.onerror = () => { img.remove(); fallback.hidden = false; };
@@ -252,15 +274,15 @@ function renderArmorPreview() {
     const imagePath = getArmorImagePath(armor);
 
     if (imagePath) {
-        elements.armorPreview.innerHTML = `<img class="calc-preview__img" src="${imagePath}" alt="${getLocalizedName(armor)}"><div class="calc-preview__fallback">${shieldSvg}</div>`;
+        elements.armorPreview.innerHTML = `<img class="armor-panel__img" src="${imagePath}" alt="${getLocalizedName(armor)}"><div class="armor-panel__fallback">${shieldSvg}</div>`;
         const img = elements.armorPreview.querySelector('img');
-        const fallback = elements.armorPreview.querySelector('.calc-preview__fallback');
+        const fallback = elements.armorPreview.querySelector('.armor-panel__fallback');
         if (img && fallback) {
             fallback.hidden = true;
             img.onerror = () => { img.remove(); fallback.hidden = false; };
         }
     } else {
-        elements.armorPreview.innerHTML = `<div class="calc-preview__placeholder">${shieldSvg}</div>`;
+        elements.armorPreview.innerHTML = `<div class="armor-panel__fallback">${shieldSvg}</div>`;
     }
 }
 
@@ -310,6 +332,51 @@ function buildContainerDetailSection(title, statEntries) {
     return `<div class="container-detail__section"><div class="container-detail__section-title">${title}</div><div class="container-detail__stats">${rows}</div></div>`;
 }
 
+function partitionArmorStats(stats = {}) {
+    const bullet = [];
+    const regular = [];
+    const extra = [];
+    const regularSet = new Set(ARMOR_REGULAR_STAT_KEYS);
+    const extraSet = new Set(ARMOR_EXTRA_STAT_KEYS);
+
+    Object.entries(stats).forEach(([key, value]) => {
+        if (key === 'bulletResistance') bullet.push([key, value]);
+        else if (regularSet.has(key)) regular.push([key, value]);
+        else if (extraSet.has(key)) extra.push([key, value]);
+        else extra.push([key, value]);
+    });
+
+    const byOrder = (order) => (a, b) => order.indexOf(a[0]) - order.indexOf(b[0]);
+    regular.sort(byOrder(ARMOR_REGULAR_STAT_KEYS));
+    extra.sort(byOrder(ARMOR_EXTRA_STAT_KEYS));
+
+    return { bullet, regular, extra };
+}
+
+function buildArmorDetailSection(title, statEntries) {
+    if (!statEntries.length) return '';
+    const rows = statEntries.map(([key, value]) => buildCompactStatRow(key, value, 0, { compact: true })).join('');
+    return `<div class="armor-detail__section"><div class="armor-detail__section-title">${title}</div><div class="armor-detail__stats-group">${rows}</div></div>`;
+}
+
+function buildArmorDetailStatsHtml(stats = {}) {
+    const { bullet, regular, extra } = partitionArmorStats(stats);
+    const parts = [];
+
+    bullet.forEach(([key, value]) => {
+        parts.push(buildCompactStatRow(key, value, 0, { compact: true, highlight: 'bullet' }));
+    });
+
+    if (regular.length) {
+        const rows = regular.map(([key, value]) => buildCompactStatRow(key, value, 0, { compact: true })).join('');
+        parts.push(`<div class="armor-detail__stats-group">${rows}</div>`);
+    }
+
+    parts.push(buildArmorDetailSection(t('calc.armorModal.extraStats'), extra));
+
+    return parts.filter(Boolean).join('');
+}
+
 function buildCompactStatRow(statKey, value, enhancementBonus = 0, options = {}) {
     const totalValue = value + enhancementBonus;
     const { displayValue, colorClass } = formatStatValue(statKey, totalValue);
@@ -321,24 +388,21 @@ function buildCompactStatRow(statKey, value, enhancementBonus = 0, options = {})
     const iconHtml = options.compact
         ? ''
         : `<span class="calc-stat-row__icon">${getStatIcon(statKey)}</span>`;
-    return `<div class="calc-stat-row${options.compact ? ' calc-stat-row--compact' : ''}"><div class="calc-stat-row__left">${iconHtml}<span class="calc-stat-row__name">${getStatName(statKey)}</span></div><span class="calc-stat-row__value ${colorClass}">${displayValue}${getStatUnit(statKey)}${bonusHtml}</span></div>`;
-}
-
-// Приведённое здоровье: EHP = BASE_HP / (1 - reduction%)
-// reduction% = BR / (BR + BULLET_RESISTANCE_CONSTANT) при BR > 0
-function calculateEffectiveHealth(bulletResistance) {
-    if (bulletResistance <= 0) return BASE_HP;
-    const reduction = bulletResistance / (bulletResistance + BULLET_RESISTANCE_CONSTANT);
-    if (reduction >= 0.99) return Math.round(BASE_HP * 100);
-    return Math.round(BASE_HP / (1 - reduction));
+    const highlightClass = options.highlight === 'bullet' ? ' calc-stat-row--bullet' : '';
+    return `<div class="calc-stat-row${options.compact ? ' calc-stat-row--compact' : ''}${highlightClass}"><div class="calc-stat-row__left">${iconHtml}<span class="calc-stat-row__name">${getStatName(statKey)}</span></div><span class="calc-stat-row__value ${colorClass}">${displayValue}${getStatUnit(statKey)}${bonusHtml}</span></div>`;
 }
 
 function initElements() {
     elements = {
         armorSelect: document.getElementById('armorSelect'),
         armorPreview: document.getElementById('armorPreview'),
+        armorPreviewBtn: document.getElementById('armorPreviewBtn'),
+        armorPanel: document.getElementById('armorPanel'),
+        armorPanelName: document.getElementById('armorPanelName'),
+        armorPanelActionsEmpty: document.getElementById('armorPanelActionsEmpty'),
+        armorPanelActionsSelected: document.getElementById('armorPanelActionsSelected'),
         armorPickerBtn: document.getElementById('armorPickerBtn'),
-        armorPickerName: document.getElementById('armorPickerName'),
+        armorReplaceBtn: document.getElementById('armorReplaceBtn'),
         armorClearBtn: document.getElementById('armorClearBtn'),
         armorModal: document.getElementById('armorModal'),
         armorModalClose: document.getElementById('armorModalClose'),
@@ -357,21 +421,20 @@ function initElements() {
         clearArtifactsConfirmBtn: document.getElementById('clearArtifactsConfirmBtn'),
         artifactSlots: document.getElementById('artifactSlots'),
         artifactCounter: document.getElementById('artifactCounter'),
-        resetBtn: document.getElementById('resetBtn'),
         modal: document.getElementById('artifactModal'),
         modalClose: document.getElementById('modalClose'),
-        modalSlotInfo: document.getElementById('modalSlotInfo'),
         artifactSearch: document.getElementById('artifactSearch'),
         searchClear: document.getElementById('searchClear'),
         artifactList: document.getElementById('artifactList'),
-        artifactCount: document.getElementById('artifactCount'),
+        artifactModalDetail: document.getElementById('artifactModalDetail'),
         scrollTop: document.getElementById('scrollTop'),
         warningsContainer: document.getElementById('warningsContainer'),
-        effectiveHealth: document.getElementById('effectiveHealth'),
-        armorPanelRow: document.getElementById('armorPanelRow'),
         enhancementBlock: document.getElementById('enhancementBlock'),
         enhancementSlider: document.getElementById('enhancementSlider'),
         enhancementValue: document.getElementById('enhancementValue'),
+        enhancementDecBtn: document.getElementById('enhancementDecBtn'),
+        enhancementIncBtn: document.getElementById('enhancementIncBtn'),
+        enhancementControls: document.getElementById('enhancementControls'),
         containerModal: document.getElementById('containerModal'),
         containerModalClose: document.getElementById('containerModalClose'),
         containerModalSearch: document.getElementById('containerModalSearch'),
@@ -429,7 +492,6 @@ function restoreState() {
                 elements.armorSelect.value = saved.armorId;
                 if (armor.enhancement) {
                     showEnhancementBlock();
-                    elements.enhancementSlider.value = state.enhancementLevel;
                     updateEnhancementDisplay();
                 }
                 updateArmorBar();
@@ -529,6 +591,8 @@ document.addEventListener('languageChanged', () => {
 
     if (elements.modal.classList.contains('active')) {
         recreateStatFilters();
+        applyFilters();
+        renderArtifactModalDetail(state.artifactModalPreviewId, true);
     }
 });
 
@@ -604,27 +668,23 @@ function injectStatFilterStyles() {
 .modal__toolbar{padding:10px 14px;gap:10px}
 .modal__search-box{padding:0 12px}
 .modal__search-box input{padding:10px 8px;font-size:14px}
-.modal__results-info{padding:8px 14px}
-.results-count{font-size:12px}
 .modal__header{padding:12px 14px}
 .modal__title{font-size:16px}
 .modal__close{width:36px;height:36px}
 .modal__body{padding:12px}
-.artifacts-grid{gap:10px}
-.artifact-card{padding:12px}
-.artifact-card__image-wrapper{width:52px;height:52px}
-.artifact-card__image{width:40px;height:40px}
-.artifact-card__name{font-size:14px}
-.artifact-card__tier{height:20px;min-width:24px;font-size:11px}
-.artifact-stat-row{font-size:12px;padding:2px 0}
+.artifacts-grid{gap:8px}
+.artifact-card{padding:8px 6px}
+.artifact-card__image{width:36px;height:36px}
+.artifact-card__img{width:36px;height:36px}
+.artifact-card__name{font-size:11px}
+.artifact-card__tier{font-size:10px}
 }
 @media(max-width:480px){
 .modal__toolbar{padding:8px 12px;gap:8px}
 .modal__search-box input{padding:8px 6px;font-size:13px}
 .modal__body{padding:10px}
-.artifact-card__top{gap:10px}
-.artifact-card__image-wrapper{width:48px;height:48px}
-.artifact-card__image{width:36px;height:36px}
+.artifact-card__image{width:32px;height:32px}
+.artifact-card__img{width:32px;height:32px}
 }`;
     document.head.appendChild(style);
 }
@@ -917,6 +977,7 @@ function toggleFiltersPanel() {
     toggle.classList.toggle('active', state.filtersExpanded);
     wrapper.classList.toggle('collapsed', !state.filtersExpanded);
     wrapper.style.maxHeight = state.filtersExpanded ? wrapper.scrollHeight + 'px' : '0';
+    scheduleArtifactModalGridSync();
 }
 
 function updateFiltersBadge() {
@@ -961,8 +1022,12 @@ function initArmorPicker() {
         e.stopPropagation();
         openArmorModal();
     });
-    elements.armorPanelRow?.addEventListener('click', (e) => {
-        if (e.target.closest('#enhancementBlock')) return;
+    elements.armorPreviewBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openArmorModal();
+    });
+    elements.armorReplaceBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
         openArmorModal();
     });
     elements.enhancementBlock?.addEventListener('click', (e) => e.stopPropagation());
@@ -999,11 +1064,13 @@ function openArmorModal() {
     renderArmorModalDetail(state.armorModalPreviewId);
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
     if (!isMobile && elements.armorModalSearch) elements.armorModalSearch.focus();
+    schedulePickerGridSync(elements.armorModalList);
     document.body.style.overflow = 'hidden';
 }
 
 function closeArmorModal() {
     elements.armorModal.classList.remove('active');
+    resetPickerGridRows(elements.armorModalList);
     lastArmorDetailId = null;
     if (!elements.containerModal.classList.contains('active') &&
         !elements.modal.classList.contains('active') &&
@@ -1071,12 +1138,14 @@ function renderArmorModalList(searchQuery = getArmorModalSearchQuery()) {
         const isPreview = state.armorModalPreviewId === armor.id;
         const isSelected = state.selectedArmor?.id === armor.id;
         const rarityClass = armor.rarity || 'none';
-        const bulletRes = armor.stats.bulletResistance || 0;
-        return `<button class="armor-card armor-card--${rarityClass} ${isPreview ? 'armor-card--preview' : ''} ${isSelected ? 'armor-card--equipped' : ''}" type="button" data-armor-id="${armor.id}"><div class="armor-card__image">${getArmorCardIcon(armor)}</div><div class="armor-card__name">${getLocalizedName(armor)}</div>${bulletRes > 0 ? `<span class="armor-card__stat">${bulletRes}</span>` : ''}</button>`;
+        return `<button class="armor-card armor-card--${rarityClass} ${isPreview ? 'armor-card--preview' : ''} ${isSelected ? 'armor-card--equipped' : ''}" type="button" data-armor-id="${armor.id}"><div class="armor-card__image">${getArmorCardIcon(armor)}</div><div class="armor-card__name">${getLocalizedName(armor)}</div></button>`;
     }).join('');
 
     elements.armorModalList.innerHTML = html;
     bindArmorCardFallbacks(elements.armorModalList);
+    if (elements.armorModal?.classList.contains('active')) {
+        schedulePickerGridSync(elements.armorModalList);
+    }
 }
 
 function renderArmorModalDetail(armorId, force = false) {
@@ -1100,7 +1169,7 @@ function renderArmorModalDetail(armorId, force = false) {
     const imageHtml = imagePath
         ? `<img class="armor-detail__img" src="${imagePath}" alt="${getLocalizedName(armor)}">`
         : `<span class="armor-detail__icon">${ARMOR_DEFAULT_ICON}</span>`;
-    const statsHtml = Object.entries(armor.stats).map(([key, value]) => buildCompactStatRow(key, value, 0, { compact: true })).join('');
+    const statsHtml = buildArmorDetailStatsHtml(armor.stats);
     const isEquipped = state.selectedArmor?.id === armor.id;
 
     const typeHtml = armor.type ? `<div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>` : '';
@@ -1138,10 +1207,7 @@ function selectArmor(armorId) {
 
     elements.armorSelect.value = armorId;
     armor.enhancement ? showEnhancementBlock() : hideEnhancementBlock();
-    if (armor.enhancement) {
-        elements.enhancementSlider.value = state.enhancementLevel;
-        updateEnhancementDisplay();
-    }
+    if (armor.enhancement) updateEnhancementDisplay();
     updateArmorBar();
     renderArmorPreview();
     updateContainerOptions();
@@ -1455,7 +1521,6 @@ function initContainerSelect() {
 
 function initEventListeners() {
     elements.containerSelect.addEventListener('change', handleContainerChange);
-    elements.resetBtn.addEventListener('click', resetBuild);
     elements.modalClose.addEventListener('click', closeModal);
     elements.modal.querySelector('.modal__backdrop').addEventListener('click', closeModal);
     elements.artifactSearch.addEventListener('input', handleSearchChange);
@@ -1465,6 +1530,14 @@ function initEventListeners() {
         elements.enhancementSlider.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
         elements.enhancementSlider.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
     }
+
+    elements.enhancementDecBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel - 1));
+    elements.enhancementIncBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel + 1));
+    elements.enhancementControls?.addEventListener('wheel', handleEnhancementWheel, { passive: false });
+    elements.enhancementValue?.addEventListener('change', handleEnhancementInput);
+    elements.enhancementValue?.addEventListener('keydown', handleEnhancementKeydown);
+    elements.enhancementValue?.addEventListener('blur', handleEnhancementInputBlur);
+    elements.enhancementValue?.addEventListener('focus', (e) => e.target.select());
 
     if (elements.searchClear) {
         elements.searchClear.addEventListener('click', () => {
@@ -1491,10 +1564,17 @@ const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 initArtifactSlotListeners(isTouchDevice);
 
-    elements.artifactList.addEventListener('click', (e) => {
-        const card = e.target.closest('.artifact-card');
-        if (card && card.dataset.artifactId) {
-            selectArtifact(card.dataset.artifactId);
+    elements.artifactList.addEventListener('click', handleArtifactModalClick);
+    if (elements.artifactModalDetail) {
+        elements.artifactModalDetail.addEventListener('click', handleArtifactModalClick);
+    }
+
+    window.addEventListener('resize', () => {
+        if (elements.modal?.classList.contains('active')) {
+            schedulePickerGridSync(elements.artifactList);
+        }
+        if (elements.armorModal?.classList.contains('active')) {
+            schedulePickerGridSync(elements.armorModalList);
         }
     });
 }
@@ -1539,6 +1619,75 @@ function applyFilters() {
     }
 
     renderArtifactList(filtered);
+
+    if (state.artifactModalPreviewId && !filtered.some(a => a.id === state.artifactModalPreviewId)) {
+        state.artifactModalPreviewId = null;
+        renderArtifactModalDetail(null, true);
+    } else {
+        updateArtifactModalCardStates();
+    }
+}
+
+function handleArtifactModalClick(e) {
+    const selectBtn = e.target.closest('.artifact-modal-detail__select');
+    if (selectBtn) {
+        confirmArtifactSelection();
+        return;
+    }
+
+    const card = e.target.closest('.artifact-card');
+    if (card?.dataset.artifactId) {
+        const nextId = card.dataset.artifactId;
+        if (nextId === state.artifactModalPreviewId) return;
+        state.artifactModalPreviewId = nextId;
+        updateArtifactModalCardStates();
+        renderArtifactModalDetail(state.artifactModalPreviewId);
+    }
+}
+
+function updateArtifactModalCardStates() {
+    if (!elements.artifactList) return;
+    elements.artifactList.querySelectorAll('.artifact-card').forEach(card => {
+        const id = card.dataset.artifactId;
+        card.classList.toggle('artifact-card--preview', id === state.artifactModalPreviewId);
+        const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === id;
+        card.classList.toggle('artifact-card--equipped', isEquipped);
+    });
+}
+
+function confirmArtifactSelection() {
+    if (!state.artifactModalPreviewId) return;
+    const currentInSlot = state.currentSlotIndex !== null
+        ? state.artifacts[state.currentSlotIndex]?.id
+        : null;
+    if (currentInSlot === state.artifactModalPreviewId) {
+        closeModal();
+        return;
+    }
+    selectArtifact(state.artifactModalPreviewId);
+}
+
+function renderArtifactModalDetail(artifactId, force = false) {
+    if (!elements.artifactModalDetail) return;
+
+    if (!artifactId) {
+        lastArtifactDetailId = null;
+        elements.artifactModalDetail.innerHTML = `<div class="artifact-modal-detail__placeholder"><span>${t('calc.artifactModal.selectHint')}</span></div>`;
+        return;
+    }
+
+    if (!force && artifactId === lastArtifactDetailId) return;
+
+    const artifact = ARTIFACTS.find(a => a.id === artifactId);
+    if (!artifact) return;
+
+    lastArtifactDetailId = artifactId;
+
+    const imageSrc = getArtifactImagePath(artifact);
+    const tierDisplay = getArtifactTierDisplay(artifact.tier);
+    const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === artifact.id;
+
+    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button>`;
 }
 
 
@@ -1570,12 +1719,65 @@ function updateContainerOptions() {
 
 
 function handleEnhancementChange(e) {
-    state.previousStats = calculateTotalStats();
-    state.enhancementLevel = parseInt(e.target.value);
+    setEnhancementLevel(parseInt(e.target.value, 10));
+}
+
+function setEnhancementLevel(level) {
+    if (!state.selectedArmor?.enhancement) return;
+    const maxLevel = state.selectedArmor.enhancement.maxLevel;
+    const nextLevel = Math.max(0, Math.min(maxLevel, level));
+
+    if (nextLevel !== state.enhancementLevel) {
+        state.previousStats = calculateTotalStats();
+        state.enhancementLevel = nextLevel;
+        renderArmorPreview();
+        updateStats();
+        saveStateToStorage();
+    }
+
     updateEnhancementDisplay();
-    renderArmorPreview();
-    updateStats();
-    saveStateToStorage();
+}
+
+function handleEnhancementWheel(e) {
+    if (!state.selectedArmor?.enhancement) return;
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 1 : -1;
+    setEnhancementLevel(state.enhancementLevel + delta);
+}
+
+function handleEnhancementInput(e) {
+    const raw = e.target.value.trim();
+    if (raw === '') return;
+    const parsed = parseInt(raw, 10);
+    if (Number.isNaN(parsed)) {
+        updateEnhancementDisplay();
+        return;
+    }
+    setEnhancementLevel(parsed);
+}
+
+function handleEnhancementInputBlur() {
+    if (!elements.enhancementValue) return;
+    if (elements.enhancementValue.value.trim() === '') {
+        updateEnhancementDisplay();
+        return;
+    }
+    handleEnhancementInput({ target: elements.enhancementValue });
+}
+
+function handleEnhancementKeydown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        elements.enhancementValue?.blur();
+        return;
+    }
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setEnhancementLevel(state.enhancementLevel + 1);
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setEnhancementLevel(state.enhancementLevel - 1);
+    }
 }
 
 function showEnhancementBlock() {
@@ -1585,7 +1787,6 @@ function showEnhancementBlock() {
     elements.enhancementSlider.value = state.enhancementLevel;
     elements.enhancementBlock.style.display = 'flex';
     elements.enhancementBlock.classList.add('visible');
-    elements.armorPanelRow?.classList.add('armor-panel__row--with-enhancement');
     updateEnhancementDisplay();
 }
 
@@ -1593,7 +1794,6 @@ function hideEnhancementBlock() {
     if (!elements.enhancementBlock) return;
     elements.enhancementBlock.style.display = 'none';
     elements.enhancementBlock.classList.remove('visible');
-    elements.armorPanelRow?.classList.remove('armor-panel__row--with-enhancement');
 }
 
 function updateEnhancementDisplay() {
@@ -1601,13 +1801,15 @@ function updateEnhancementDisplay() {
     const level = state.enhancementLevel;
     const maxLevel = state.selectedArmor.enhancement.maxLevel;
 
-    elements.enhancementValue.textContent = level;
-    elements.enhancementSlider.style.setProperty('--slider-progress', `${(level / maxLevel) * 100}%`);
+    elements.enhancementValue.value = level;
+    elements.enhancementValue.min = 0;
+    elements.enhancementValue.max = maxLevel;
+    elements.enhancementSlider.value = level;
+    elements.enhancementSlider.max = maxLevel;
     elements.enhancementBlock.setAttribute('data-level', level);
 
-    elements.enhancementBlock.classList.remove('enhancement-block--high', 'enhancement-block--max');
-    if (level >= 10 && level < maxLevel) elements.enhancementBlock.classList.add('enhancement-block--high');
-    else if (level === maxLevel) elements.enhancementBlock.classList.add('enhancement-block--max');
+    if (elements.enhancementDecBtn) elements.enhancementDecBtn.disabled = level <= 0;
+    if (elements.enhancementIncBtn) elements.enhancementIncBtn.disabled = level >= maxLevel;
 }
 
 function handleContainerChange(e) {
@@ -1741,8 +1943,8 @@ function initArtifactSlotsSortable() {
         fallbackClass: 'sortable-drag',
         fallbackOnBody: true,
         fallbackTolerance: 5,
-        draggable: '.artifact-slot-card:not(.artifact-slot-card--empty)',
-        filter: '.artifact-slot-card--empty, [data-slot-action]',
+        draggable: '.artifact-slot-card',
+        filter: '[data-slot-action]',
         preventOnFilter: true,
         disabled: state.artifactCopyMode,
         onStart() {
@@ -1921,12 +2123,13 @@ function renderArtifactDetailPanel() {
     const artifact = index !== null ? state.artifacts[index] : null;
 
     if (!artifact) {
-        elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>${t('calc.artifactDetail.selectHint')}</span></div>`;
+        elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail__placeholder"><span>${t('calc.artifactDetail.selectHint')}</span></div>`;
         return;
     }
 
     const imageSrc = getArtifactImagePath(artifact);
-    elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="category-tag category-tag--${artifact.category}">${getCategoryName(artifact.category)}</span></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
+    const tierDisplay = getArtifactTierDisplay(artifact.tier);
+    elements.artifactDetailPanel.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-detail__tier">${tierDisplay}</span></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
 }
 
 function renderArtifactSlots() {
@@ -1954,9 +2157,9 @@ function renderArtifactSlots() {
         const copyClasses = `${isCopySource ? ' artifact-slot-card--copy-source' : ''}${isCopyTarget ? ' artifact-slot-card--copy-target' : ''}`;
         if (artifact) {
             const imageSrc = getArtifactImagePath(artifact);
-            return `<div class="artifact-slot-card${isSelected ? ' artifact-slot-card--selected' : ''}${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button">${renderArtifactSlotGrip()}<div class="artifact-slot-card__preview artifact-slot-card__preview--filled"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" draggable="false" onerror="this.style.display='none'"></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__name">${getLocalizedName(artifact)}</div></div></button>${renderArtifactSlotActions(index)}</div></div>`;
+            return `<div class="artifact-slot-card artifact-slot-card--${artifact.category}${isSelected ? ' artifact-slot-card--selected' : ''}${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button">${renderArtifactSlotGrip()}<div class="artifact-slot-card__preview artifact-slot-card__preview--filled"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" draggable="false" onerror="this.style.display='none'"></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__name">${getLocalizedName(artifact)}</div></div></button>${renderArtifactSlotActions(index)}</div></div>`;
         }
-        return `<div class="artifact-slot-card artifact-slot-card--empty${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button"><div class="artifact-slot-card__preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__hint">${t('calc.slot.clickToAdd')}</div></div></button></div></div>`;
+        return `<div class="artifact-slot-card artifact-slot-card--empty${copyClasses}" data-index="${index}"><div class="artifact-slot-card__main"><button class="artifact-slot-card__select" type="button">${renderArtifactSlotGrip()}<div class="artifact-slot-card__preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div><div class="artifact-slot-card__info"><div class="artifact-slot-card__hint">${t('calc.slot.clickToAdd')}</div></div></button></div></div>`;
     }).join('');
 
     elements.artifactSlots.innerHTML = `<div class="artifact-slots__grid">${slotsHtml}</div>`;
@@ -1965,48 +2168,91 @@ function renderArtifactSlots() {
     updateArtifactActions();
 }
 
-function updateArtifactCount(count) {
-    if (elements.artifactCount) elements.artifactCount.textContent = count;
-}
-
 function renderArtifactList(artifacts) {
     if (!artifacts) artifacts = ARTIFACTS;
-    updateArtifactCount(artifacts.length);
 
     if (artifacts.length === 0) {
         elements.artifactList.innerHTML = `<div class="artifacts-empty"><div class="artifacts-empty__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><div class="artifacts-empty__title">${t('calc.modal.noResults')}</div><div class="artifacts-empty__text">${t('calc.modal.tryOtherFilters')}</div></div>`;
+        if (state.artifactModalPreviewId) {
+            state.artifactModalPreviewId = null;
+            renderArtifactModalDetail(null, true);
+        }
         return;
     }
 
     const listHtml = artifacts.map(artifact => {
-        const tierClass = artifact.tier === 'unique' ? 'unique' : artifact.tier;
-        const tierDisplay = artifact.tier === 'unique' ? '★' : `T${artifact.tier}`;
+        const isPreview = state.artifactModalPreviewId === artifact.id;
+        const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === artifact.id;
 
-        const statsHtml = Object.entries(artifact.stats).map(([key, value]) => {
-            const isInverted = INVERTED_STATS.includes(key);
-            let displayValue, valueClass;
-            if (value > 0) {
-                displayValue = `+${formatNumber(value)}${getStatUnit(key)}`;
-                valueClass = isInverted ? 'artifact-stat-row__value--negative' : 'artifact-stat-row__value--positive';
-            } else {
-                displayValue = `${formatNumber(value)}${getStatUnit(key)}`;
-                valueClass = isInverted ? 'artifact-stat-row__value--positive' : 'artifact-stat-row__value--negative';
-            }
-            return `<div class="artifact-stat-row"><span class="artifact-stat-row__name">${getStatName(key)}</span><span class="artifact-stat-row__value ${valueClass}">${displayValue}</span></div>`;
-        }).join('');
-
-        return `<div class="artifact-card artifact-card--${artifact.category}" data-artifact-id="${artifact.id}"><div class="artifact-card__top"><div class="artifact-card__image-wrapper"><img src="${getArtifactImagePath(artifact)}" alt="${getLocalizedName(artifact)}" class="artifact-card__image" onerror="this.src='../images/placeholder.png'"></div><div class="artifact-card__info"><div class="artifact-card__name">${getLocalizedName(artifact)}</div><div class="artifact-card__meta"><span class="artifact-card__tier artifact-card__tier--${tierClass}">${tierDisplay}</span><span class="artifact-card__category">${getCategoryName(artifact.category)}</span></div></div></div><div class="artifact-card__divider"></div><div class="artifact-card__stats">${statsHtml}</div></div>`;
+        return `<button class="artifact-card artifact-card--${artifact.category} ${isPreview ? 'artifact-card--preview' : ''} ${isEquipped ? 'artifact-card--equipped' : ''}" type="button" data-artifact-id="${artifact.id}"><div class="artifact-card__image"><img src="${getArtifactImagePath(artifact)}" alt="${getLocalizedName(artifact)}" class="artifact-card__img" onerror="this.src='../images/placeholder.png'"></div><div class="artifact-card__name">${getLocalizedName(artifact)}</div></button>`;
     }).join('');
 
     elements.artifactList.innerHTML = listHtml;
 }
 
 
+function schedulePickerGridSync(grid) {
+    if (!grid) return;
+    clearTimeout(pickerGridLayoutTimer);
+    pickerGridLayoutTimer = setTimeout(() => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => syncPickerGridRows(grid));
+        });
+    }, 0);
+}
+
+function scheduleArtifactModalGridSync() {
+    schedulePickerGridSync(elements.artifactList);
+}
+
+function resetPickerGridRows(grid) {
+    if (!grid) return;
+    grid.style.height = '';
+    grid.style.maxHeight = '';
+}
+
+function resetArtifactModalGridRows() {
+    resetPickerGridRows(elements.artifactList);
+}
+
+function getPickerGridRowStride(grid) {
+    const card = grid.querySelector('.armor-card, .artifact-card');
+    if (card) {
+        return Math.round(card.getBoundingClientRect().height + PICKER_GRID_GAP);
+    }
+    return grid.classList.contains('artifacts-grid') ? ARTIFACT_GRID_ROW_STRIDE : 106 + PICKER_GRID_GAP;
+}
+
+function syncPickerGridRows(grid) {
+    const layout = grid?.closest('.armor-modal__layout, .artifact-modal__layout');
+    const modal = grid?.closest('.modal');
+    if (!grid || !layout || !modal?.classList.contains('active')) return;
+
+    if (window.innerWidth <= 768) {
+        resetPickerGridRows(grid);
+        return;
+    }
+
+    const layoutHeight = layout.clientHeight;
+    if (layoutHeight <= 0) return;
+
+    const rowStride = getPickerGridRowStride(grid);
+    const visibleRows = Math.max(1, Math.floor((layoutHeight + PICKER_GRID_GAP) / rowStride));
+    const alignedHeight = visibleRows * rowStride - PICKER_GRID_GAP;
+
+    grid.style.height = `${alignedHeight}px`;
+    grid.style.maxHeight = `${alignedHeight}px`;
+}
+
+function syncArtifactModalGridRows() {
+    syncPickerGridRows(elements.artifactList);
+}
+
 function openArtifactModal(slotIndex) {
     state.currentSlotIndex = slotIndex;
+    const currentArtifact = state.artifacts[slotIndex];
+    state.artifactModalPreviewId = currentArtifact?.id || null;
     elements.modal.classList.add('active');
-    if (elements.modalSlotInfo) elements.modalSlotInfo.textContent = `${t('calc.modal.slot')} #${slotIndex + 1}`;
-
     state.filters.search = '';
     state.filters.positiveEffects = [];
     state.filters.negativeEffects = [];
@@ -2029,18 +2275,23 @@ function openArtifactModal(slotIndex) {
 
     updateFiltersBadge();
     updateStatFilterClearButtons();
-    renderArtifactList(ARTIFACTS);
+    applyFilters();
+    renderArtifactModalDetail(state.artifactModalPreviewId, true);
 
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
     if (!isMobile) elements.artifactSearch.focus();
 
+    scheduleArtifactModalGridSync();
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     closeStatFilterComboboxes();
     elements.modal.classList.remove('active');
+    resetArtifactModalGridRows();
     state.currentSlotIndex = null;
+    state.artifactModalPreviewId = null;
+    lastArtifactDetailId = null;
     if (!elements.containerModal.classList.contains('active') &&
         !elements.armorModal.classList.contains('active') &&
         !elements.clearArtifactsConfirm.classList.contains('active')) {
@@ -2089,7 +2340,6 @@ function updateStats() {
     });
 
     updateEffectiveBulletResistance(totalStats.bulletResistance);
-    updateEffectiveHealth(totalStats.bulletResistance);
     updateWarnings(totalStats);
     state.previousStats = totalStats;
 }
@@ -2109,12 +2359,6 @@ function updateHeroStats(currentStats, previousStats) {
             element.classList.add(colorClass.includes('positive') ? 'hero-stat__value--positive' : 'hero-stat__value--negative');
         }
     });
-}
-
-function updateEffectiveHealth(bulletResistance) {
-    if (!elements.effectiveHealth) return;
-    const ehp = calculateEffectiveHealth(bulletResistance);
-    elements.effectiveHealth.textContent = formatNumber(ehp);
 }
 
 function formatPriorityStatValue(statKey, value, prevValue) {
