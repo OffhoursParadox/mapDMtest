@@ -204,16 +204,8 @@ function getArmorTypeName(typeValue) {
 }
 
 // ============== CONTAINERS ==============
-// Изображения: Table/Containers/<image> (PNG/WebP), поля image + imageFolder
+// Изображения: images/items/Containers/<image> (PNG/WebP), поля image + imageFolder
 const CONTAINERS = [
-    {
-        id: 'container_x1',
-        name: 'Самодельный контейнер X1', nameEn: 'Homemade Container X1',
-        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
-        type: 'standard', typeName: 'Стандартный', typeNameEn: 'Standard',
-        image: 'container_x1.png', imageFolder: 'Containers',
-        slots: 1, stats: { maxStamina: -8.00 }, shielding: { radiation: -1.00 }
-    },
     {
         id: 'container_x2',
         name: 'Самодельный контейнер X2', nameEn: 'Homemade Container X2',
@@ -221,6 +213,14 @@ const CONTAINERS = [
         type: 'bulky', typeName: 'Громоздкий', typeNameEn: 'Bulky',
         image: 'container_x2.png', imageFolder: 'Containers',
         slots: 2, stats: { maxStamina: -15.00, moveSpeed: -1.00 }, shielding: { radiation: -2.00 }
+    },
+    {
+        id: 'container_x1',
+        name: 'Самодельный контейнер X1', nameEn: 'Homemade Container X1',
+        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
+        type: 'standard', typeName: 'Стандартный', typeNameEn: 'Standard',
+        image: 'container_x1.png', imageFolder: 'Containers',
+        slots: 1, stats: { maxStamina: -8.00 }, shielding: { radiation: -1.00 }
     },
     {
         id: 'pka_2',
@@ -273,13 +273,12 @@ const CONTAINERS = [
 ];
 
 // ============== ARMORS ==============
-// Изображения: Table/Armors/<id>.png (PNG/WebP), путь формируется автоматически по id
+// Изображения: images/items/Armors/<id>.png (PNG/WebP), путь формируется автоматически по id
 const ARMORS = [
     // LIGHT
     {
         id: 'leather_jacket',
         name: 'Кожаная куртка', nameEn: 'Leather Jacket',
-        type: 'Лёгкие', typeEn: 'Light',
         containerTypes: ['all'],
         stats: { radiationProtection: 20, bioProtection: 20, heatResistance: 14, chemResistance: 14, electroResistance: 14, impactResistance: 12, tearProtection: 16, bulletResistance: 24, maxWeight: 5.00 },
         enhancement: null
@@ -287,8 +286,6 @@ const ARMORS = [
     {
         id: 'anomaly_jacket',
         name: 'Аномальная кожанка', nameEn: 'Anomalous Leather Jacket',
-        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
-        type: 'Лёгкие', typeEn: 'Light',
         containerTypes: ['all'],
         stats: { radiationProtection: 20, bioProtection: 20, heatResistance: 14, chemResistance: 18, electroResistance: 14, impactResistance: 12, tearProtection: 16, bulletResistance: 24, bleeding: -0.25, regeneration: 0.75, moveSpeed: 2.00, maxWeight: 5.00 },
         enhancement: null
@@ -296,8 +293,6 @@ const ARMORS = [
     {
         id: 'chainmail_jacket',
         name: 'Кольчужная куртка', nameEn: 'Chainmail Jacket',
-        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
-        type: 'Лёгкие', typeEn: 'Light',
         containerTypes: ['all'],
         stats: { radiationProtection: 20, bioProtection: 20, heatResistance: 9, chemResistance: 9, electroResistance: 9, impactResistance: 16, tearProtection: 36, bulletResistance: 32, moveSpeed: 1.00, maxWeight: 5.00 },
         enhancement: null
@@ -387,7 +382,7 @@ const ARMORS = [
     {
         id: 'rat_cloak',
         name: 'Плащ из крысиных шкур', nameEn: 'Rat Skin Cloak',
-        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
+        rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon',
         type: 'Боевые', typeEn: 'Combat',
         containerTypes: ['all'],
         stats: { radiationProtection: 100, bioProtection: 20, heatResistance: 14, chemResistance: 14, electroResistance: 14, impactResistance: 12, tearProtection: 16, bulletResistance: 24, bleeding: -1.00, saturation: 0.60, regeneration: 0.50, moveSpeed: 5.00, maxWeight: 7.00 },
@@ -476,7 +471,7 @@ const ARMORS = [
     {
         id: 'healing_berill',
         name: 'Лечебный «Берилл-5М»', nameEn: 'Healing "Berill-5M"',
-        rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon',
+        rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection',
         type: 'Боевые', typeEn: 'Combat',
         containerTypes: ['all'],
         stats: { radiationProtection: 100, bioProtection: 100, thermalProtection: 60, heatResistance: 38, chemResistance: 28, electroResistance: 20, impactResistance: 98, tearProtection: 102, bulletResistance: 158, bleeding: -3.00, regeneration: 1.00, maxStamina: -5.00, maxWeight: 12.00 },
@@ -575,7 +570,7 @@ const ARMORS = [
     },
     {
         id: 'chn16',
-        name: 'Бронежилет ЧН-16', nameEn: 'Body Armor CHN-16',
+        name: 'Бронежилет ЧН-1б', nameEn: 'Body Armor CHN-1b',
         rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
         type: 'Комбинированные', typeEn: 'Combined',
         containerTypes: ['all'],
@@ -765,70 +760,71 @@ const ARMORS = [
 ];
 
 // ============== ARTIFACTS ==============
+// Изображения: images/items/Artifacts/<id>.<ext> (PNG/JPG/WebP)
 const ARTIFACTS = [
     // GRAVITATIONAL
-    { id: 'blood_stone', name: 'Кровь камня', nameEn: 'Blood Stone', category: 'gravity', tier: 1, image: 'BS.png', imageFolder: 'Artifacts', price: 3200, stats: { regeneration: 1.00, bleeding: -0.25, radiation: 1.00 } },
-    { id: 'vyvert', name: 'Выверт', nameEn: 'Vyvert', category: 'gravity', tier: 1, image: 'Vivert.png', imageFolder: 'Artifacts', price: 5000, stats: { tearProtection: 20, maxWeight: 6.00, radiation: 1.00 } },
-    { id: 'medusa', name: 'Медуза', nameEn: 'Medusa', category: 'gravity', tier: 1, image: 'Medusa.png', imageFolder: 'Artifacts', price: 12000, stats: { radiationProtection: 20, maxWeight: 4.00, radiation: -2.00, bulletResistance: -3 } },
-    { id: 'stone_flower', name: 'Каменный цветок', nameEn: 'Stone Flower', category: 'gravity', tier: 1, image: 'SF.png', imageFolder: 'Artifacts', price: 12500, stats: { psiProtection: 20, maxWeight: 6.00, bulletResistance: 8, radiation: 2.00 } },
-    { id: 'meat_chunk', name: 'Ломоть мяса', nameEn: 'Meat Chunk', category: 'gravity', tier: 2, image: 'LM.png', imageFolder: 'Artifacts', price: 13500, stats: { regeneration: 2.00, bleeding: -0.75, radiation: 1.50 } },
-    { id: 'gravi', name: 'Грави', nameEn: 'Gravi', category: 'gravity', tier: 2, image: 'Gravy.png', imageFolder: 'Artifacts', price: 21000, stats: { tearProtection: 30, maxWeight: 12.00, radiation: 2.00 } },
-    { id: 'night_star', name: 'Ночная звезда', nameEn: 'Night Star', category: 'gravity', tier: 2, image: 'NS.png', imageFolder: 'Artifacts', price: 26100, stats: { bulletResistance: 21, maxStamina: -2.00, radiation: 3.00 } },
-    { id: 'mercury_ball', name: 'Ртутный шар', nameEn: 'Mercury Ball', category: 'gravity', tier: 2, image: 'RB.png', imageFolder: 'Artifacts', price: 30000, stats: { impactResistance: 20, radiationProtection: 20, tearProtection: 15, saturation: 1.00, maxWeight: -6.00, radiation: 1.00 } },
-    { id: 'gold_fish', name: 'Золотая рыбка', nameEn: 'Goldfish', category: 'gravity', tier: 3, image: 'GF.png', imageFolder: 'Artifacts', price: 31000, stats: { tearProtection: 60, maxWeight: 15.00, maxStamina: -5.00, radiation: 2.00 } },
-    { id: 'spring', name: 'Пружина', nameEn: 'Spring', category: 'gravity', tier: 3, image: 'Pruzh.png', imageFolder: 'Artifacts', price: 40200, stats: { impactResistance: 60, tearProtection: 30, maxWeight: 8.00, bulletResistance: 16, staminaRegen: -1.25, bioProtection: -20, radiationProtection: -20, thermalProtection: -20, maxStamina: -12.50, heatResistance: -20, chemResistance: -20 } },
-    { id: 'golden_gravi', name: 'Золотистый грави', nameEn: 'Golden Gravi', category: 'gravity', tier: 3, image: 'GG.png', imageFolder: 'Artifacts', price: 46000, stats: { tearProtection: 40, maxWeight: 30.00, radiation: 3.00 } },
-    { id: 'yantarnik', name: 'Янтарник', nameEn: 'Yantarnik', category: 'gravity', tier: 3, image: 'Yantarnik.png', imageFolder: 'Artifacts', price: 52000, stats: { maxWeight: 18.00, bulletResistance: 24, radiation: 3.00 } },
-    { id: 'soul', name: 'Душа', nameEn: 'Soul', category: 'gravity', tier: 3, image: 'Soul.png', imageFolder: 'Artifacts', price: 61000, stats: { bleeding: -5.00, regeneration: 8.50,  saturation: -2.25, bulletResistance: -20, radiation: 5.00 } },
-    { id: 'dark_medusa', name: 'Тёмная медуза', nameEn: 'Dark Medusa', category: 'gravity', tier: 3, image: 'DarkMedusa.png', imageFolder: 'Artifacts', price: 78000, stats: { bulletResistance: 42, regeneration: -0.25, maxStamina: -10.00, radiation: 5.00 } },
-    { id: 'proto_medusa', name: 'Протомедуза', nameEn: 'Protomedusa', category: 'gravity', tier: 3, image: 'ProtoMedusa.png', imageFolder: 'Artifacts', price: 80200, stats: { radiationProtection: 80, maxWeight: 12.00, radiation: -8.00, bulletResistance: -24 } },
+    { id: 'blood_stone', name: 'Кровь камня', nameEn: 'Blood Stone', category: 'gravity', tier: 1, image: 'blood_stone.png', imageFolder: 'Artifacts', price: 3200, stats: { regeneration: 1.00, bleeding: -0.25, radiation: 1.00 } },
+    { id: 'vyvert', name: 'Выверт', nameEn: 'Vyvert', category: 'gravity', tier: 1, image: 'vyvert.png', imageFolder: 'Artifacts', price: 5000, stats: { tearProtection: 20, maxWeight: 6.00, radiation: 1.00 } },
+    { id: 'medusa', name: 'Медуза', nameEn: 'Medusa', category: 'gravity', tier: 1, image: 'medusa.png', imageFolder: 'Artifacts', price: 12000, stats: { radiationProtection: 20, maxWeight: 4.00, radiation: -2.00, bulletResistance: -3 } },
+    { id: 'stone_flower', name: 'Каменный цветок', nameEn: 'Stone Flower', category: 'gravity', tier: 1, image: 'stone_flower.png', imageFolder: 'Artifacts', price: 12500, stats: { psiProtection: 20, maxWeight: 6.00, bulletResistance: 8, radiation: 2.00 } },
+    { id: 'meat_chunk', name: 'Ломоть мяса', nameEn: 'Meat Chunk', category: 'gravity', tier: 2, image: 'meat_chunk.png', imageFolder: 'Artifacts', price: 13500, stats: { regeneration: 2.00, bleeding: -0.75, radiation: 1.50 } },
+    { id: 'gravi', name: 'Грави', nameEn: 'Gravi', category: 'gravity', tier: 2, image: 'gravi.png', imageFolder: 'Artifacts', price: 21000, stats: { tearProtection: 30, maxWeight: 12.00, radiation: 2.00 } },
+    { id: 'night_star', name: 'Ночная звезда', nameEn: 'Night Star', category: 'gravity', tier: 2, image: 'night_star.png', imageFolder: 'Artifacts', price: 26100, stats: { bulletResistance: 21, maxStamina: -2.00, radiation: 3.00 } },
+    { id: 'mercury_ball', name: 'Ртутный шар', nameEn: 'Mercury Ball', category: 'gravity', tier: 2, image: 'mercury_ball.png', imageFolder: 'Artifacts', price: 30000, stats: { impactResistance: 20, radiationProtection: 20, tearProtection: 15, saturation: 1.00, maxWeight: -6.00, radiation: 1.00 } },
+    { id: 'gold_fish', name: 'Золотая рыбка', nameEn: 'Goldfish', category: 'gravity', tier: 3, image: 'gold_fish.png', imageFolder: 'Artifacts', price: 31000, stats: { tearProtection: 60, maxWeight: 15.00, maxStamina: -5.00, radiation: 2.00 } },
+    { id: 'spring', name: 'Пружина', nameEn: 'Spring', category: 'gravity', tier: 3, image: 'spring.png', imageFolder: 'Artifacts', price: 40200, stats: { impactResistance: 60, tearProtection: 30, maxWeight: 8.00, bulletResistance: 16, staminaRegen: -1.25, bioProtection: -20, radiationProtection: -20, thermalProtection: -20, maxStamina: -12.50, heatResistance: -20, chemResistance: -20 } },
+    { id: 'golden_gravi', name: 'Золотистый грави', nameEn: 'Golden Gravi', category: 'gravity', tier: 3, image: 'golden_gravi.png', imageFolder: 'Artifacts', price: 46000, stats: { tearProtection: 40, maxWeight: 30.00, radiation: 3.00 } },
+    { id: 'yantarnik', name: 'Янтарник', nameEn: 'Yantarnik', category: 'gravity', tier: 3, image: 'yantarnik.png', imageFolder: 'Artifacts', price: 52000, stats: { maxWeight: 18.00, bulletResistance: 24, radiation: 3.00 } },
+    { id: 'soul', name: 'Душа', nameEn: 'Soul', category: 'gravity', tier: 3, image: 'soul.png', imageFolder: 'Artifacts', price: 61000, stats: { bleeding: -5.00, regeneration: 8.50,  saturation: -2.25, bulletResistance: -20, radiation: 5.00 } },
+    { id: 'dark_medusa', name: 'Тёмная медуза', nameEn: 'Dark Medusa', category: 'gravity', tier: 3, image: 'dark_medusa.png', imageFolder: 'Artifacts', price: 78000, stats: { bulletResistance: 42, regeneration: -0.25, maxStamina: -10.00, radiation: 5.00 } },
+    { id: 'proto_medusa', name: 'Протомедуза', nameEn: 'Protomedusa', category: 'gravity', tier: 3, image: 'proto_medusa.png', imageFolder: 'Artifacts', price: 80200, stats: { radiationProtection: 80, maxWeight: 12.00, radiation: -8.00, bulletResistance: -24 } },
     // CHEMICAL
-    { id: 'slime', name: 'Слизь', nameEn: 'Slime', category: 'chemical', tier: 1, image: 'Slime.png', imageFolder: 'Artifacts/Bio', price: 4000, stats: { bioProtection: 10, bleeding: -1.50, saturation: 0.45, chemResistance: 10, regeneration: -0.15 } },
-    { id: 'thorn', name: 'Колючка', nameEn: 'Thorn', category: 'chemical', tier: 1, image: 'Thorn.png', imageFolder: 'Artifacts/Bio', price: 10300, stats: { bioProtection: 15, radiationProtection: 30, radiation: -3.00, chemResistance: 15, bleeding: 1.50 } },
-    { id: 'slug', name: 'Слизняк', nameEn: 'Slug', category: 'chemical', tier: 2, image: 'Slug.png', imageFolder: 'Artifacts/Bio', price: 11800, stats: { bioProtection: 20, saturation: 1.25, chemResistance: 20, maxWeight: -3.00, regeneration: -0.45 } },
-    { id: 'bile_stone', name: 'Желчь камня', nameEn: 'Bile Stone', category: 'chemical', tier: 2, image: 'BileStone.png', imageFolder: 'Artifacts/Bio', price: 21000, stats: { maxWeight: 5.00, saturation: 1.75, bioProtection: -15, radiation: 1.50 } },
-    { id: 'swamp_rot', name: 'Болотный гнилец', nameEn: 'Swamp Rot', category: 'chemical', tier: 2, image: 'SR.png', imageFolder: 'Artifacts/Bio', price: 22000, stats: { saturation: 2.35, bioProtection: -10, maxWeight: -5.00, regeneration: -0.75, chemResistance: -5 } },
-    { id: 'crystal_thorn', name: 'Кристальная колючка', nameEn: 'Crystal Thorn', category: 'chemical', tier: 2, image: 'CT.png', imageFolder: 'Artifacts/Bio', price: 31000, stats: { radiationProtection: 40, radiation: -4.00, bioProtection: -15, bleeding: 2.00, chemResistance: -9 } },
-    { id: 'firefly', name: 'Светляк', nameEn: 'Firefly', category: 'chemical', tier: 3, image: 'Svetlak.png', imageFolder: 'Artifacts/Bio', price: 42000, stats: { staminaRegen: 2.00, bleeding: -3.00, regeneration: 5.50, moveSpeed: 2.00, saturation: -1.75, radiation: 4.00 } },
-    { id: 'mica', name: 'Слюда', nameEn: 'Mica', category: 'chemical', tier: 3, image: 'Sluda.png', imageFolder: 'Artifacts/Bio', price: 45000, stats: { bioProtection: 60, maxWeight: 6.50, maxStamina: 35.00, chemResistance: -20 } },
-    { id: 'pellicle', name: 'Плёнка', nameEn: 'Pellicle', category: 'chemical', tier: 3, image: 'Plenka.png', imageFolder: 'Artifacts/Bio', price: 47000, stats: { bioProtection: 20, saturation: 2.50, radiation: 2.00 } },
-    { id: 'sea_urchin', name: 'Морской ёж', nameEn: 'Sea Urchin', category: 'chemical', tier: 3, image: 'SH.png', imageFolder: 'Artifacts/Bio', price: 59000, stats: { radiationProtection: 50, radiation: -5.00, bleeding: 3.00 } },
-    { id: 'kolobok', name: 'Колобок', nameEn: 'Kolobok', category: 'chemical', tier: 3, image: 'Kolobok.png', imageFolder: 'Artifacts/Bio', price: 78000, stats: { bleeding: -4.00, regeneration: 2.50, maxStamina: -5.00, bulletResistance: -8, radiation: 2.00 } },
-    { id: 'bubble', name: 'Пузырь', nameEn: 'Bubble', category: 'chemical', tier: 3, image: 'Puzir.png', imageFolder: 'Artifacts/Bio', price: 86000, stats: { radiationProtection: 60, radiation: -6.00 } },
+    { id: 'slime', name: 'Слизь', nameEn: 'Slime', category: 'chemical', tier: 1, image: 'slime.png', imageFolder: 'Artifacts', price: 4000, stats: { bioProtection: 10, bleeding: -1.50, saturation: 0.45, chemResistance: 10, regeneration: -0.15 } },
+    { id: 'thorn', name: 'Колючка', nameEn: 'Thorn', category: 'chemical', tier: 1, image: 'thorn.png', imageFolder: 'Artifacts', price: 10300, stats: { bioProtection: 15, radiationProtection: 30, radiation: -3.00, chemResistance: 15, bleeding: 1.50 } },
+    { id: 'slug', name: 'Слизняк', nameEn: 'Slug', category: 'chemical', tier: 2, image: 'slug.png', imageFolder: 'Artifacts', price: 11800, stats: { bioProtection: 20, saturation: 1.25, chemResistance: 20, maxWeight: -3.00, regeneration: -0.45 } },
+    { id: 'bile_stone', name: 'Желчь камня', nameEn: 'Bile Stone', category: 'chemical', tier: 2, image: 'bile_stone.png', imageFolder: 'Artifacts', price: 21000, stats: { maxWeight: 5.00, saturation: 1.75, bioProtection: -15, radiation: 1.50 } },
+    { id: 'swamp_rot', name: 'Болотный гнилец', nameEn: 'Swamp Rot', category: 'chemical', tier: 2, image: 'swamp_rot.png', imageFolder: 'Artifacts', price: 22000, stats: { saturation: 2.35, bioProtection: -10, maxWeight: -5.00, regeneration: -0.75, chemResistance: -5 } },
+    { id: 'crystal_thorn', name: 'Кристальная колючка', nameEn: 'Crystal Thorn', category: 'chemical', tier: 2, image: 'crystal_thorn.png', imageFolder: 'Artifacts', price: 31000, stats: { radiationProtection: 40, radiation: -4.00, bioProtection: -15, bleeding: 2.00, chemResistance: -9 } },
+    { id: 'firefly', name: 'Светляк', nameEn: 'Firefly', category: 'chemical', tier: 3, image: 'firefly.png', imageFolder: 'Artifacts', price: 42000, stats: { staminaRegen: 2.00, bleeding: -3.00, regeneration: 5.50, moveSpeed: 2.00, saturation: -1.75, radiation: 4.00 } },
+    { id: 'mica', name: 'Слюда', nameEn: 'Mica', category: 'chemical', tier: 3, image: 'mica.png', imageFolder: 'Artifacts', price: 45000, stats: { bioProtection: 60, maxWeight: 6.50, maxStamina: 35.00, chemResistance: -20 } },
+    { id: 'pellicle', name: 'Плёнка', nameEn: 'Pellicle', category: 'chemical', tier: 3, image: 'pellicle.png', imageFolder: 'Artifacts', price: 47000, stats: { bioProtection: 20, saturation: 2.50, radiation: 2.00 } },
+    { id: 'sea_urchin', name: 'Морской ёж', nameEn: 'Sea Urchin', category: 'chemical', tier: 3, image: 'sea_urchin.png', imageFolder: 'Artifacts', price: 59000, stats: { radiationProtection: 50, radiation: -5.00, bleeding: 3.00 } },
+    { id: 'kolobok', name: 'Колобок', nameEn: 'Kolobok', category: 'chemical', tier: 3, image: 'kolobok.png', imageFolder: 'Artifacts', price: 78000, stats: { bleeding: -4.00, regeneration: 2.50, maxStamina: -5.00, bulletResistance: -8, radiation: 2.00 } },
+    { id: 'bubble', name: 'Пузырь', nameEn: 'Bubble', category: 'chemical', tier: 3, image: 'bubble.png', imageFolder: 'Artifacts', price: 86000, stats: { radiationProtection: 60, radiation: -6.00 } },
     // ELECTRICAL
-    { id: 'sparkler', name: 'Бенгальский огонь', nameEn: 'Sparkler', category: 'electric', tier: 1, image: 'BF.png', imageFolder: 'Artifacts/Electro', price: 6000, stats: { staminaRegen: 0.50, electroResistance: 10, radiation: 0.50 } },
-    { id: 'flash', name: 'Вспышка', nameEn: 'Flash', category: 'electric', tier: 1, image: 'Vspishka.png', imageFolder: 'Artifacts/Electro', price: 12000, stats: { staminaRegen: 1.00, electroResistance: 15, radiation: 1.00 } },
-    { id: 'battery', name: 'Батарейка', nameEn: 'Battery', category: 'electric', tier: 1, image: 'Battery.png', imageFolder: 'Artifacts/Electro', price: 15000, stats: { staminaRegen: 1.50, moveSpeed: 2.00, radiation: 1.00 } },
-    { id: 'moonlight', name: 'Лунный свет', nameEn: 'Moonlight', category: 'electric', tier: 2, image: 'Moonlight.png', imageFolder: 'Artifacts/Electro', price: 22000, stats: { psiProtection: 45, radiation: 1.00, electroResistance: -20 } },
-    { id: 'sky_stone', name: 'Небесный камень', nameEn: 'Sky Stone', category: 'electric', tier: 2, image: 'SS.png', imageFolder: 'Artifacts/Electro', price: 22000, stats: { staminaRegen: 2.25, regeneration: 2.00, moveSpeed: 2.00, electroResistance: 25, saturation: -0.35, radiation: 2.50 } },
-    { id: 'medium', name: 'Медиум', nameEn: 'Medium', category: 'electric', tier: 2, image: 'Medium.png', imageFolder: 'Artifacts/Electro', price: 23000, stats: { psiProtection: 60, electroResistance: -35 } },
-    { id: 'electro_mica', name: 'Электрослюда', nameEn: 'Electro Mica', category: 'electric', tier: 2, image: 'Electrosluda.png', imageFolder: 'Artifacts/Electro', price: 27000, stats: { staminaRegen: 3.50, maxStamina: 35.00, moveSpeed: 3.00, electroResistance: 20, radiation: 2.00 } },
-    { id: 'dummy', name: 'Пустышка', nameEn: 'Dummy', category: 'electric', tier: 3, image: 'Pustishka.png', imageFolder: 'Artifacts/Electro', price: 35000, stats: { staminaRegen: 5.25, bulletResistance: 16, moveSpeed: 4.00, maxStamina: -20.00, radiation: 3.00 } },
-    { id: 'halogen', name: 'Галоген', nameEn: 'Halogen', category: 'electric', tier: 3, image: 'Galogen.png', imageFolder: 'Artifacts/Electro', price: 61000, stats: { psiProtection: 120, maxStamina: 10.00, moveSpeed: 5.00, bleeding: 4.00 } },
-    { id: 'snowflake', name: 'Снежинка', nameEn: 'Snowflake', category: 'electric', tier: 3, image: 'Snowy.png', imageFolder: 'Artifacts/Electro', price: 78000, stats: { staminaRegen: 2.00, maxStamina: 20.00, moveSpeed: 6.00, bulletResistance: -22, radiation: 4.00 } },
+    { id: 'sparkler', name: 'Бенгальский огонь', nameEn: 'Sparkler', category: 'electric', tier: 1, image: 'sparkler.png', imageFolder: 'Artifacts', price: 6000, stats: { staminaRegen: 0.50, electroResistance: 10, radiation: 0.50 } },
+    { id: 'flash', name: 'Вспышка', nameEn: 'Flash', category: 'electric', tier: 1, image: 'flash.png', imageFolder: 'Artifacts', price: 12000, stats: { staminaRegen: 1.00, electroResistance: 15, radiation: 1.00 } },
+    { id: 'battery', name: 'Батарейка', nameEn: 'Battery', category: 'electric', tier: 1, image: 'battery.png', imageFolder: 'Artifacts', price: 15000, stats: { staminaRegen: 1.50, moveSpeed: 2.00, radiation: 1.00 } },
+    { id: 'moonlight', name: 'Лунный свет', nameEn: 'Moonlight', category: 'electric', tier: 2, image: 'moonlight.png', imageFolder: 'Artifacts', price: 22000, stats: { psiProtection: 45, radiation: 1.00, electroResistance: -20 } },
+    { id: 'sky_stone', name: 'Небесный камень', nameEn: 'Sky Stone', category: 'electric', tier: 2, image: 'sky_stone.png', imageFolder: 'Artifacts', price: 22000, stats: { staminaRegen: 2.25, regeneration: 2.00, moveSpeed: 2.00, electroResistance: 25, saturation: -0.35, radiation: 2.50 } },
+    { id: 'medium', name: 'Медиум', nameEn: 'Medium', category: 'electric', tier: 2, image: 'medium.png', imageFolder: 'Artifacts', price: 23000, stats: { psiProtection: 60, electroResistance: -35 } },
+    { id: 'electro_mica', name: 'Электрослюда', nameEn: 'Electro Mica', category: 'electric', tier: 2, image: 'electro_mica.png', imageFolder: 'Artifacts', price: 27000, stats: { staminaRegen: 3.50, maxStamina: 35.00, moveSpeed: 3.00, electroResistance: 20, radiation: 2.00 } },
+    { id: 'dummy', name: 'Пустышка', nameEn: 'Dummy', category: 'electric', tier: 3, image: 'dummy.png', imageFolder: 'Artifacts', price: 35000, stats: { staminaRegen: 5.25, bulletResistance: 16, moveSpeed: 4.00, maxStamina: -20.00, radiation: 3.00 } },
+    { id: 'halogen', name: 'Галоген', nameEn: 'Halogen', category: 'electric', tier: 3, image: 'halogen.png', imageFolder: 'Artifacts', price: 61000, stats: { psiProtection: 120, maxStamina: 10.00, moveSpeed: 5.00, bleeding: 4.00 } },
+    { id: 'snowflake', name: 'Снежинка', nameEn: 'Snowflake', category: 'electric', tier: 3, image: 'snowflake.png', imageFolder: 'Artifacts', price: 78000, stats: { staminaRegen: 2.00, maxStamina: 20.00, moveSpeed: 6.00, bulletResistance: -22, radiation: 4.00 } },
     // THERMAL
-    { id: 'droplet', name: 'Капля', nameEn: 'Droplet', category: 'thermal', tier: 1, image: 'Kaplya.png', imageFolder: 'Artifacts/Termo', price: 3500, stats: { maxWeight: 2.00, radiation: -0.50, heatResistance: 10, staminaRegen: -0.25 } },
-    { id: 'crystal', name: 'Кристалл', nameEn: 'Crystal', category: 'thermal', tier: 1, image: 'Crystall.png', imageFolder: 'Artifacts/Termo', price: 4800, stats: { frostProtection: 20, radiation: -1.00, heatResistance: 15, staminaRegen: -0.75 } },
-    { id: 'fireball', name: 'Огненный шар', nameEn: 'Fireball', category: 'thermal', tier: 1, image: 'FB.png', imageFolder: 'Artifacts/Termo', price: 6800, stats: { frostProtection: 20, thermalProtection: 20, radiation: -1.50, staminaRegen: -1.25 } },
-    { id: 'mothers_beads', name: 'Мамины бусы', nameEn: "Mother's Beads", category: 'thermal', tier: 2, image: 'MothersB00bs.png', imageFolder: 'Artifacts/Termo', price: 13600, stats: { bleeding: -5.00, radiation: 1.00, heatResistance: -10 } },
-    { id: 'eye', name: 'Глаз', nameEn: 'Eye', category: 'thermal', tier: 2, image: 'Eye.png', imageFolder: 'Artifacts/Termo', price: 19350, stats: { thermalProtection: 30, bleeding: -10.00, heatResistance: 20, radiation: 2.00 } },
-    { id: 'flame', name: 'Пламя', nameEn: 'Flame', category: 'thermal', tier: 3, image: 'Flame.png', imageFolder: 'Artifacts/Termo', price: 32000, stats: { frostProtection: 40, thermalProtection: 80, bleeding: -15.00, radiation: 3.00 } },
-    { id: 'fire_loop', name: 'Огненная петля', nameEn: 'Fire Loop', category: 'thermal', tier: 3, image: 'FP.png', imageFolder: 'Artifacts/Termo', price: 36000, stats: { bleeding: -6.00, regeneration: 4.75, maxStamina: -10.00, saturation: -1.30, radiation: 3.50 } },
-    { id: 'dragon_eye', name: 'Глаз дракона', nameEn: "Dragon's Eye", category: 'thermal', tier: 3, image: 'DE.png', imageFolder: 'Artifacts/Termo', price: 44000, stats: { staminaRegen: 3.00, bleeding: -3.00, maxWeight: 22.00, regeneration: -0.55 } },
+    { id: 'droplet', name: 'Капля', nameEn: 'Droplet', category: 'thermal', tier: 1, image: 'droplet.png', imageFolder: 'Artifacts', price: 3500, stats: { maxWeight: 2.00, radiation: -0.50, heatResistance: 10, staminaRegen: -0.25 } },
+    { id: 'crystal', name: 'Кристалл', nameEn: 'Crystal', category: 'thermal', tier: 1, image: 'crystal.png', imageFolder: 'Artifacts', price: 4800, stats: { frostProtection: 20, radiation: -1.00, heatResistance: 15, staminaRegen: -0.75 } },
+    { id: 'fireball', name: 'Огненный шар', nameEn: 'Fireball', category: 'thermal', tier: 1, image: 'fireball.png', imageFolder: 'Artifacts', price: 6800, stats: { frostProtection: 20, thermalProtection: 20, radiation: -1.50, staminaRegen: -1.25 } },
+    { id: 'mothers_beads', name: 'Мамины бусы', nameEn: "Mother's Beads", category: 'thermal', tier: 2, image: 'mothers_beads.png', imageFolder: 'Artifacts', price: 13600, stats: { bleeding: -5.00, radiation: 1.00, heatResistance: -10 } },
+    { id: 'eye', name: 'Глаз', nameEn: 'Eye', category: 'thermal', tier: 2, image: 'eye.png', imageFolder: 'Artifacts', price: 19350, stats: { thermalProtection: 30, bleeding: -10.00, heatResistance: 20, radiation: 2.00 } },
+    { id: 'flame', name: 'Пламя', nameEn: 'Flame', category: 'thermal', tier: 3, image: 'flame.png', imageFolder: 'Artifacts', price: 32000, stats: { frostProtection: 40, thermalProtection: 80, bleeding: -15.00, radiation: 3.00 } },
+    { id: 'fire_loop', name: 'Огненная петля', nameEn: 'Fire Loop', category: 'thermal', tier: 3, image: 'fire_loop.png', imageFolder: 'Artifacts', price: 36000, stats: { bleeding: -6.00, regeneration: 4.75, maxStamina: -10.00, saturation: -1.30, radiation: 3.50 } },
+    { id: 'dragon_eye', name: 'Глаз дракона', nameEn: "Dragon's Eye", category: 'thermal', tier: 3, image: 'dragon_eye.png', imageFolder: 'Artifacts', price: 44000, stats: { staminaRegen: 3.00, bleeding: -3.00, maxWeight: 22.00, regeneration: -0.55 } },
     // UNIQUE
-    { id: 'generator', name: 'Генератор', nameEn: 'Generator', category: 'unique', tier: 'unique', image: 'Generator.webp', imageFolder: 'Artifacts/Quest', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { staminaRegen: 2.50, maxStamina: 10.00, moveSpeed: 3.00, radiation: 2.00 } },
-    { id: 'medallion', name: 'Медальон', nameEn: 'Medallion', category: 'unique', tier: 'unique', image: 'Medalion.png', imageFolder: 'Artifacts/Quest', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { bleeding: -2.00, regeneration: 3.00, maxStamina: -5.00, radiation: 2.00 } },
-    { id: 'goblet_bio', name: 'Бокал (био)', nameEn: 'Goblet (Bio)', category: 'unique', tier: 2, image: 'Bokal_Bio.jpg', imageFolder: 'Artifacts/Quest', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { saturation: 1.00, radiation: -1.50, bulletResistance: -6 } },
-    { id: 'goblet_gravity', name: 'Бокал (грави)', nameEn: 'Goblet (Gravity)', category: 'unique', tier: 2, image: 'Bokal_Gravity.jpg', imageFolder: 'Artifacts/Quest', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { tearProtection: 12, bulletResistance: 12, radiation: 1.00 } },
-    { id: 'goblet_thermal', name: 'Бокал (терма)', nameEn: 'Goblet (Thermal)', category: 'unique', tier: 2, image: 'Bokal_Thermal.jpg', imageFolder: 'Artifacts/Quest', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { bleeding: -1.00, regeneration: 1.50, radiation: 1.00 } },
+    { id: 'generator', name: 'Генератор', nameEn: 'Generator', category: 'unique', tier: 'unique', image: 'generator.webp', imageFolder: 'Artifacts', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { staminaRegen: 2.50, maxStamina: 10.00, moveSpeed: 3.00, radiation: 2.00 } },
+    { id: 'medallion', name: 'Медальон', nameEn: 'Medallion', category: 'unique', tier: 'unique', image: 'medallion.png', imageFolder: 'Artifacts', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { bleeding: -2.00, regeneration: 3.00, maxStamina: -5.00, radiation: 2.00 } },
+    { id: 'goblet_bio', name: 'Бокал (био)', nameEn: 'Goblet (Bio)', category: 'unique', tier: 2, image: 'goblet_bio.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { saturation: 1.00, radiation: -1.50, bulletResistance: -6 } },
+    { id: 'goblet_gravity', name: 'Бокал (грави)', nameEn: 'Goblet (Gravity)', category: 'unique', tier: 2, image: 'goblet_gravity.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { tearProtection: 12, bulletResistance: 12, radiation: 1.00 } },
+    { id: 'goblet_thermal', name: 'Бокал (терма)', nameEn: 'Goblet (Thermal)', category: 'unique', tier: 2, image: 'goblet_thermal.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Нельзя продать', priceTextEn: 'Cannot sell', stats: { bleeding: -1.00, regeneration: 1.50, radiation: 1.00 } },
     // FROST (EVENT)
-    { id: 'proto_snowflake', name: 'Прото-снежинка', nameEn: 'Proto-snowflake', category: 'frost', tier: 1, image: 'ProtoSnow.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 50, tearProtection: 30, cold: -20.00, impactResistance: -20, saturation: -0.05, moveSpeed: -1.00 } },
-    { id: 'frostbiter', name: 'Обморожник', nameEn: 'Frostbiter', category: 'frost', tier: 1, image: 'Frostbite.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { saturation: 1.00, heatResistance: 20, chemResistance: 20, frostProtection: -35, bulletResistance: -12, cold: 10.00 } },
-    { id: 'ice_crystal', name: 'Ледяной кристалл', nameEn: 'Ice Crystal', category: 'frost', tier: 1, image: 'IceCrystal.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 40, cold: -15.00, radiation: 0.50 } },
-    { id: 'polar_star', name: 'Полярная звезда', nameEn: 'Polar Star', category: 'frost', tier: 2, image: 'PolarStar.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 1.00, frostProtection: 100, maxStamina: 10.00, moveSpeed: 3.00,  cold: -40.00, psiProtection: -100, radiation: 1.00 } },
-    { id: 'purple_tear', name: 'Пурпурная слеза', nameEn: 'Purple Tear', category: 'frost', tier: 2, image: 'PurpleTear.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 3.00, thermalProtection: 30, bleeding: -4.00, maxStamina: 30.00, moveSpeed: 5.00, heatResistance: 20, frostProtection: -50, bulletResistance: -12, radiation: 2.00, cold: 20.00 } },
-    { id: 'ice_flower', name: 'Ледоцвет', nameEn: 'Ice Flower', category: 'frost', tier: 3, image: 'IceFlower.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 200, bleeding: -5.00, maxWeight: 25.00, cold: -60.00, thermalProtection: -30, bulletResistance: -8, radiation: 1.50, heatResistance: -40 } },
-    { id: 'tesseract', name: 'Тессеракт', nameEn: 'Tesseract', category: 'frost', tier: 3, image: 'Tesseract.jpg', imageFolder: 'Artifacts/Frost', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 2.00, maxStamina: 20.00, bulletResistance: 40, moveSpeed: 4.00, radiation: 4.00, cold: 30.00 } }
+    { id: 'proto_snowflake', name: 'Прото-снежинка', nameEn: 'Proto-snowflake', category: 'frost', tier: 1, image: 'proto_snowflake.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 50, tearProtection: 30, cold: -20.00, impactResistance: -20, saturation: -0.05, moveSpeed: -1.00 } },
+    { id: 'frostbiter', name: 'Обморожник', nameEn: 'Frostbiter', category: 'frost', tier: 1, image: 'frostbiter.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { saturation: 1.00, heatResistance: 20, chemResistance: 20, frostProtection: -35, bulletResistance: -12, cold: 10.00 } },
+    { id: 'ice_crystal', name: 'Ледяной кристалл', nameEn: 'Ice Crystal', category: 'frost', tier: 1, image: 'ice_crystal.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 40, cold: -15.00, radiation: 0.50 } },
+    { id: 'polar_star', name: 'Полярная звезда', nameEn: 'Polar Star', category: 'frost', tier: 2, image: 'polar_star.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 1.00, frostProtection: 100, maxStamina: 10.00, moveSpeed: 3.00,  cold: -40.00, psiProtection: -100, radiation: 1.00 } },
+    { id: 'purple_tear', name: 'Пурпурная слеза', nameEn: 'Purple Tear', category: 'frost', tier: 2, image: 'purple_tear.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 3.00, thermalProtection: 30, bleeding: -4.00, maxStamina: 30.00, moveSpeed: 5.00, heatResistance: 20, frostProtection: -50, bulletResistance: -12, radiation: 2.00, cold: 20.00 } },
+    { id: 'ice_flower', name: 'Ледоцвет', nameEn: 'Ice Flower', category: 'frost', tier: 3, image: 'ice_flower.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { frostProtection: 200, bleeding: -5.00, maxWeight: 25.00, cold: -60.00, thermalProtection: -30, bulletResistance: -8, radiation: 1.50, heatResistance: -40 } },
+    { id: 'tesseract', name: 'Тессеракт', nameEn: 'Tesseract', category: 'frost', tier: 3, image: 'tesseract.jpg', imageFolder: 'Artifacts', price: null, priceText: 'Ивент', priceTextEn: 'Event', stats: { staminaRegen: 2.00, maxStamina: 20.00, bulletResistance: 40, moveSpeed: 4.00, radiation: 4.00, cold: 30.00 } }
 ];
 
 // ============== WEAPON CATEGORIES ==============
@@ -843,13 +839,30 @@ const WEAPON_CATEGORIES = {
 };
 
 // ============== HELPER FUNCTIONS ==============
-function getArtifactImagePath(artifact, basePath = '') {
-    return `${basePath}${artifact.imageFolder}/${artifact.image}`;
+const ITEMS_IMAGES_DIR = 'images/items/';
+
+function getItemImagePath(imageFolder, image, basePath = '../') {
+    return `${basePath}${ITEMS_IMAGES_DIR}${imageFolder}/${image}`;
 }
 
-function getContainerImagePath(container, basePath = '') {
+function getArtifactImagePath(artifact, basePath = '../') {
+    if (!artifact?.image || !artifact?.imageFolder) return null;
+    return getItemImagePath(artifact.imageFolder, artifact.image, basePath);
+}
+
+function getContainerImagePath(container, basePath = '../') {
     if (container?.image && container?.imageFolder) {
-        return `${basePath}${container.imageFolder}/${container.image}`;
+        return getItemImagePath(container.imageFolder, container.image, basePath);
+    }
+    return null;
+}
+
+function getArmorImagePath(armor, basePath = '../') {
+    if (armor?.image && armor?.imageFolder) {
+        return getItemImagePath(armor.imageFolder, armor.image, basePath);
+    }
+    if (armor?.id) {
+        return `${basePath}${ITEMS_IMAGES_DIR}Armors/${armor.id}.png`;
     }
     return null;
 }
