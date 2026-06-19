@@ -407,6 +407,14 @@ const ARMORS = [
         enhancement: ENHANCEMENT_PRESETS.combat
     },
     {
+        id: 'leather_cloak',
+        name: 'Кожаный плащ', nameEn: 'Leather Cloak',
+        type: 'Боевые', typeEn: 'Combat',
+        containerTypes: ['all'],
+        stats: { radiationProtection: 20, bioProtection: 20, heatResistance: 12, chemResistance: 8, electroResistance: 32, impactResistance: 36, tearProtection: 74, bulletResistance: 42, moveSpeed: 1.00, maxWeight: 7.00 },
+        enhancement: ENHANCEMENT_PRESETS.combat
+    },
+    {
         id: 'psz7',
         name: 'Армейский бронежилет ПСЗ-7', nameEn: 'Military Body Armor PSZ-7',
         rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
@@ -466,6 +474,15 @@ const ARMORS = [
         type: 'Боевые', typeEn: 'Combat',
         containerTypes: ['all'],
         stats: { radiationProtection: 100, bioProtection: 100, heatResistance: 34, chemResistance: 26, electroResistance: 16, impactResistance: 80, tearProtection: 68, bulletResistance: 126, moveSpeed: 2.00, maxWeight: 12.00 },
+        enhancement: ENHANCEMENT_PRESETS.combat
+    },
+    {
+        id: 'skitalec_mod',
+        name: 'Модифицированный «Скиталец»', nameEn: 'Modified Suit "Wanderer"',
+        rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection',
+        type: 'Боевые', typeEn: 'Combat',
+        containerTypes: ['all'],
+        stats: { radiationProtection: 120, bioProtection: 120, thermalProtection: 80, heatResistance: 10, chemResistance: 58, electroResistance: 46, impactResistance: 28, tearProtection: 32, bulletResistance: 94, maxStamina: 7.00, moveSpeed: 4.00, maxWeight: 16.00 },
         enhancement: ENHANCEMENT_PRESETS.combat
     },
     {
@@ -584,6 +601,15 @@ const ARMORS = [
         type: 'Комбинированные', typeEn: 'Combined',
         containerTypes: ['all'],
         stats: { radiationProtection: 100, bioProtection: 60, thermalProtection: 60, heatResistance: 42, chemResistance: 46, electroResistance: 34, impactResistance: 70, tearProtection: 84, bulletResistance: 72, maxWeight: 10.00 },
+        enhancement: ENHANCEMENT_PRESETS.combined
+    },
+    {
+        id: 'chn2',
+        name: 'Комбинезон «ЧН-2»', nameEn: 'Suit "CHN-2"',
+        rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common',
+        type: 'Комбинированные', typeEn: 'Combined',
+        containerTypes: ['all'],
+        stats: { radiationProtection: 100, bioProtection: 60, thermalProtection: 60, heatResistance: 42, chemResistance: 46, electroResistance: 34, impactResistance: 70, tearProtection: 84, bulletResistance: 64, maxWeight: 10.00 },
         enhancement: ENHANCEMENT_PRESETS.combined
     },
     {
