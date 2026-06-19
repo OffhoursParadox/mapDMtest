@@ -171,9 +171,10 @@
     <main>
         <section class="calculator">
             <div class="container">
-                <div class="calc-layout">
+                <div class="calc-carousel" id="calcCarousel">
+                    <div class="calc-layout" id="calcCarouselTrack" role="region" aria-roledescription="carousel">
                     <!-- Левая колонка: Артефакты + Контейнер + Броня -->
-                    <div class="calc-col calc-col--left">
+                    <div class="calc-col calc-col--left" data-calc-slide="0">
                         <div class="calc-card calc-card--artifacts">
                             <div class="calc-card__head">
                                 <h2 class="calc-card__title" data-i18n="calc.artifactBuild">Артефакты</h2>
@@ -280,8 +281,11 @@
                     </div>
 
                     <!-- Центральная колонка: Артефакт -->
-                    <div class="calc-col calc-col--center">
+                    <div class="calc-col calc-col--center" data-calc-slide="1">
                         <div class="calc-card calc-card--artifact-detail">
+                            <div class="calc-card__head calc-card__head--mobile-only">
+                                <h2 class="calc-card__title" data-i18n="calc.artifactDetail.title">Артефакт</h2>
+                            </div>
                             <div class="calc-card__body calc-card__body--artifact-detail" id="artifactDetailPanel">
                                 <div class="artifact-detail__placeholder">
                                     <span data-i18n="calc.artifactDetail.selectHint">Выберите артефакт для просмотра характеристик</span>
@@ -291,7 +295,7 @@
                     </div>
 
                     <!-- Правая колонка: Итоговые характеристики -->
-                    <div class="calc-col calc-col--right">
+                    <div class="calc-col calc-col--right" data-calc-slide="2">
                         <div class="stats-panel" id="statsPanel">
                             <div class="stats-panel__head">
                                 <h2 class="stats-panel__title" data-i18n="calc.totalStats">Итоговые характеристики</h2>
@@ -315,26 +319,25 @@
                                         <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="regeneration">0%/сек</span>
                                     </div>
                                     <div class="hero-stat">
-                                        <span class="hero-stat__label" data-i18n="calc.stat.bulletResistance">Пулестойкость</span>
-                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="bulletResistance">0</span>
+                                        <span class="hero-stat__label" data-i18n="calc.stat.bleeding">Кровотечение</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="bleeding">0/сек</span>
                                     </div>
                                     <div class="hero-stat">
-                                        <span class="hero-stat__label" data-i18n="calc.stat.impactResistance">Гашение удара</span>
-                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="impactResistance">0</span>
+                                        <span class="hero-stat__label" data-i18n="calc.stat.radiation">Радиация</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="radiation">0 мЗв/сек</span>
                                     </div>
                                     <div class="hero-stat">
-                                        <span class="hero-stat__label" data-i18n="calc.stat.tearProtection">Защита от разрывов</span>
-                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="tearProtection">0</span>
+                                        <span class="hero-stat__label" data-i18n="calc.stat.saturation">Насыщение</span>
+                                        <span class="hero-stat__value hero-stat__value--sm" data-hero-stat="saturation">0%/сек</span>
                                     </div>
                                 </div>
 
                                 <div class="stats-panel__divider"></div>
 
                                 <div class="stats-panel__list" id="statsList">
-                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.radiation">Радиация</span><span class="stats-panel__value" data-stat="radiation">0 мЗв/сек</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.impactResistance">Гашение удара</span><span class="stats-panel__value" data-stat="impactResistance">0</span></div>
+                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.tearProtection">Защита от разрывов</span><span class="stats-panel__value" data-stat="tearProtection">0</span></div>
                                     <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.cold">Холод</span><span class="stats-panel__value" data-stat="cold">0/сек</span></div>
-                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.bleeding">Кровотечение</span><span class="stats-panel__value" data-stat="bleeding">0/сек</span></div>
-                                    <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.saturation">Насыщение</span><span class="stats-panel__value" data-stat="saturation">0%/сек</span></div>
                                     <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.radiationProtection">Защита от радиации</span><span class="stats-panel__value" data-stat="radiationProtection">0</span></div>
                                     <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.bioProtection">Защита от биозаражения</span><span class="stats-panel__value" data-stat="bioProtection">0</span></div>
                                     <div class="stats-panel__row"><span class="stats-panel__name" data-i18n="calc.stat.thermalProtection">Защита от температуры</span><span class="stats-panel__value" data-stat="thermalProtection">0</span></div>
@@ -351,6 +354,18 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+                    <nav class="calc-carousel__nav" id="calcCarouselNav" aria-label="Разделы калькулятора" data-aria-label-i18n="calc.mobileCarousel.ariaLabel">
+                        <button type="button" class="calc-carousel__tab is-active" data-slide="0" aria-selected="true">
+                            <span data-i18n="calc.mobileSlide.build">Сборка</span>
+                        </button>
+                        <button type="button" class="calc-carousel__tab" data-slide="1" aria-selected="false">
+                            <span data-i18n="calc.artifactDetail.title">Артефакт</span>
+                        </button>
+                        <button type="button" class="calc-carousel__tab" data-slide="2" aria-selected="false">
+                            <span data-i18n="calc.mobileSlide.totals">Итоги</span>
+                        </button>
+                    </nav>
                 </div>
             </div>
         </section>

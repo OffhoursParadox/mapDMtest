@@ -28,6 +28,7 @@ let lastArmorDetailId = null;
 let lastContainerDetailId = null;
 let lastArtifactDetailId = null;
 let artifactSlotsSortable = null;
+let artifactSlotDragJustFinished = false;
 
 let elements = {};
 let statFilterOptions = { positive: [], negative: [] };
@@ -35,7 +36,7 @@ let statFilterOptions = { positive: [], negative: [] };
 const STORAGE_KEY = 'cataclysmCalculatorState';
 const DEFAULT_CONTAINER_ID = 'container_radiy';
 const PRIORITY_STATS = ['regeneration', 'bleeding', 'radiation', 'saturation', 'cold'];
-const HERO_STATS = ['regeneration', 'bulletResistance', 'impactResistance', 'tearProtection'];
+const HERO_STATS = ['regeneration', 'bleeding', 'radiation', 'saturation'];
 const ARMOR_REGULAR_STAT_KEYS = [
     'radiationProtection', 'bioProtection', 'thermalProtection', 'psiProtection', 'frostProtection',
     'heatResistance', 'chemResistance', 'electroResistance',
@@ -54,6 +55,17 @@ const WARNING_STATS = {
     bleeding: { threshold: 0, titleKey: 'calc.warning.bleedingDamage', unitKey: 'calc.unit.perSec' },
     regeneration: { threshold: 0, titleKey: 'calc.warning.healthLossDamage', unitKey: 'calc.unit.percentSec', inverted: true },
     saturation: { threshold: 0, titleKey: 'calc.warning.saturationDamage', unitKey: 'calc.unit.percentSec', inverted: true }
+};
+
+const WARNING_ICON_FILES = {
+    radiation: '../images/icons/warnings/radiation.svg',
+    cold: '../images/icons/warnings/cold.svg',
+    bleeding: '../images/icons/warnings/bleeding.svg'
+};
+
+const WARNING_ICON_INLINE = {
+    regeneration: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-4.35-8.5-8.5C1.5 8.5 4.5 4 8.5 4c2 0 3.5 1.5 3.5 1.5S13.5 4 15.5 4C19.5 4 22.5 8.5 20.5 12.5 18.5 16.65 12 21 12 21z" fill="currentColor" fill-opacity="0.15"/><path d="M5 13h3l2-4 3 8 2-5 2 1h3"/></svg>',
+    saturation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>'
 };
 
 const RARITY_KEYS = {
@@ -562,6 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initContainerPicker();
     initContainerSelect();
     initEventListeners();
+    initCalcMobileCarousel();
 
     if (window.i18n && typeof window.i18n.onReady === 'function') {
         window.i18n.onReady(restoreState);
@@ -902,7 +915,7 @@ function initStatFilterCombobox({ comboboxId, inputId, filterKey, variant, stats
 }
 
 function createStatFilterComboboxMarkup(comboboxId, variant, inputId, placeholderKey) {
-    return `<div class="stat-filter-combobox stat-filter-combobox--${variant}" id="${comboboxId}" data-variant="${variant}" data-placeholder-key="${placeholderKey}"><div class="stat-filter-combobox__row"><div class="stat-filter-combobox__field"><div class="stat-filter-combobox__tags"></div><input type="text" class="stat-filter-combobox__input" id="${inputId}" placeholder="${t(placeholderKey)}" autocomplete="off" spellcheck="false"></div><button type="button" class="stat-filter-combobox__clear" aria-label="${t('calc.filter.clearType')}" disabled hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div class="stat-filter-combobox__menu"><div class="stat-filter-combobox__list"></div></div></div>`;
+    return `<div class="stat-filter-combobox stat-filter-combobox--${variant}" id="${comboboxId}" data-variant="${variant}" data-placeholder-key="${placeholderKey}"><div class="stat-filter-combobox__row"><div class="stat-filter-combobox__field"><div class="stat-filter-combobox__tags"></div><input type="text" class="stat-filter-combobox__input" id="${inputId}" placeholder="${t(placeholderKey)}" autocomplete="off" spellcheck="false"><span class="stat-filter-combobox__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div><button type="button" class="stat-filter-combobox__clear" aria-label="${t('calc.filter.clearType')}" disabled hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div class="stat-filter-combobox__menu"><div class="stat-filter-combobox__list"></div></div></div>`;
 }
 
 function createStatFilters() {
@@ -1062,7 +1075,7 @@ function openArmorModal() {
     }
     renderArmorModalList();
     renderArmorModalDetail(state.armorModalPreviewId);
-    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
+    const isMobile = isPickerMobileLayout();
     if (!isMobile && elements.armorModalSearch) elements.armorModalSearch.focus();
     schedulePickerGridSync(elements.armorModalList);
     document.body.style.overflow = 'hidden';
@@ -1173,7 +1186,7 @@ function renderArmorModalDetail(armorId, force = false) {
     const isEquipped = state.selectedArmor?.id === armor.id;
 
     const typeHtml = armor.type ? `<div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>` : '';
-    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div></div><div class="armor-detail__stats">${statsHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button>`;
+    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__summary"><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button></div></div><div class="armor-detail__stats">${statsHtml}</div>`;
 
     const img = elements.armorModalDetail.querySelector('.armor-detail__img');
     if (img) {
@@ -1311,7 +1324,7 @@ function openContainerModal() {
     }
     renderContainerModalList();
     renderContainerModalDetail(state.containerModalPreviewId);
-    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
+    const isMobile = isPickerMobileLayout();
     if (!isMobile && elements.containerModalSearch) elements.containerModalSearch.focus();
     document.body.style.overflow = 'hidden';
 }
@@ -1570,6 +1583,7 @@ initArtifactSlotListeners(isTouchDevice);
     }
 
     window.addEventListener('resize', () => {
+        syncArtifactSlotSortableHandle();
         if (elements.modal?.classList.contains('active')) {
             schedulePickerGridSync(elements.artifactList);
         }
@@ -1577,6 +1591,78 @@ initArtifactSlotListeners(isTouchDevice);
             schedulePickerGridSync(elements.armorModalList);
         }
     });
+}
+
+function initCalcMobileCarousel() {
+    const track = document.getElementById('calcCarouselTrack');
+    const nav = document.getElementById('calcCarouselNav');
+    if (!track || !nav) return;
+
+    const tabs = nav.querySelectorAll('[data-slide]');
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    let activeIndex = 0;
+    let scrollRaf = null;
+
+    function isActive() {
+        return mobileQuery.matches;
+    }
+
+    function getSlideWidth() {
+        return track.clientWidth;
+    }
+
+    function setActiveSlide(index) {
+        const clamped = Math.max(0, Math.min(index, tabs.length - 1));
+        activeIndex = clamped;
+        tabs.forEach((tab, i) => {
+            const isCurrent = i === clamped;
+            tab.classList.toggle('is-active', isCurrent);
+            tab.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        });
+    }
+
+    function scrollToSlide(index, behavior = 'smooth') {
+        if (!isActive()) return;
+        const width = getSlideWidth();
+        if (width <= 0) return;
+        const clamped = Math.max(0, Math.min(index, tabs.length - 1));
+        track.scrollTo({ left: width * clamped, behavior });
+        setActiveSlide(clamped);
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            scrollToSlide(parseInt(tab.dataset.slide, 10));
+        });
+    });
+
+    track.addEventListener('scroll', () => {
+        if (!isActive()) return;
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
+        scrollRaf = requestAnimationFrame(() => {
+            const width = getSlideWidth();
+            if (width <= 0) return;
+            const index = Math.round(track.scrollLeft / width);
+            setActiveSlide(index);
+        });
+    }, { passive: true });
+
+    const handleLayoutChange = () => {
+        if (isActive()) {
+            scrollToSlide(activeIndex, 'auto');
+        } else {
+            track.scrollLeft = 0;
+            setActiveSlide(0);
+        }
+    };
+
+    if (typeof mobileQuery.addEventListener === 'function') {
+        mobileQuery.addEventListener('change', handleLayoutChange);
+    } else if (typeof mobileQuery.addListener === 'function') {
+        mobileQuery.addListener(handleLayoutChange);
+    }
+
+    window.addEventListener('resize', handleLayoutChange);
 }
 
 function handleSearchChange(e) {
@@ -1687,7 +1773,7 @@ function renderArtifactModalDetail(artifactId, force = false) {
     const tierDisplay = getArtifactTierDisplay(artifact.tier);
     const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === artifact.id;
 
-    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button>`;
+    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__summary"><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
 }
 
 
@@ -1895,14 +1981,24 @@ function renderArtifactSlotActions(index) {
     return `<div class="artifact-slot-card__actions"><button class="artifact-slot-card__action artifact-slot-card__action--delete" type="button" data-slot-action="delete" title="${t('calc.artifactActions.delete')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button><button class="artifact-slot-card__action artifact-slot-card__action--copy${copyActiveClass}" type="button" data-slot-action="copy" title="${t('calc.artifactActions.copy')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><button class="artifact-slot-card__action artifact-slot-card__action--replace" type="button" data-slot-action="replace" title="${t('calc.artifactActions.replace')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg></button></div>`;
 }
 
+function getArtifactSlotSortableHandle() {
+    return isPickerMobileLayout() ? '.artifact-slot-card__grip' : null;
+}
+
 function initArtifactSlotListeners(isTouchDevice) {
     elements.artifactSlots.addEventListener('click', (e) => {
+        if (artifactSlotDragJustFinished) return;
+
         const actionBtn = e.target.closest('[data-slot-action]');
         if (actionBtn) {
             e.stopPropagation();
             const slot = actionBtn.closest('.artifact-slot-card');
             if (!slot) return;
             handleArtifactSlotAction(actionBtn.dataset.slotAction, parseInt(slot.dataset.index, 10));
+            return;
+        }
+
+        if (isPickerMobileLayout() && e.target.closest('.artifact-slot-card__grip')) {
             return;
         }
 
@@ -1935,6 +2031,8 @@ function initArtifactSlotsSortable() {
 
     if (!grid || typeof Sortable === 'undefined') return;
 
+    const useGripHandle = Boolean(getArtifactSlotSortableHandle());
+
     artifactSlotsSortable = new Sortable(grid, {
         animation: 200,
         ghostClass: 'sortable-ghost',
@@ -1943,6 +2041,9 @@ function initArtifactSlotsSortable() {
         fallbackClass: 'sortable-drag',
         fallbackOnBody: true,
         fallbackTolerance: 5,
+        handle: getArtifactSlotSortableHandle(),
+        delay: useGripHandle ? 180 : 0,
+        delayOnTouchOnly: true,
         draggable: '.artifact-slot-card',
         filter: '[data-slot-action]',
         preventOnFilter: true,
@@ -1954,10 +2055,21 @@ function initArtifactSlotsSortable() {
         onEnd(evt) {
             clearArtifactDragFocus();
             if (evt.oldIndex !== evt.newIndex) {
+                artifactSlotDragJustFinished = true;
+                setTimeout(() => {
+                    artifactSlotDragJustFinished = false;
+                }, 120);
                 reorderArtifactSlot(evt.oldIndex, evt.newIndex);
             }
         },
     });
+}
+
+function syncArtifactSlotSortableHandle() {
+    if (!artifactSlotsSortable) return;
+    const handle = getArtifactSlotSortableHandle();
+    artifactSlotsSortable.option('handle', handle);
+    artifactSlotsSortable.option('delay', handle ? 180 : 0);
 }
 
 function setArtifactSlotsSortableDisabled(disabled) {
@@ -2177,6 +2289,9 @@ function renderArtifactList(artifacts) {
             state.artifactModalPreviewId = null;
             renderArtifactModalDetail(null, true);
         }
+        if (elements.modal?.classList.contains('active')) {
+            scheduleArtifactModalGridSync();
+        }
         return;
     }
 
@@ -2188,8 +2303,15 @@ function renderArtifactList(artifacts) {
     }).join('');
 
     elements.artifactList.innerHTML = listHtml;
+    if (elements.modal?.classList.contains('active')) {
+        scheduleArtifactModalGridSync();
+    }
 }
 
+
+function isPickerMobileLayout() {
+    return window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
+}
 
 function schedulePickerGridSync(grid) {
     if (!grid) return;
@@ -2228,7 +2350,7 @@ function syncPickerGridRows(grid) {
     const modal = grid?.closest('.modal');
     if (!grid || !layout || !modal?.classList.contains('active')) return;
 
-    if (window.innerWidth <= 768) {
+    if (isPickerMobileLayout()) {
         resetPickerGridRows(grid);
         return;
     }
@@ -2278,7 +2400,7 @@ function openArtifactModal(slotIndex) {
     applyFilters();
     renderArtifactModalDetail(state.artifactModalPreviewId, true);
 
-    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
+    const isMobile = isPickerMobileLayout();
     if (!isMobile) elements.artifactSearch.focus();
 
     scheduleArtifactModalGridSync();
@@ -2382,17 +2504,18 @@ function formatPriorityStatValue(statKey, value, prevValue) {
 
 function formatStatValueWithChange(statKey, currentValue, previousValue) {
     const isInverted = INVERTED_STATS.includes(statKey);
-    const diff = currentValue - previousValue;
     let displayValue = '', colorClass = '';
 
     if (currentValue === 0) displayValue = '0';
     else if (currentValue > 0) displayValue = `+${formatNumber(currentValue)}`;
     else displayValue = formatNumber(currentValue);
 
-    if (diff !== 0) {
-        colorClass = isInverted ? (diff > 0 ? 'stat-row__value--negative' : 'stat-row__value--positive') : (diff > 0 ? 'stat-row__value--positive' : 'stat-row__value--negative');
-    } else if (currentValue !== 0) {
-        colorClass = isInverted ? (currentValue > 0 ? 'stat-row__value--negative' : 'stat-row__value--positive') : (currentValue > 0 ? 'stat-row__value--positive' : 'stat-row__value--negative');
+    if (currentValue !== 0) {
+        if (isInverted) {
+            colorClass = currentValue > 0 ? 'stat-row__value--negative' : 'stat-row__value--positive';
+        } else {
+            colorClass = currentValue > 0 ? 'stat-row__value--positive' : 'stat-row__value--negative';
+        }
     }
 
     return { displayValue, colorClass };
@@ -2410,7 +2533,7 @@ function updateWarnings(totalStats) {
             const sign = config.inverted ? '-' : '+';
             const title = t(config.titleKey);
             const unit = t(config.unitKey);
-            warningsHtml.push(`<div class="warning-banner warning-banner--${statKey}"><span class="warning-banner__icon">⚠️</span><div class="warning-banner__content"><span class="warning-banner__text">${title}</span><span class="warning-banner__value">(${sign}${formatNumber(displayValue)} ${unit})</span></div></div>`);
+            warningsHtml.push(`<div class="warning-banner warning-banner--${statKey}"><span class="warning-banner__icon">${getWarningIcon(statKey)}</span><div class="warning-banner__content"><span class="warning-banner__text">${title}</span><span class="warning-banner__value">(${sign}${formatNumber(displayValue)} ${unit})</span></div></div>`);
         }
     });
 
@@ -2420,14 +2543,11 @@ function updateWarnings(totalStats) {
 }
 
 function getWarningIcon(statKey) {
-    const icons = {
-        radiation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-        cold: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><path d="M12 2l4 4M12 2l-4 4"/><path d="M12 22l4-4M12 22l-4-4"/><path d="M2 12l4 4M2 12l4-4"/><path d="M22 12l-4 4M22 12l-4-4"/></svg>',
-        bleeding: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
-        regeneration: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
-        saturation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>'
-    };
-    return icons[statKey] || icons.radiation;
+    if (WARNING_ICON_FILES[statKey]) {
+        return '<span class="warning-banner__icon-mask" aria-hidden="true"></span>';
+    }
+
+    return WARNING_ICON_INLINE[statKey] || '<span class="warning-banner__icon-mask" aria-hidden="true"></span>';
 }
 
 function updateEffectiveBulletResistance(bulletResistance) {
