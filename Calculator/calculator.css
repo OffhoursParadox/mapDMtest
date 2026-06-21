@@ -1461,12 +1461,12 @@
 
 @media (max-width: 768px) {
     .artifact-slots__grid > .artifact-slot-card,
-    .artifact-slots__grid > .artifact-slot-card * {
-        touch-action: pan-x pan-y !important;
+    .artifact-slots__grid > .artifact-slot-card *:not(.artifact-slot-card__grip):not(.artifact-slot-card__grip *) {
+        touch-action: inherit !important;
     }
 
     .artifact-slot-card {
-        touch-action: pan-x pan-y;
+        touch-action: inherit;
     }
 
     .artifact-slot-card__grip {
@@ -4076,7 +4076,7 @@
         gap: 0;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
+        scroll-behavior: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         overscroll-behavior-x: contain;
@@ -4090,14 +4090,23 @@
         flex: 0 0 100%;
         min-width: 100%;
         scroll-snap-align: start;
-        scroll-snap-stop: always;
+        scroll-snap-stop: normal;
         max-height: var(--calc-carousel-slide-h);
         overflow-y: auto;
         overflow-x: hidden;
+        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
         padding: 0 var(--space-md);
         box-sizing: border-box;
         touch-action: pan-x pan-y;
+    }
+
+    .calc-col .calc-card,
+    .calc-col .calc-card__body,
+    .calc-col .stats-panel,
+    .calc-col .container-bar,
+    .calc-col .armor-panel {
+        touch-action: inherit;
     }
 
     .calc-col--right {
