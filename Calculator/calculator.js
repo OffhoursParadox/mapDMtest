@@ -446,6 +446,7 @@ function initElements() {
         enhancementValue: document.getElementById('enhancementValue'),
         enhancementDecBtn: document.getElementById('enhancementDecBtn'),
         enhancementIncBtn: document.getElementById('enhancementIncBtn'),
+        enhancementMaxBtn: document.getElementById('enhancementMaxBtn'),
         enhancementControls: document.getElementById('enhancementControls'),
         containerModal: document.getElementById('containerModal'),
         containerModalClose: document.getElementById('containerModalClose'),
@@ -1595,6 +1596,7 @@ function initEventListeners() {
 
     elements.enhancementDecBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel - 1));
     elements.enhancementIncBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel + 1));
+    elements.enhancementMaxBtn?.addEventListener('click', () => setEnhancementLevel(getEnhancementQuickLevel()));
     elements.enhancementControls?.addEventListener('wheel', handleEnhancementWheel, { passive: false });
     elements.enhancementValue?.addEventListener('change', handleEnhancementInput);
     elements.enhancementValue?.addEventListener('keydown', handleEnhancementKeydown);
@@ -1904,6 +1906,14 @@ function updateContainerOptions() {
     elements.containerSelect.disabled = false;
 }
 
+
+const ENHANCEMENT_QUICK_LEVEL = 15;
+
+function getEnhancementQuickLevel() {
+    const maxLevel = state.selectedArmor?.enhancement?.maxLevel;
+    if (!maxLevel) return ENHANCEMENT_QUICK_LEVEL;
+    return Math.min(ENHANCEMENT_QUICK_LEVEL, maxLevel);
+}
 
 function handleEnhancementChange(e) {
     setEnhancementLevel(parseInt(e.target.value, 10));
