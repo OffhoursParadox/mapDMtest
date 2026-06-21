@@ -3070,21 +3070,32 @@
 
 /* ── Stat filter dropdowns (artifact modal) ── */
 .stat-filters-wrapper {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.26s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.stat-filters-wrapper > .stat-filters {
+    min-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.stat-filters-wrapper:not(.collapsed) > .stat-filters {
+    overflow: visible;
 }
 
 .stat-filters-wrapper.collapsed {
-    max-height: 0 !important;
-    opacity: 0;
+    grid-template-rows: 0fr;
 }
 
 @media (min-width: 769px) {
     .stat-filters-wrapper,
     .stat-filters-wrapper.collapsed {
+        grid-template-rows: 1fr;
+    }
+
+    .stat-filters-wrapper > .stat-filters {
         overflow: visible;
-        max-height: none !important;
-        opacity: 1;
     }
 }
 
@@ -3100,7 +3111,7 @@
     font-family: var(--font-main);
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .filters-toggle:hover {
@@ -3379,15 +3390,25 @@
     left: 0;
     right: 0;
     z-index: 50;
-    display: none;
+    display: block;
     background: rgba(14, 12, 10, 0.98);
     border: 1px solid var(--color-border);
     border-radius: var(--r-sm);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, -6px, 0);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
 }
 
-.stat-filter-combobox.open .stat-filter-combobox__menu { display: block; }
+.stat-filter-combobox.open .stat-filter-combobox__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+}
 
 .stat-filter-combobox--positive.open .stat-filter-combobox__menu {
     border-color: rgba(74, 222, 128, 0.45);
@@ -3418,7 +3439,7 @@
     font-size: 13px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
     overflow: hidden;
 }
 
@@ -4207,8 +4228,23 @@
 
     .calc-card__head--mobile-only {
         display: flex;
-        padding: 0;
-        align-items: stretch;
+        align-items: center;
+        padding: 12px 14px;
+    }
+
+    .calc-card--artifact-detail {
+        overflow: hidden;
+    }
+
+    .calc-card--artifact-detail .calc-card__head--mobile-only {
+        border-radius: var(--r-lg) var(--r-lg) 0 0;
+    }
+
+    .calc-card--artifact-detail .calc-card__title {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .calc-carousel__nav {
