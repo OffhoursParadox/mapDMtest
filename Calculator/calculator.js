@@ -868,19 +868,31 @@ function initStatFilterCombobox({ comboboxId, inputId, filterKey, variant, stats
     });
 
     const arrow = combobox.querySelector('.stat-filter-combobox__arrow');
-    arrow?.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    }, { passive: false });
-    arrow?.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    arrow?.addEventListener('click', (e) => {
+    let arrowTouchHandled = false;
+
+    const handleArrowToggle = (e) => {
         e.preventDefault();
         e.stopPropagation();
         input.blur();
         toggleStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    };
+
+    arrow?.addEventListener('touchend', (e) => {
+        arrowTouchHandled = true;
+        handleArrowToggle(e);
+        setTimeout(() => {
+            arrowTouchHandled = false;
+        }, 400);
+    }, { passive: false });
+
+    arrow?.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    arrow?.addEventListener('click', (e) => {
+        if (arrowTouchHandled) return;
+        handleArrowToggle(e);
     });
 
     input.addEventListener('focus', () => {
