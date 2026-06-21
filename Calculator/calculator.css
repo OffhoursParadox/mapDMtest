@@ -3207,7 +3207,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
     color: var(--color-text-muted);
     transform: translateY(-50%);
     transition: transform 0.2s ease, color 0.2s ease;
@@ -3549,6 +3550,11 @@
     .stat-filter-combobox__input { font-size: 13px; flex-basis: 44px; min-width: 44px; }
     .stat-filter-combobox__clear { width: 34px; }
     .stat-filter-combobox__menu { z-index: 100; }
+    .stat-filter-combobox__arrow {
+        right: 4px;
+        width: 32px;
+        height: 32px;
+    }
 }
 
 /* ── Modal ── */
