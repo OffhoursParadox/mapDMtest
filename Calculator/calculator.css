@@ -857,20 +857,6 @@
     flex-shrink: 0;
 }
 
-.armor-detail__summary {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.armor-detail__summary .armor-detail__meta {
-    flex: 1;
-    min-width: 0;
-}
-
 .armor-detail__preview {
     flex-shrink: 0;
     width: 64px;
@@ -1016,9 +1002,8 @@
 }
 
 .armor-detail__select {
-    margin-top: 0;
     flex-shrink: 0;
-    width: auto;
+    width: 100%;
     padding: 8px 12px;
     background: rgba(var(--c-accent-rgb), 0.15);
     border: 1px solid rgba(var(--c-accent-rgb), 0.35);
@@ -1030,7 +1015,7 @@
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
-    align-self: flex-start;
+    text-align: center;
 }
 
 .armor-detail__select:hover {
@@ -1477,11 +1462,11 @@
 @media (max-width: 768px) {
     .artifact-slots__grid > .artifact-slot-card,
     .artifact-slots__grid > .artifact-slot-card * {
-        touch-action: auto !important;
+        touch-action: pan-x pan-y !important;
     }
 
     .artifact-slot-card {
-        touch-action: manipulation;
+        touch-action: pan-x pan-y;
     }
 
     .artifact-slot-card__grip {
@@ -3962,24 +3947,14 @@
     align-items: flex-start;
 }
 
-.artifact-modal-detail .artifact-detail__summary {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-}
-
 .artifact-modal-detail .artifact-detail__meta {
     flex: 1;
     min-width: 0;
 }
 
 .artifact-modal-detail__select {
-    margin-top: 0;
     flex-shrink: 0;
-    width: auto;
+    width: 100%;
     padding: 8px 12px;
     background: rgba(var(--c-accent-rgb), 0.15);
     border: 1px solid rgba(var(--c-accent-rgb), 0.35);
@@ -3991,7 +3966,7 @@
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
-    align-self: flex-start;
+    text-align: center;
 }
 
 .artifact-modal-detail__select:hover {
@@ -4105,7 +4080,6 @@
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         overscroll-behavior-x: contain;
-        touch-action: pan-x;
     }
 
     .calc-layout::-webkit-scrollbar {
@@ -4123,7 +4097,7 @@
         -webkit-overflow-scrolling: touch;
         padding: 0 var(--space-md);
         box-sizing: border-box;
-        touch-action: pan-y;
+        touch-action: pan-x pan-y;
     }
 
     .calc-col--right {
