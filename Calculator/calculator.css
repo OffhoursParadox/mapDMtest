@@ -488,6 +488,16 @@
     cursor: default;
 }
 
+.enhancement-level__step--quick {
+    width: auto;
+    min-width: 30px;
+    padding: 0 8px;
+    border-left: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+}
+
 .enhancement-level__input {
     width: 40px;
     height: 100%;
