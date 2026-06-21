@@ -773,6 +773,15 @@ function closeStatFilterComboboxes(except) {
     });
 }
 
+function toggleStatFilterComboboxMenu(combobox, statsMap, filterKey, input) {
+    if (combobox.classList.contains('open')) {
+        combobox.classList.remove('open');
+        input.blur();
+        return;
+    }
+    openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+}
+
 function openStatFilterComboboxMenu(combobox, statsMap, filterKey, input) {
     openStatFilterCombobox(combobox);
     renderStatFilterComboboxList(combobox, statsMap, filterKey, input.value);
@@ -852,9 +861,21 @@ function initStatFilterCombobox({ comboboxId, inputId, filterKey, variant, stats
 
     combobox.querySelector('.stat-filter-combobox__field').addEventListener('mousedown', (e) => {
         if (e.target.closest('.stat-filter-tag__remove')) return;
+        if (e.target.closest('.stat-filter-combobox__arrow')) return;
         e.preventDefault();
         input.focus();
         openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    });
+
+    const arrow = combobox.querySelector('.stat-filter-combobox__arrow');
+    arrow?.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    arrow?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
     });
 
     input.addEventListener('focus', () => {
