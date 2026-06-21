@@ -1647,64 +1647,6 @@ function initCalcMobileCarousel() {
         });
     }, { passive: true });
 
-    let touchActive = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartScrollLeft = 0;
-    let touchAxis = null;
-    const TOUCH_AXIS_THRESHOLD = 10;
-
-    function shouldIgnoreCarouselTouch(target) {
-        if (!(target instanceof Element)) return false;
-        return Boolean(target.closest(
-            '.enhancement-slider, .enhancement-block__slider-container, .artifact-slot-card__grip, input, textarea, select'
-        ));
-    }
-
-    track.addEventListener('touchstart', (e) => {
-        if (!isActive()) return;
-        touchActive = !shouldIgnoreCarouselTouch(e.target);
-        if (!touchActive) return;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchStartScrollLeft = track.scrollLeft;
-        touchAxis = null;
-    }, { passive: true });
-
-    track.addEventListener('touchmove', (e) => {
-        if (!isActive() || !touchActive || e.touches.length !== 1) return;
-
-        const dx = e.touches[0].clientX - touchStartX;
-        const dy = e.touches[0].clientY - touchStartY;
-
-        if (!touchAxis) {
-            if (Math.abs(dx) < TOUCH_AXIS_THRESHOLD && Math.abs(dy) < TOUCH_AXIS_THRESHOLD) return;
-            touchAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-        }
-
-        if (touchAxis === 'x') {
-            e.preventDefault();
-            track.scrollLeft = touchStartScrollLeft - dx;
-        }
-    }, { passive: false });
-
-    track.addEventListener('touchend', () => {
-        if (!touchActive) return;
-        if (touchAxis === 'x' && isActive()) {
-            const width = getSlideWidth();
-            if (width > 0) {
-                scrollToSlide(Math.round(track.scrollLeft / width));
-            }
-        }
-        touchActive = false;
-        touchAxis = null;
-    }, { passive: true });
-
-    track.addEventListener('touchcancel', () => {
-        touchActive = false;
-        touchAxis = null;
-    }, { passive: true });
-
     const handleLayoutChange = () => {
         if (isActive()) {
             scrollToSlide(activeIndex, 'auto');
