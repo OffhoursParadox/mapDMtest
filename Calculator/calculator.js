@@ -989,8 +989,19 @@ function toggleFiltersPanel() {
     state.filtersExpanded = !state.filtersExpanded;
     toggle.classList.toggle('active', state.filtersExpanded);
     wrapper.classList.toggle('collapsed', !state.filtersExpanded);
-    wrapper.style.maxHeight = state.filtersExpanded ? wrapper.scrollHeight + 'px' : '0';
-    scheduleArtifactModalGridSync();
+
+    const syncAfterTransition = (event) => {
+        if (event.propertyName !== 'grid-template-rows') return;
+        wrapper.removeEventListener('transitionend', syncAfterTransition);
+        scheduleArtifactModalGridSync();
+    };
+
+    wrapper.removeEventListener('transitionend', syncAfterTransition);
+    if (state.filtersExpanded) {
+        wrapper.addEventListener('transitionend', syncAfterTransition);
+    } else {
+        scheduleArtifactModalGridSync();
+    }
 }
 
 function updateFiltersBadge() {
@@ -2444,7 +2455,6 @@ function openArtifactModal(slotIndex) {
     if (filtersToggle) filtersToggle.classList.remove('active');
     if (filtersWrapper) {
         filtersWrapper.classList.add('collapsed');
-        filtersWrapper.style.maxHeight = '0';
     }
 
     updateFiltersBadge();
