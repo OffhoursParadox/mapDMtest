@@ -3211,17 +3211,26 @@
     cursor: pointer;
     color: var(--color-text-muted);
     transform: translateY(-50%);
-    transition: transform 0.2s ease, color 0.2s ease;
+    transition: color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    user-select: none;
+    outline: none;
+    background: transparent;
 }
 
 .stat-filter-combobox__arrow svg {
     width: 16px;
     height: 16px;
+    transition: transform 0.2s ease;
 }
 
 .stat-filter-combobox.open .stat-filter-combobox__arrow {
-    transform: translateY(-50%) rotate(180deg);
     color: var(--color-accent);
+}
+
+.stat-filter-combobox.open .stat-filter-combobox__arrow svg {
+    transform: rotate(180deg);
 }
 
 .stat-filter-combobox--positive.open .stat-filter-combobox__arrow {
