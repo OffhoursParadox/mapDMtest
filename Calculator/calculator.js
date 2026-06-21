@@ -1186,7 +1186,7 @@ function renderArmorModalDetail(armorId, force = false) {
     const isEquipped = state.selectedArmor?.id === armor.id;
 
     const typeHtml = armor.type ? `<div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>` : '';
-    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__summary"><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button></div></div><div class="armor-detail__stats">${statsHtml}</div>`;
+    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div></div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button><div class="armor-detail__stats">${statsHtml}</div>`;
 
     const img = elements.armorModalDetail.querySelector('.armor-detail__img');
     if (img) {
@@ -1647,6 +1647,64 @@ function initCalcMobileCarousel() {
         });
     }, { passive: true });
 
+    let touchActive = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartScrollLeft = 0;
+    let touchAxis = null;
+    const TOUCH_AXIS_THRESHOLD = 10;
+
+    function shouldIgnoreCarouselTouch(target) {
+        if (!(target instanceof Element)) return false;
+        return Boolean(target.closest(
+            '.enhancement-slider, .enhancement-block__slider-container, .artifact-slot-card__grip, input, textarea, select'
+        ));
+    }
+
+    track.addEventListener('touchstart', (e) => {
+        if (!isActive()) return;
+        touchActive = !shouldIgnoreCarouselTouch(e.target);
+        if (!touchActive) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartScrollLeft = track.scrollLeft;
+        touchAxis = null;
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+        if (!isActive() || !touchActive || e.touches.length !== 1) return;
+
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+
+        if (!touchAxis) {
+            if (Math.abs(dx) < TOUCH_AXIS_THRESHOLD && Math.abs(dy) < TOUCH_AXIS_THRESHOLD) return;
+            touchAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        }
+
+        if (touchAxis === 'x') {
+            e.preventDefault();
+            track.scrollLeft = touchStartScrollLeft - dx;
+        }
+    }, { passive: false });
+
+    track.addEventListener('touchend', () => {
+        if (!touchActive) return;
+        if (touchAxis === 'x' && isActive()) {
+            const width = getSlideWidth();
+            if (width > 0) {
+                scrollToSlide(Math.round(track.scrollLeft / width));
+            }
+        }
+        touchActive = false;
+        touchAxis = null;
+    }, { passive: true });
+
+    track.addEventListener('touchcancel', () => {
+        touchActive = false;
+        touchAxis = null;
+    }, { passive: true });
+
     const handleLayoutChange = () => {
         if (isActive()) {
             scrollToSlide(activeIndex, 'auto');
@@ -1773,7 +1831,7 @@ function renderArtifactModalDetail(artifactId, force = false) {
     const tierDisplay = getArtifactTierDisplay(artifact.tier);
     const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === artifact.id;
 
-    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__summary"><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
+    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div></div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
 }
 
 
