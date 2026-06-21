@@ -1,113 +1,279 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="favicon.svg">
     <title>404 — Страница не найдена | Project Cataclysm Wiki</title>
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#08090d">
+    <meta name="theme-color" content="#0a0908">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Roboto:wght@400;500&family=Roboto+Mono:wght@600&display=swap&subset=cyrillic" rel="stylesheet">
-    <link href="shared.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="main.css">
     <style>
-        .bg-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;overflow:hidden}
-        .bg-overlay::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;background:linear-gradient(180deg,rgba(8,9,13,0.75) 0%,rgba(8,9,13,0.88) 40%,rgba(8,9,13,0.95) 100%)}
-        .bg-overlay::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:url("images/hero.png") no-repeat center center;background-size:cover;transform:translateZ(0)}
+        .error-section {
+            padding: calc(var(--header-h) + var(--space-2xl)) 0 var(--space-xl);
+        }
 
-        .error-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:calc(var(--header-h) + 40px) 24px 80px;text-align:center;position:relative}
-        .error-content{max-width:680px;width:100%;position:relative;z-index:1}
+        .error-block {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--r-2xl);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 24%),
+                rgba(14, 12, 10, 0.92);
+            box-shadow:
+                0 24px 60px rgba(0, 0, 0, 0.42),
+                0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+        }
 
-        .scanlines{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0.03}
-        .scanlines::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.08) 2px,rgba(255,255,255,0.08) 4px)}
+        .error-block::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            background:
+                radial-gradient(circle at 18% 0%, rgba(var(--c-accent-rgb), 0.14), transparent 34%),
+                radial-gradient(circle at 82% 100%, rgba(var(--c-red-rgb), 0.08), transparent 30%);
+            opacity: 0.85;
+            z-index: 0;
+        }
 
-        .particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:hidden}
-        .particle{position:absolute;width:2px;height:2px;background:var(--c-accent);border-radius:50%;opacity:0;animation:particleFloat linear infinite}
-        .particle:nth-child(1){left:10%;animation-duration:8s;animation-delay:0s}
-        .particle:nth-child(2){left:25%;animation-duration:12s;animation-delay:1s}
-        .particle:nth-child(3){left:40%;animation-duration:9s;animation-delay:3s}
-        .particle:nth-child(4){left:55%;animation-duration:11s;animation-delay:2s}
-        .particle:nth-child(5){left:70%;animation-duration:7s;animation-delay:4s}
-        .particle:nth-child(6){left:85%;animation-duration:10s;animation-delay:1.5s}
-        .particle:nth-child(7){left:15%;animation-duration:13s;animation-delay:5s}
-        .particle:nth-child(8){left:60%;animation-duration:8.5s;animation-delay:0.5s}
-        @keyframes particleFloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:0.6}90%{opacity:0.6}100%{transform:translateY(-10vh) scale(1.5);opacity:0}}
+        .error-block__sweep {
+            position: absolute;
+            top: -55%;
+            left: -35%;
+            width: 70%;
+            height: 210%;
+            z-index: 1;
+            opacity: 0.14;
+            background: linear-gradient(90deg, transparent, rgba(var(--c-accent-rgb), 0.28), transparent);
+            transform: rotate(18deg);
+            animation: panelSweep 8s ease-in-out infinite;
+            pointer-events: none;
+        }
 
-        .error-code{position:relative;font-family:var(--font-display);font-size:clamp(100px,20vw,180px);font-weight:700;letter-spacing:8px;line-height:1;margin-bottom:8px;color:var(--c-text);user-select:none}
-        .error-code::before,.error-code::after{content:'404';position:absolute;top:0;left:0;width:100%;height:100%;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit}
-        .error-code::before{color:var(--c-accent);clip-path:inset(0 0 65% 0);animation:glitchTop 3s steps(1) infinite}
-        .error-code::after{color:#ef4444;clip-path:inset(65% 0 0 0);animation:glitchBottom 3s steps(1) infinite}
-        @keyframes glitchTop{0%,100%{transform:translate(0)}2%{transform:translate(-3px,-1px)}4%{transform:translate(3px,1px)}6%,94%{transform:translate(0)}96%{transform:translate(2px,-1px)}98%{transform:translate(-2px,1px)}}
-        @keyframes glitchBottom{0%,100%{transform:translate(0)}2%{transform:translate(3px,1px)}4%{transform:translate(-3px,-1px)}6%,94%{transform:translate(0)}96%{transform:translate(-3px,1px)}98%{transform:translate(3px,-1px)}}
+        .error-block__content {
+            position: relative;
+            z-index: 2;
+            padding: clamp(32px, 6vw, 56px) clamp(20px, 5vw, 48px);
+            text-align: center;
+        }
 
-        .error-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:clamp(200px,40vw,360px);height:clamp(200px,40vw,360px);border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.08) 0%,transparent 70%);pointer-events:none;animation:glowPulse 4s ease-in-out infinite}
-        @keyframes glowPulse{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+        .error-code-wrap {
+            position: relative;
+            display: inline-block;
+            margin-bottom: var(--space-md);
+        }
 
-        .error-code-wrap{position:relative;display:inline-block;margin-bottom:16px}
+        .error-code {
+            position: relative;
+            font-family: var(--font-display);
+            font-size: clamp(88px, 18vw, 160px);
+            font-weight: 700;
+            letter-spacing: clamp(4px, 1.2vw, 10px);
+            line-height: 1;
+            color: var(--c-text);
+            user-select: none;
+        }
 
-        .error-subtitle{font-family:var(--font-display);font-size:clamp(18px,3vw,26px);font-weight:500;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-        .error-subtitle span{background:linear-gradient(135deg,var(--c-accent) 0%,#009db3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .error-code::before,
+        .error-code::after {
+            content: '404';
+            position: absolute;
+            inset: 0;
+            font: inherit;
+            letter-spacing: inherit;
+        }
 
-        .error-desc{font-size:15px;color:var(--c-text-2);line-height:1.7;max-width:480px;margin:0 auto 40px}
-        .error-divider{width:60px;height:2px;margin:0 auto 40px;background:linear-gradient(90deg,transparent,var(--c-accent),transparent);border-radius:1px}
+        .error-code::before {
+            color: var(--c-accent);
+            clip-path: inset(0 0 62% 0);
+            animation: errorGlitchTop 3.2s steps(1) infinite;
+        }
 
-        .error-nav{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:36px}
+        .error-code::after {
+            color: var(--c-red);
+            clip-path: inset(62% 0 0 0);
+            animation: errorGlitchBottom 3.2s steps(1) infinite;
+        }
 
-        .error-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);text-decoration:none;color:var(--c-text);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1),border-color 0.3s cubic-bezier(0.16,1,0.3,1),box-shadow 0.3s cubic-bezier(0.16,1,0.3,1),background 0.3s cubic-bezier(0.16,1,0.3,1)}
-        .error-card:hover{background:var(--c-surface-solid);border-color:rgba(var(--c-accent-rgb),0.3);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 20px rgba(var(--c-accent-rgb),0.1)}
+        @keyframes errorGlitchTop {
+            0%, 100% { transform: translate(0); }
+            2% { transform: translate(-3px, -1px); }
+            4% { transform: translate(3px, 1px); }
+            6%, 94% { transform: translate(0); }
+            96% { transform: translate(2px, -1px); }
+            98% { transform: translate(-2px, 1px); }
+        }
 
-        .error-card__icon{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-md);flex-shrink:0}
-        .error-card__icon svg{width:20px;height:20px}
-        .error-card__icon--map{background:rgba(59,130,246,0.1);color:#3b82f6}
-        .error-card__icon--artifacts{background:rgba(168,85,247,0.1);color:#a855f7}
-        .error-card__icon--calculator{background:rgba(245,158,11,0.1);color:#f59e0b}
-        .error-card__icon--ttk{background:rgba(239,68,68,0.1);color:#ef4444}
+        @keyframes errorGlitchBottom {
+            0%, 100% { transform: translate(0); }
+            2% { transform: translate(3px, 1px); }
+            4% { transform: translate(-3px, -1px); }
+            6%, 94% { transform: translate(0); }
+            96% { transform: translate(-3px, 1px); }
+            98% { transform: translate(3px, -1px); }
+        }
 
-        .error-card__text{text-align:left}
-        .error-card__title{font-family:var(--font-display);font-size:15px;font-weight:600;letter-spacing:0.5px;line-height:1.3}
-        .error-card__desc{font-size:12px;color:var(--c-text-2);margin-top:2px}
+        .error-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(180px, 36vw, 320px);
+            height: clamp(180px, 36vw, 320px);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(var(--c-accent-rgb), 0.12) 0%, transparent 72%);
+            pointer-events: none;
+            animation: glowPulse 4s ease-in-out infinite;
+        }
 
-        .error-home{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:linear-gradient(135deg,var(--c-accent) 0%,#009db3 100%);color:#08090d;font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:var(--r-md);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1),box-shadow 0.3s cubic-bezier(0.16,1,0.3,1)}
-        .error-home:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,229,255,0.25)}
-        .error-home:active{transform:translateY(-1px)}
-        .error-home svg{width:20px;height:20px}
+        .error-subtitle {
+            font-family: var(--font-display);
+            font-size: clamp(20px, 3vw, 28px);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: var(--space-sm);
+        }
 
-        .error-signal{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:32px;color:var(--c-text-2);font-family:var(--font-mono);font-size:12px;letter-spacing:1px}
-        .error-signal__dot{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:signalBlink 2s ease-in-out infinite}
-        @keyframes signalBlink{0%,100%{opacity:1}50%{opacity:0.2}}
+        .error-subtitle span {
+            background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-dim) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-        @media(max-width:640px){.error-nav{grid-template-columns:1fr}.error-code{letter-spacing:4px}.error-subtitle{letter-spacing:1.5px}.error-page{padding:calc(var(--header-h) + 20px) 16px 60px}}
-        @media(max-width:480px){.error-card{padding:14px}.error-card__icon{width:36px;height:36px}.error-card__icon svg{width:18px;height:18px}.error-home{padding:12px 28px;font-size:14px}}
-        @media(hover:none){.error-card:hover{transform:none;box-shadow:none}.error-card:active{background:var(--c-surface-solid);border-color:rgba(var(--c-accent-rgb),0.3)}.error-home:hover{transform:none;box-shadow:none}.error-home:active{transform:scale(0.97)}}
-        @media(prefers-reduced-motion:reduce){.error-code::before,.error-code::after{animation:none}.error-glow{animation:none}.error-signal__dot{animation:none}.particle{animation:none;display:none}}
-        @media print{.particles,.scanlines,.error-glow,.bg-overlay{display:none}.error-code{color:#000}.error-code::before,.error-code::after{display:none}}
+        .error-desc {
+            max-width: 560px;
+            margin: 0 auto var(--space-xl);
+            color: var(--c-text-2);
+            line-height: 1.75;
+        }
+
+        .error-divider {
+            width: 72px;
+            height: 2px;
+            margin: 0 auto var(--space-xl);
+            background: linear-gradient(90deg, transparent, var(--c-accent), transparent);
+            border-radius: 1px;
+        }
+
+        .error-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 0 28px;
+            border-radius: var(--r-md);
+            border: 1px solid rgba(var(--c-accent-rgb), 0.35);
+            background: linear-gradient(135deg, rgba(var(--c-accent-rgb), 0.22) 0%, rgba(var(--c-accent-rgb), 0.10) 100%);
+            color: #fff7df;
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: transform var(--t-normal) var(--ease-out-expo), box-shadow var(--t-normal) var(--ease-out-expo), border-color var(--t-normal) var(--ease-out-expo), background var(--t-normal) var(--ease-out-expo);
+        }
+
+        .error-home:hover {
+            transform: translateY(-3px);
+            border-color: rgba(var(--c-accent-rgb), 0.55);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(var(--c-accent-rgb), 0.18);
+            background: linear-gradient(135deg, rgba(var(--c-accent-rgb), 0.30) 0%, rgba(var(--c-accent-rgb), 0.14) 100%);
+        }
+
+        .error-home svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .error-sections {
+            padding-bottom: var(--space-3xl);
+        }
+
+        .error-sections__title {
+            margin-bottom: var(--space-lg);
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2.4px;
+            text-transform: uppercase;
+            color: var(--c-text-2);
+            text-align: center;
+        }
+
+        .error-sections .quick-nav__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .error-sections .quick-card {
+            min-height: 240px;
+        }
+
+        @media (min-width: 1024px) {
+            .error-sections .quick-nav__grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .error-section {
+                padding-top: calc(var(--header-h) + var(--space-lg));
+            }
+
+            .error-sections .quick-nav__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (hover: none) {
+            .error-home:hover {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .error-home:active {
+                transform: scale(0.98);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .error-code::before,
+            .error-code::after,
+            .error-glow,
+            .error-block__sweep {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-overlay"></div>
-    <div class="scanlines"></div>
-    <div class="particles">
-        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
-        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="bg-overlay">
+        <div class="bg-overlay__content"></div>
     </div>
 
-    <header class="header">
+    <header class="header" id="mainHeader">
         <div class="header__container">
-            <a href="./" class="header__logo">
+            <a href="index.html" class="header__logo">
                 <div class="logo-mark">
                     <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="logo-grad-404" x1="4" y1="4" x2="32" y2="32">
-                                <stop offset="0%" stop-color="#00e5ff"/>
-                                <stop offset="100%" stop-color="#007a8a"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="M18 3L4 10.5v21L18 39l14-7.5v-21L18 3z" stroke="url(#logo-grad-404)" stroke-width="1.2" fill="none" opacity="0.9"/>
-                        <path d="M18 8L8 13.5v15L18 34l10-5.5v-15L18 8z" stroke="url(#logo-grad-404)" stroke-width="0.6" fill="none" opacity="0.3"/>
-                        <circle cx="18" cy="21" r="3.5" fill="url(#logo-grad-404)" opacity="0.9"/>
-                        <circle cx="18" cy="21" r="1.2" fill="#08090d"/>
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
                     </svg>
                 </div>
                 <div class="logo-text">
@@ -115,15 +281,257 @@
                     <span class="logo-text__wiki">WIKI</span>
                 </div>
             </a>
+
             <nav class="header__nav" aria-label="Основная навигация">
-                <a href="Map/map.html" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg><span data-i18n="nav.map">Карта</span></a>
-                <a href="Table/table.html" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="nav.artifacts">Артефакты</span></a>
-                <a href="Calculator/calculator.html" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></svg><span data-i18n="nav.calculator">Калькулятор</span></a>
-                <a href="TTK/ttk.html" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span data-i18n="nav.ttk">ТТК</span></a>
-                <div class="lang-switcher">
-                    <button class="lang-switcher__btn" id="langSwitcher" aria-label="Выбор языка" aria-expanded="false" aria-haspopup="true">
-                        <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                        <span class="lang-switcher__current" id="currentLang">RU</span>
+                <a href="Map/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="Table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span data-i18n="nav.items">Предметы</span>
+                </a>
+                <a href="Calculator/calculator.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="TTK/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="nav.ttk">ТТК</span>
+                </a>
+            </nav>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" type="button" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" type="button" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
                     </button>
-                    <div class="lang-dropdown" id="langDropdown">
-                        <button class="lang-dropdown__item" data-lang="ru"><span class="lang-dropdown__flag">🇷🇺</span><span class="lang-dropdown__text">Русский</span><svg class="lang-dropdown__check" viewBox="0 0 24 24" fill="none" stroke
+                    <button class="lang-dropdown__item" type="button" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" type="button" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
+        <nav class="mobile-menu__nav">
+            <a href="Map/map.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="Table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="Calculator/calculator.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="TTK/ttk.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" type="button" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
+                </button>
+                <button class="mobile-lang-btn" type="button" data-lang="en">
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section class="error-section">
+            <div class="container">
+                <div class="error-block">
+                    <span class="error-block__sweep" aria-hidden="true"></span>
+                    <div class="error-block__content">
+                        <div class="error-code-wrap">
+                            <span class="error-glow" aria-hidden="true"></span>
+                            <div class="error-code" aria-hidden="true">404</div>
+                        </div>
+
+                        <h1 class="error-subtitle">
+                            <span data-i18n="error.subtitle">Аномалия поглотила страницу</span>
+                        </h1>
+
+                        <div class="error-divider" aria-hidden="true"></div>
+
+                        <p class="error-desc" data-i18n="error.desc">
+                            Запрашиваемая страница не существует или была перемещена. Возможно, она попала в аномалию. Воспользуйтесь навигацией ниже, чтобы вернуться в безопасную зону.
+                        </p>
+
+                        <a href="index.html" class="error-home">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                            <span data-i18n="error.home">На главную</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-nav error-sections">
+            <div class="container">
+                <h2 class="error-sections__title" data-i18n="error.sections">Разделы базы</h2>
+                <div class="quick-nav__grid">
+                    <a href="Table/table.html" class="quick-card quick-card--encyclopedia" style="--quick-delay:120ms;">
+                        <img src="images/previews/items.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.artifacts.label">Энциклопедия Зоны</span>
+                            <span class="quick-card__title" data-i18n="cards.artifacts.title">База данных предметов</span>
+                            <span class="quick-card__desc" data-i18n="cards.artifacts.desc">Оружие, броня, артефакты, медицина и весь лут — в одном справочнике.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.explore">Изучить каталог</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="Calculator/calculator.html" class="quick-card quick-card--calculator" style="--quick-delay:195ms;">
+                        <img src="images/previews/calculator.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.calculator.label">Твой идеальный билд</span>
+                            <span class="quick-card__title" data-i18n="cards.calculator.title">Калькулятор сборок</span>
+                            <span class="quick-card__desc" data-i18n="cards.calculator.desc">Настрой артефакты под себя, сравни сборки и добейся максимума.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.build">Собрать билд</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="TTK/ttk.html" class="quick-card quick-card--ttk" style="--quick-delay:270ms;">
+                        <img src="images/previews/ttk.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.ttk.label">Числа решают</span>
+                            <span class="quick-card__title" data-i18n="cards.ttk.title">Калькулятор ТТК</span>
+                            <span class="quick-card__desc" data-i18n="cards.ttk.desc">Узнай, какое оружие убьёт быстрее. Сравни урон в сухих цифрах.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.compare">Сравнить оружие</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="Map/map.html" class="quick-card quick-card--map" style="--quick-delay:345ms;">
+                        <img src="images/previews/map.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.map.label">Путь сталкера</span>
+                            <span class="quick-card__title" data-i18n="cards.map.title">Интерактивная карта</span>
+                            <span class="quick-card__desc" data-i18n="cards.map.desc">Спавны мутантов, тайники, сейфы и ключевые точки — не заблудись в Зоне.</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.openMap">Открыть карту</span>
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__copy">© 2026 Project Cataclysm Wiki. <span data-i18n="footer.official">Официальный сайт.</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initBurgerMenu();
+            initScrollEffects();
+            initLangDropdownClose();
+        });
+
+        function updateErrorPageTitle() {
+            if (!window.i18n || typeof window.i18n.t !== 'function') return;
+            const title = window.i18n.t('error.pageTitle');
+            if (title) document.title = title;
+        }
+
+        document.addEventListener('i18nReady', updateErrorPageTitle);
+        document.addEventListener('languageChanged', updateErrorPageTitle);
+    </script>
+</body>
+</html>
