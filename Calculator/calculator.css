@@ -4066,7 +4066,15 @@
         flex-direction: column;
         gap: var(--space-sm);
         --calc-carousel-nav-h: 44px;
-        --calc-carousel-slide-h: calc(100dvh - var(--header-h) - var(--calc-carousel-nav-h) - var(--space-md) * 2);
+        --calc-carousel-slide-h: calc(
+            100dvh
+            - var(--header-h)
+            - var(--calc-carousel-nav-h)
+            - var(--space-md)
+            - var(--space-sm)
+            - var(--space-lg)
+            - env(safe-area-inset-bottom, 0px)
+        );
     }
 
     .calc-layout {
@@ -4090,7 +4098,7 @@
         flex: 0 0 100%;
         min-width: 100%;
         scroll-snap-align: start;
-        scroll-snap-stop: normal;
+        scroll-snap-stop: always;
         max-height: var(--calc-carousel-slide-h);
         overflow-y: auto;
         overflow-x: hidden;
@@ -4114,8 +4122,93 @@
         grid-column: auto;
     }
 
+    .calc-col--right .stats-panel {
+        overflow: visible;
+        height: auto;
+    }
+
+    .calc-col--right .stats-panel__head {
+        padding: 10px 12px;
+    }
+
+    .calc-col--right .stats-panel__title {
+        font-size: 15px;
+    }
+
+    .calc-col--right .stats-panel__body {
+        max-height: none;
+        overflow: visible;
+        padding: 10px 12px 14px;
+        gap: 8px;
+    }
+
+    .stats-panel__hero {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .hero-stat {
+        padding: 7px 9px;
+        gap: 2px;
+    }
+
+    .hero-stat--primary {
+        grid-column: 1 / -1;
+        padding: 9px 10px;
+    }
+
+    .hero-stat__label {
+        font-size: 9px;
+        letter-spacing: 0.25px;
+        line-height: 1.25;
+    }
+
+    .hero-stat__value {
+        font-size: 20px;
+    }
+
+    .hero-stat--primary .hero-stat__value {
+        font-size: 22px;
+    }
+
+    .hero-stat__value--sm {
+        font-size: 13px;
+        line-height: 1.2;
+    }
+
+    .hero-stat__sub,
+    .hero-stat__unit {
+        font-size: 10px;
+    }
+
+    .hero-stat__bar {
+        height: 4px;
+        margin-top: 4px;
+    }
+
+    .stats-panel__divider {
+        margin: 2px 0;
+    }
+
+    .stats-panel__row {
+        padding: 4px 8px;
+        gap: 8px;
+    }
+
+    .stats-panel__name,
+    .stats-panel__value {
+        font-size: 12px;
+    }
+
+    .warning-banner {
+        padding: 8px 10px 8px 8px;
+        gap: 8px;
+    }
+
     .calc-card__head--mobile-only {
         display: flex;
+        padding: 0;
+        align-items: stretch;
     }
 
     .calc-carousel__nav {
@@ -4153,23 +4246,6 @@
         background: rgba(var(--c-accent-rgb), 0.18);
         color: var(--color-accent);
         box-shadow: inset 0 0 0 1px rgba(var(--c-accent-rgb), 0.35);
-    }
-
-    .stats-panel__hero {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-panel__body {
-        max-height: none;
-        overflow: visible;
-    }
-
-    .hero-stat--primary {
-        grid-column: span 1;
-    }
-
-    .hero-stat__value {
-        font-size: 26px;
     }
 
     .modal {
