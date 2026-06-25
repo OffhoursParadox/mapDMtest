@@ -446,6 +446,7 @@ function initElements() {
         enhancementValue: document.getElementById('enhancementValue'),
         enhancementDecBtn: document.getElementById('enhancementDecBtn'),
         enhancementIncBtn: document.getElementById('enhancementIncBtn'),
+        enhancementMaxBtn: document.getElementById('enhancementMaxBtn'),
         enhancementControls: document.getElementById('enhancementControls'),
         containerModal: document.getElementById('containerModal'),
         containerModalClose: document.getElementById('containerModalClose'),
@@ -773,6 +774,15 @@ function closeStatFilterComboboxes(except) {
     });
 }
 
+function toggleStatFilterComboboxMenu(combobox, statsMap, filterKey, input) {
+    if (combobox.classList.contains('open')) {
+        combobox.classList.remove('open');
+        input.blur();
+        return;
+    }
+    openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+}
+
 function openStatFilterComboboxMenu(combobox, statsMap, filterKey, input) {
     openStatFilterCombobox(combobox);
     renderStatFilterComboboxList(combobox, statsMap, filterKey, input.value);
@@ -852,9 +862,38 @@ function initStatFilterCombobox({ comboboxId, inputId, filterKey, variant, stats
 
     combobox.querySelector('.stat-filter-combobox__field').addEventListener('mousedown', (e) => {
         if (e.target.closest('.stat-filter-tag__remove')) return;
+        if (e.target.closest('.stat-filter-combobox__arrow')) return;
         e.preventDefault();
         input.focus();
         openStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    });
+
+    const arrow = combobox.querySelector('.stat-filter-combobox__arrow');
+    let arrowTouchHandled = false;
+
+    const handleArrowToggle = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        input.blur();
+        toggleStatFilterComboboxMenu(combobox, statsMap, filterKey, input);
+    };
+
+    arrow?.addEventListener('touchend', (e) => {
+        arrowTouchHandled = true;
+        handleArrowToggle(e);
+        setTimeout(() => {
+            arrowTouchHandled = false;
+        }, 400);
+    }, { passive: false });
+
+    arrow?.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    arrow?.addEventListener('click', (e) => {
+        if (arrowTouchHandled) return;
+        handleArrowToggle(e);
     });
 
     input.addEventListener('focus', () => {
@@ -989,8 +1028,19 @@ function toggleFiltersPanel() {
     state.filtersExpanded = !state.filtersExpanded;
     toggle.classList.toggle('active', state.filtersExpanded);
     wrapper.classList.toggle('collapsed', !state.filtersExpanded);
-    wrapper.style.maxHeight = state.filtersExpanded ? wrapper.scrollHeight + 'px' : '0';
-    scheduleArtifactModalGridSync();
+
+    const syncAfterTransition = (event) => {
+        if (event.propertyName !== 'grid-template-rows') return;
+        wrapper.removeEventListener('transitionend', syncAfterTransition);
+        scheduleArtifactModalGridSync();
+    };
+
+    wrapper.removeEventListener('transitionend', syncAfterTransition);
+    if (state.filtersExpanded) {
+        wrapper.addEventListener('transitionend', syncAfterTransition);
+    } else {
+        scheduleArtifactModalGridSync();
+    }
 }
 
 function updateFiltersBadge() {
@@ -1186,7 +1236,7 @@ function renderArmorModalDetail(armorId, force = false) {
     const isEquipped = state.selectedArmor?.id === armor.id;
 
     const typeHtml = armor.type ? `<div class="armor-detail__type">${getArmorTypeName(armor.type)}</div>` : '';
-    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__summary"><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button></div></div><div class="armor-detail__stats">${statsHtml}</div>`;
+    elements.armorModalDetail.innerHTML = `<div class="armor-detail__head"><div class="armor-detail__preview">${imageHtml}</div><div class="armor-detail__meta"><div class="armor-detail__name rarity--${rarityClass}">${getLocalizedName(armor)}</div>${typeHtml}</div></div><button class="armor-detail__select ${isEquipped ? 'armor-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.armorModal.equipped') : t('calc.armorModal.select')}</button><div class="armor-detail__stats">${statsHtml}</div>`;
 
     const img = elements.armorModalDetail.querySelector('.armor-detail__img');
     if (img) {
@@ -1546,6 +1596,7 @@ function initEventListeners() {
 
     elements.enhancementDecBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel - 1));
     elements.enhancementIncBtn?.addEventListener('click', () => setEnhancementLevel(state.enhancementLevel + 1));
+    elements.enhancementMaxBtn?.addEventListener('click', () => setEnhancementLevel(getEnhancementQuickLevel()));
     elements.enhancementControls?.addEventListener('wheel', handleEnhancementWheel, { passive: false });
     elements.enhancementValue?.addEventListener('change', handleEnhancementInput);
     elements.enhancementValue?.addEventListener('keydown', handleEnhancementKeydown);
@@ -1602,6 +1653,7 @@ function initCalcMobileCarousel() {
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     let activeIndex = 0;
     let scrollRaf = null;
+    let swipeOriginIndex = null;
 
     function isActive() {
         return mobileQuery.matches;
@@ -1609,6 +1661,18 @@ function initCalcMobileCarousel() {
 
     function getSlideWidth() {
         return track.clientWidth;
+    }
+
+    function getClampedSlideIndex(fromIndex, rawIndex) {
+        const minIndex = Math.max(0, fromIndex - 1);
+        const maxIndex = Math.min(tabs.length - 1, fromIndex + 1);
+        return Math.max(minIndex, Math.min(rawIndex, maxIndex));
+    }
+
+    function getRawSlideIndex() {
+        const width = getSlideWidth();
+        if (width <= 0) return activeIndex;
+        return Math.round(track.scrollLeft / width);
     }
 
     function setActiveSlide(index) {
@@ -1640,12 +1704,51 @@ function initCalcMobileCarousel() {
         if (!isActive()) return;
         if (scrollRaf) cancelAnimationFrame(scrollRaf);
         scrollRaf = requestAnimationFrame(() => {
-            const width = getSlideWidth();
-            if (width <= 0) return;
-            const index = Math.round(track.scrollLeft / width);
+            let index = getRawSlideIndex();
+            if (swipeOriginIndex !== null) {
+                index = getClampedSlideIndex(swipeOriginIndex, index);
+            }
             setActiveSlide(index);
         });
     }, { passive: true });
+
+    function finalizeSwipeScroll() {
+        if (!isActive()) return;
+        const origin = swipeOriginIndex;
+        swipeOriginIndex = null;
+        if (origin === null) return;
+
+        const width = getSlideWidth();
+        if (width <= 0) return;
+
+        const targetIndex = getClampedSlideIndex(origin, getRawSlideIndex());
+        if (Math.abs(track.scrollLeft - width * targetIndex) > 1) {
+            scrollToSlide(targetIndex);
+        } else {
+            setActiveSlide(targetIndex);
+        }
+    }
+
+    track.addEventListener('touchstart', () => {
+        if (!isActive()) return;
+        swipeOriginIndex = activeIndex;
+    }, { passive: true });
+
+    track.addEventListener('touchend', () => {
+        if (!isActive() || swipeOriginIndex === null) return;
+        if ('onscrollend' in track) return;
+        requestAnimationFrame(() => requestAnimationFrame(finalizeSwipeScroll));
+    }, { passive: true });
+
+    track.addEventListener('touchcancel', () => {
+        swipeOriginIndex = null;
+    }, { passive: true });
+
+    if ('onscrollend' in track) {
+        track.addEventListener('scrollend', () => {
+            if (swipeOriginIndex !== null) finalizeSwipeScroll();
+        }, { passive: true });
+    }
 
     const handleLayoutChange = () => {
         if (isActive()) {
@@ -1773,7 +1876,7 @@ function renderArtifactModalDetail(artifactId, force = false) {
     const tierDisplay = getArtifactTierDisplay(artifact.tier);
     const isEquipped = state.currentSlotIndex !== null && state.artifacts[state.currentSlotIndex]?.id === artifact.id;
 
-    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__summary"><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button></div></div><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
+    elements.artifactModalDetail.innerHTML = `<div class="artifact-detail artifact-detail--${artifact.category}"><div class="artifact-detail__head"><div class="artifact-detail__preview"><img src="${imageSrc}" alt="${getLocalizedName(artifact)}" onerror="this.style.display='none'"></div><div class="artifact-detail__meta"><div class="artifact-detail__name">${getLocalizedName(artifact)}</div><span class="artifact-modal-detail__tier">${tierDisplay}</span></div></div><button class="artifact-modal-detail__select ${isEquipped ? 'artifact-modal-detail__select--equipped' : ''}" type="button">${isEquipped ? t('calc.artifactModal.equipped') : t('calc.artifactModal.select')}</button><div class="artifact-detail__stats">${renderArtifactSlotStats(artifact)}</div></div>`;
 }
 
 
@@ -1803,6 +1906,14 @@ function updateContainerOptions() {
     elements.containerSelect.disabled = false;
 }
 
+
+const ENHANCEMENT_QUICK_LEVEL = 15;
+
+function getEnhancementQuickLevel() {
+    const maxLevel = state.selectedArmor?.enhancement?.maxLevel;
+    if (!maxLevel) return ENHANCEMENT_QUICK_LEVEL;
+    return Math.min(ENHANCEMENT_QUICK_LEVEL, maxLevel);
+}
 
 function handleEnhancementChange(e) {
     setEnhancementLevel(parseInt(e.target.value, 10));
@@ -2392,7 +2503,6 @@ function openArtifactModal(slotIndex) {
     if (filtersToggle) filtersToggle.classList.remove('active');
     if (filtersWrapper) {
         filtersWrapper.classList.add('collapsed');
-        filtersWrapper.style.maxHeight = '0';
     }
 
     updateFiltersBadge();

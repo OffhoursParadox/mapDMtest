@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Калькулятор ТТК — Project Cataclysm Wiki</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="keywords" content="Project Cataclysm ТТК, Project Cataclysm урон, Project Cataclysm калькулятор урона">
+    <meta name="description" content="Калькулятор ТТК Project Cataclysm. Рассчитай урон оружия с учётом брони, патронов и дистанции.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="ttk.css">
+</head>
+<body>
+    <div class="bg-overlay">
+        <div class="bg-overlay__content"></div>
+    </div>
+
+    <header class="header" id="mainHeader">
+        <div class="header__container">
+            <a href="../index.html" class="header__logo">
+                <div class="logo-mark">
+                    <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-text__cataclysm">CATACLYSM</span>
+                    <span class="logo-text__wiki">WIKI</span>
+                </div>
+            </a>
+
+            <nav class="header__nav">
+                <a href="../Map/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="../Table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span data-i18n="nav.items">Предметы</span>
+                </a>
+                <a href="../Calculator/calculator.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="ttk.html" class="nav-link nav-link--current">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="nav.ttk">ТТК</span>
+                </a>
+            </nav>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
+        <nav class="mobile-menu__nav">
+            <a href="../Map/map.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../Table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="../Calculator/calculator.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="ttk.html" class="mobile-menu__link mobile-menu__link--current">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
+                </button>
+                <button class="mobile-lang-btn" data-lang="en">
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section class="ttk-calculator">
+            <div class="container">
+                <header class="ttk-page-head anim-fade-in">
+                    <h1 class="ttk-page-head__title" data-i18n="ttk.pageTitle">Калькулятор ТТК</h1>
+                </header>
+
+                <div class="ttk-carousel" id="ttkCarousel">
+                    <div class="ttk-layout" id="ttkCarouselTrack" role="region" aria-roledescription="carousel">
+                    <div class="ttk-col ttk-col--inputs" data-ttk-slide="0">
+                        <!-- СПИСОК ОРУЖИЯ -->
+                        <div class="calc-card weapon-list-panel anim-fade-in">
+                            <div class="calc-card__head">
+                                <h2 class="calc-card__title" data-i18n="ttk.weaponList">Список оружия</h2>
+                            </div>
+                            <div class="calc-card__body weapon-list-panel__body">
+                                <div class="weapon-list" id="weaponGrid"></div>
+                            </div>
+                        </div>
+
+                        <!-- СПИСОК ЦЕЛЕЙ -->
+                        <div class="calc-card target-list-panel anim-fade-in">
+                            <div class="calc-card__head">
+                                <h2 class="calc-card__title" data-i18n="ttk.targetList">Цели</h2>
+                            </div>
+                            <div class="calc-card__body target-list-panel__body">
+                                <div class="target-list" id="targetGrid"></div>
+                                <div class="target-list__footer">
+                                    <label class="target-distance" for="targetDistance">
+                                        <span class="target-distance__label" data-i18n="ttk.distance">Дистанция (м)</span>
+                                        <input type="number" id="targetDistance" class="target-distance__input input-field" value="0" min="0" max="500">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ГРАФИК TTK -->
+                        <div class="calc-card chart-panel">
+                            <div class="calc-card__head">
+                                <div class="calc-card__head-icon calc-card__head-icon--chart">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17l-5-5-4 4-3-3"/></svg>
+                                </div>
+                                <h2 class="calc-card__title" data-i18n="ttk.ttkChart">График TTK</h2>
+                                <div class="ttk-mode-toggle" id="ttkModeToggle">
+                                    <button class="ttk-mode-toggle__btn ttk-mode-toggle__btn--active" data-mode="body">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a7 7 0 0 1 7-7h0a7 7 0 0 1 7 7v2"/></svg>
+                                        <span data-i18n="ttk.body">Тело</span>
+                                    </button>
+                                    <button class="ttk-mode-toggle__btn" data-mode="head">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8M9 18h6"/></svg>
+                                        <span data-i18n="ttk.head">Голова</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="calc-card__body chart-panel__body">
+                                <div class="chart-placeholder" id="chartPlaceholder">
+                                    <div class="chart-placeholder__icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M18 17l-5-5-4 4-3-3"/></svg>
+                                    </div>
+                                    <span class="chart-placeholder__title" data-i18n="ttk.chartPlaceholder">Выберите оружие для отображения графика TTK</span>
+                                    <span class="chart-placeholder__sub" data-i18n="ttk.chartPlaceholderSub">Добавьте оружие в список выше — график и рейтинг появятся здесь</span>
+                                </div>
+                                <div class="chart-results" id="damageChart">
+                                    <div class="chart-summary">
+                                        <div class="chart-summary__distance">
+                                            <span class="chart-summary__label" data-i18n="ttk.chartDistanceLabel">Дистанция</span>
+                                            <span class="chart-summary__value" id="chartDistanceValue">0 м</span>
+                                        </div>
+                                        <div class="chart-summary__meta">
+                                            <span class="chart-summary__mode" id="chartModeLabel" data-i18n="ttk.body">Тело</span>
+                                            <span class="chart-summary__sep" aria-hidden="true">·</span>
+                                            <span class="chart-summary__hint" data-i18n="ttk.chartHintShort">клик по графику — сменить дистанцию</span>
+                                        </div>
+                                    </div>
+                                    <div class="chart-results__layout">
+                                        <div class="chart-results__graph">
+                                            <div class="damage-chart__container">
+                                                <canvas id="damageCanvas"></canvas>
+                                                <div class="chart-crosshair-label" id="chartCrosshairLabel" aria-hidden="true"></div>
+                                            </div>
+                                            <div class="chart-tooltip" id="chartTooltip"></div>
+                                            <div class="chart-axis-legend">
+                                                <span class="chart-axis-legend__item chart-axis-legend__item--better">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                                                    <span data-i18n="ttk.chartFaster">Быстрее</span>
+                                                </span>
+                                                <span class="chart-axis-legend__item chart-axis-legend__item--worse">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                                    <span data-i18n="ttk.chartSlower">Медленнее</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <aside class="chart-ranking">
+                                            <div class="chart-ranking__head">
+                                                <span class="chart-ranking__title" data-i18n="ttk.ranking">Рейтинг</span>
+                                                <span class="chart-ranking__subtitle" id="chartRankingSubtitle"></span>
+                                            </div>
+                                            <div class="chart-ranking__list" id="chartLegend"></div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ttk-col ttk-col--preview" data-ttk-slide="1">
+                        <div class="weapon-preview-panel stats-panel" id="weaponPreviewPanel">
+                            <div class="stats-panel__head">
+                                <h2 class="stats-panel__title" data-i18n="ttk.weaponPreview">Предпросмотр оружия</h2>
+                            </div>
+                            <div class="stats-panel__body">
+                                <div class="weapon-preview__placeholder" id="weaponPreviewPlaceholder">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                    <span data-i18n="ttk.previewHint">Выберите оружие в списке слева</span>
+                                </div>
+                                <div class="weapon-preview__content" id="weaponPreviewContent" hidden>
+                                    <div class="weapon-preview__hero">
+                                        <div class="weapon-preview__image-wrap" id="weaponPreviewImageWrap"></div>
+                                        <h3 class="weapon-preview__name" id="weaponPreviewName"></h3>
+                                    </div>
+                                </div>
+                                <div id="weaponPreviewStatsBlock" hidden>
+                                <div class="stats-panel__hero">
+                                    <div class="hero-stat hero-stat--dps">
+                                        <span class="hero-stat__label" data-i18n="ttk.dpsBody">DPS (тело)</span>
+                                        <span class="hero-stat__value" id="dpsBody">0</span>
+                                    </div>
+                                    <div class="hero-stat hero-stat--head">
+                                        <span class="hero-stat__label" data-i18n="ttk.dpsHead">DPS (голова)</span>
+                                        <span class="hero-stat__value hero-stat__value--head" id="dpsHead">0</span>
+                                    </div>
+                                    <div class="hero-stat hero-stat--ttk">
+                                        <span class="hero-stat__label" data-i18n="ttk.body">Тело</span>
+                                        <span class="hero-stat__value" id="ttkBody">0.00 <span data-i18n="ttk.sec">сек</span></span>
+                                        <span class="hero-stat__shots-badge" id="shotsBody">0 <span data-i18n="ttk.shots">выстр.</span></span>
+                                    </div>
+                                    <div class="hero-stat hero-stat--ttk hero-stat--ttk-head">
+                                        <span class="hero-stat__label" data-i18n="ttk.head">Голова</span>
+                                        <span class="hero-stat__value hero-stat__value--head" id="ttkHead">0.00 <span data-i18n="ttk.sec">сек</span></span>
+                                        <span class="hero-stat__shots-badge hero-stat__shots-badge--head" id="shotsHead">0 <span data-i18n="ttk.shots">выстр.</span></span>
+                                    </div>
+                                </div>
+
+                                <div class="preview-detail-stats">
+                                <div class="stats-section preview-stats-section">
+                                    <h3 class="stats-section__title" data-i18n="ttk.damagePerShot">Урон за выстрел</h3>
+                                    <div class="stats-panel__list preview-stats-list">
+                                        <div class="stats-panel__row">
+                                            <span class="stats-panel__name" data-i18n="ttk.baseDamage">Базовый</span>
+                                            <span class="stats-panel__value" id="baseDamage">0</span>
+                                        </div>
+                                        <div class="stats-panel__row">
+                                            <span class="stats-panel__name" data-i18n="ttk.atDistance">На дистанции</span>
+                                            <span class="stats-panel__value" id="distanceDamage">0</span>
+                                        </div>
+                                        <div class="stats-panel__row">
+                                            <span class="stats-panel__name" data-i18n="ttk.afterArmor">После брони</span>
+                                            <span class="stats-panel__value" id="armorDamage">0</span>
+                                        </div>
+                                        <div class="stats-panel__row">
+                                            <span class="stats-panel__name" data-i18n="ttk.headshot">В голову</span>
+                                            <span class="stats-panel__value stats-panel__value--head" id="headshotDamage">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stats-section preview-stats-section weapon-stats" id="weaponStats" style="display:none;">
+                                    <h3 class="stats-section__title" data-i18n="ttk.weaponStats">Характеристики оружия</h3>
+                                    <div class="stats-panel__list preview-stats-list" id="weaponStatsGrid"></div>
+                                </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comparison-table calc-card" id="comparisonTable">
+                            <div class="calc-card__head">
+                                <h3 class="calc-card__title" data-i18n="ttk.weaponComparison">Сравнение оружия</h3>
+                            </div>
+                            <div class="calc-card__body comparison-table__content" id="comparisonTableContent"></div>
+                        </div>
+                    </div>
+                    </div>
+                    <nav class="ttk-carousel__nav" id="ttkCarouselNav" aria-label="Разделы калькулятора" data-aria-label-i18n="ttk.mobileCarousel.ariaLabel">
+                        <button type="button" class="ttk-carousel__tab is-active" data-slide="0" aria-selected="true">
+                            <span data-i18n="ttk.mobileSlide.setup">Настройки</span>
+                        </button>
+                        <button type="button" class="ttk-carousel__tab" data-slide="1" aria-selected="false">
+                            <span data-i18n="ttk.mobileSlide.preview">Предпросмотр</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__copy">© 2026 Project Cataclysm Wiki. <span data-i18n="footer.official">Официальный сайт.</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop" aria-label="Вверх">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <div class="target-edit-modal" id="targetEditModal" aria-hidden="true">
+        <div class="target-edit-modal__backdrop" id="targetEditBackdrop"></div>
+        <div class="target-edit-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="targetEditTitle">
+            <div class="target-edit-modal__head">
+                <h3 class="target-edit-modal__title" id="targetEditTitle" data-i18n="ttk.editTarget">Редактировать цель</h3>
+                <button class="target-edit-modal__close" id="targetEditClose" type="button" aria-label="Закрыть">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="target-edit-modal__body">
+                <div class="input-group">
+                    <label class="input-group__label" for="targetEditName" data-i18n="ttk.dummyName">Название манекена</label>
+                    <input type="text" id="targetEditName" class="input-field" maxlength="48">
+                </div>
+                <div class="input-group">
+                    <label class="input-group__label" for="targetEditHp" data-i18n="ttk.targetHP">HP</label>
+                    <input type="number" id="targetEditHp" class="input-field" value="100" min="1" max="10000">
+                </div>
+                <div class="input-group">
+                    <label class="input-group__label" for="targetEditBulletResistance" data-i18n="ttk.bulletResistance">Пулестойкость</label>
+                    <input type="number" id="targetEditBulletResistance" class="input-field" value="0" min="0" max="10000" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label class="input-group__label" for="targetEditRegeneration" data-i18n="ttk.regeneration">Регенерация</label>
+                    <input type="number" id="targetEditRegeneration" class="input-field" value="0" step="0.01">
+                </div>
+            </div>
+            <div class="target-edit-modal__foot">
+                <button type="button" class="target-edit-modal__btn target-edit-modal__btn--ghost" id="targetEditCancel" data-i18n="ttk.cancel">Отмена</button>
+                <button type="button" class="target-edit-modal__btn target-edit-modal__btn--primary" id="targetEditSave" data-i18n="ttk.save">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="weapon-picker" id="weaponPicker" aria-hidden="true">
+        <div class="weapon-picker__backdrop" id="weaponPickerBackdrop"></div>
+        <div class="weapon-picker__dialog" role="dialog" aria-modal="true" aria-labelledby="weaponPickerTitle">
+            <div class="weapon-picker__head">
+                <div class="weapon-picker__head-main">
+                    <button class="weapon-picker__back" id="weaponPickerBack" type="button" data-aria-label-i18n="ttk.backToWeaponList" aria-label="Вернуться к списку">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <h3 class="weapon-picker__title" id="weaponPickerTitle" data-i18n="ttk.selectWeapon">Выберите оружие...</h3>
+                    <div class="weapon-picker__detail-head" id="weaponPickerDetailHead">
+                        <span class="weapon-picker__detail-name" id="weaponPickerDetailName"></span>
+                        <span class="weapon-picker__detail-category" id="weaponPickerDetailCategory"></span>
+                    </div>
+                </div>
+                <button class="weapon-picker__close" id="weaponPickerClose" type="button" aria-label="Закрыть">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="weapon-picker__search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" data-placeholder-i18n="ttk.searchWeapon" placeholder="Поиск оружия..." id="weaponSearchInput">
+            </div>
+            <div class="weapon-picker__body" id="weaponPickerBody">
+                <div class="weapon-picker__list-wrap">
+                    <div class="weapon-picker__clear" id="weaponClearWrapper" style="display:none;">
+                        <button class="weapon-picker__clear-btn" id="weaponClearBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            <span data-i18n="ttk.resetSelection">Сбросить выбор</span>
+                        </button>
+                    </div>
+                    <div class="weapon-picker__list custom-dropdown__list" id="weaponDropdownList"></div>
+                </div>
+                <aside class="weapon-picker__preview" id="weaponPickerPreview">
+                    <div class="weapon-picker__preview-body">
+                        <div class="weapon-picker__preview-placeholder" id="weaponPickerPreviewPlaceholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span data-i18n="ttk.pickerPreviewHint">Нажмите на оружие для предпросмотра</span>
+                            <span class="weapon-picker__preview-hint-sub" data-i18n="ttk.pickerPreviewHintSub">Двойной клик — быстрый выбор</span>
+                        </div>
+                        <div class="weapon-picker__preview-content" id="weaponPickerPreviewContent" hidden>
+                            <div class="weapon-picker__preview-image" id="weaponPickerPreviewImage"></div>
+                            <div class="weapon-details">
+                                <div class="weapon-details__header">
+                                    <span class="weapon-details__name" id="weaponPickerPreviewName"></span>
+                                    <span class="weapon-details__category" id="weaponPickerPreviewCategory"></span>
+                                </div>
+                                <div class="weapon-details__stats" id="weaponPickerPreviewStats"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="weapon-picker__select-btn" id="weaponPickerSelectBtn" hidden>
+                        <span data-i18n="ttk.chooseWeapon">Выбрать</span>
+                    </button>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <script src="../data/data.js"></script>
+    <script src="../i18n.js"></script>
+    <script src="../shared.js"></script>
+    <script src="ttk.js"></script>
+</body>
+</html>

@@ -120,9 +120,11 @@ function initLanguageState() {
 }
 
 function setLanguage(lang) {
+    // Delegate to i18n module if available
     if (window.i18n && typeof window.i18n.setLanguage === 'function') {
         window.i18n.setLanguage(lang);
     } else {
+        // Fallback if i18n is not loaded yet
         const normalizedLang = normalizeLang(lang);
         localStorage.setItem('wiki-lang', normalizedLang);
         applyLanguageState(normalizedLang);
@@ -151,6 +153,7 @@ function normalizeLang(lang) {
     return lang === 'en' ? 'en' : 'ru';
 }
 
+// Global functions for backward compatibility with onclick handlers
 window.toggleLangDropdown = function() {
     const dropdown = document.getElementById('langDropdown');
     const switcher = document.getElementById('langSwitcher');
