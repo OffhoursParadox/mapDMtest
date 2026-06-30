@@ -27,7 +27,8 @@ body{font-size:14px;line-height:1.5}
     background:url("../images/hero.png") no-repeat center center;
     background-size:cover;
     transform:translateZ(0);
-    -webkit-transform:translateZ(0)
+    -webkit-transform:translateZ(0);
+    display:none
 }
 
 :root{
@@ -527,7 +528,29 @@ body{font-size:14px;line-height:1.5}
     bottom:0;
     z-index:1;
     background:var(--c-bg);
-    transition:none
+    transition:none;
+    contain:strict
+}
+
+body.map-interacting .coordinates,
+body.map-interacting .level-switcher,
+body.map-interacting .map-control{
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none
+}
+
+html.is-fullscreen .bg-overlay{
+    display:none
+}
+html.is-fullscreen .coordinates,
+html.is-fullscreen .level-switcher,
+html.is-fullscreen .map-control{
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none
+}
+html.is-fullscreen .sidebar{
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none
 }
 
 /* ===== COORDINATES ===== */
@@ -655,7 +678,8 @@ body{font-size:14px;line-height:1.5}
 /* ===== LEAFLET OVERRIDES ===== */
 .leaflet-container{
     background:var(--c-bg)!important;
-    font-family:var(--font-body)!important
+    font-family:var(--font-body)!important;
+    transform:translateZ(0)
 }
 .leaflet-control-attribution{
     background:rgba(10,9,8,0.8)!important;

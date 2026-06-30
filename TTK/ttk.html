@@ -145,7 +145,7 @@
                 </svg>
                 <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
             </a>
-            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+            <a href="../Barter/barter.html" class="mobile-menu__link">
                 <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                 </svg>
@@ -194,30 +194,22 @@
                             </div>
                             <div class="calc-card__body target-list-panel__body">
                                 <div class="target-list" id="targetGrid"></div>
-                                <div class="target-list__footer">
-                                    <label class="target-distance" for="targetDistance">
-                                        <span class="target-distance__label" data-i18n="ttk.distance">Дистанция (м)</span>
-                                        <input type="number" id="targetDistance" class="target-distance__input input-field" value="0" min="0" max="500">
-                                    </label>
-                                </div>
                             </div>
                         </div>
 
                         <!-- ГРАФИК TTK -->
                         <div class="calc-card chart-panel">
                             <div class="calc-card__head">
-                                <div class="calc-card__head-icon calc-card__head-icon--chart">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17l-5-5-4 4-3-3"/></svg>
-                                </div>
                                 <h2 class="calc-card__title" data-i18n="ttk.ttkChart">График TTK</h2>
                                 <div class="ttk-mode-toggle" id="ttkModeToggle">
                                     <button class="ttk-mode-toggle__btn ttk-mode-toggle__btn--active" data-mode="body">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a7 7 0 0 1 7-7h0a7 7 0 0 1 7 7v2"/></svg>
                                         <span data-i18n="ttk.body">Тело</span>
                                     </button>
                                     <button class="ttk-mode-toggle__btn" data-mode="head">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8M9 18h6"/></svg>
                                         <span data-i18n="ttk.head">Голова</span>
+                                    </button>
+                                    <button class="ttk-mode-toggle__btn" data-mode="limb">
+                                        <span data-i18n="ttk.limbs">Конечности</span>
                                     </button>
                                 </div>
                             </div>
@@ -399,15 +391,24 @@
                     <label class="input-group__label" for="targetEditBulletResistance" data-i18n="ttk.bulletResistance">Пулестойкость</label>
                     <input type="number" id="targetEditBulletResistance" class="input-field" value="0" min="0" max="10000" step="0.01">
                 </div>
-                <div class="input-group">
-                    <label class="input-group__label" for="targetEditRegeneration" data-i18n="ttk.regeneration">Регенерация</label>
-                    <input type="number" id="targetEditRegeneration" class="input-field" value="0" step="0.01">
-                </div>
             </div>
             <div class="target-edit-modal__foot">
                 <button type="button" class="target-edit-modal__btn target-edit-modal__btn--ghost" id="targetEditCancel" data-i18n="ttk.cancel">Отмена</button>
                 <button type="button" class="target-edit-modal__btn target-edit-modal__btn--primary" id="targetEditSave" data-i18n="ttk.save">Сохранить</button>
             </div>
+        </div>
+    </div>
+
+    <div class="ammo-picker" id="ammoPicker" aria-hidden="true">
+        <div class="ammo-picker__backdrop" id="ammoPickerBackdrop"></div>
+        <div class="ammo-picker__dialog" role="dialog" aria-modal="true" aria-labelledby="ammoPickerTitle">
+            <div class="ammo-picker__head">
+                <h3 class="ammo-picker__title" id="ammoPickerTitle" data-i18n="ttk.selectAmmo">Выберите патроны...</h3>
+                <button class="ammo-picker__close" id="ammoPickerClose" type="button" aria-label="Закрыть">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="ammo-picker__body" id="ammoPickerList" role="listbox"></div>
         </div>
     </div>
 

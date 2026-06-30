@@ -13,6 +13,7 @@
     --color-warning: #d4a030;
     --color-dps: #c45430;
     --color-headshot: #d4a030;
+    --color-limb: #7a9ab8;
     --color-ammo: #7a8a50;
     --color-target: #a8782a;
     --color-chart: #8a9a40;
@@ -227,101 +228,6 @@
 .weapon-row__name.rarity--unique { color: #cc1237; background: none; }
 .weapon-row__name.rarity--legendary { color: #ff8c00; background: none; }
 
-.weapon-row__stats {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 2px;
-}
-
-.weapon-row__mag-stepper {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    line-height: 1;
-}
-
-.weapon-row__mag-label {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-}
-
-.weapon-row__mag-controls {
-    display: inline-flex;
-    align-items: stretch;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.28);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    overflow: hidden;
-}
-
-.weapon-row__mag-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    flex-shrink: 0;
-    padding: 0;
-    background: transparent;
-    border: none;
-    color: var(--color-text-muted);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.weapon-row__mag-btn:hover:not(:disabled),
-.weapon-row__mag-btn:focus-visible:not(:disabled) {
-    background: rgba(122, 138, 80, 0.16);
-    color: var(--color-text);
-    outline: none;
-}
-
-.weapon-row__mag-btn:disabled {
-    opacity: 0.35;
-    cursor: default;
-}
-
-.weapon-row__mag-input {
-    width: 28px;
-    height: 100%;
-    padding: 0 2px;
-    background: rgba(255, 255, 255, 0.04);
-    border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    font-family: var(--font-heading);
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--color-text);
-    text-align: center;
-    cursor: text;
-    font-variant-numeric: tabular-nums;
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-
-.weapon-row__mag-input::-webkit-outer-spin-button,
-.weapon-row__mag-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.weapon-row__mag-input:focus {
-    outline: none;
-    background: rgba(122, 138, 80, 0.1);
-}
-
-.weapon-row--active .weapon-row__mag-controls {
-    border-color: color-mix(in srgb, var(--slot-color, var(--slot-color-0)) 35%, rgba(255, 255, 255, 0.12));
-}
-
 .weapon-row__ammo {
     flex: 0 0 auto;
     align-self: stretch;
@@ -390,7 +296,8 @@
 
 .weapon-row__ammo-dropdown.open .custom-dropdown__menu,
 .weapon-row__ammo-dropdown.closing .custom-dropdown__menu,
-.weapon-list-panel > .custom-dropdown__menu.weapon-row__ammo-menu--portaled {
+.weapon-list-panel > .custom-dropdown__menu.weapon-row__ammo-menu--portaled,
+.custom-dropdown__menu.weapon-row__ammo-menu--portaled.weapon-row__ammo-menu--fixed {
     position: absolute;
     right: auto;
     bottom: auto;
@@ -399,6 +306,11 @@
     transition: opacity 0.15s ease, visibility 0.15s ease;
     z-index: 100;
     background: #0c0a09;
+}
+
+.custom-dropdown__menu.weapon-row__ammo-menu--portaled.weapon-row__ammo-menu--fixed {
+    position: fixed;
+    z-index: 2500;
 }
 
 .weapon-row__ammo-dropdown.custom-dropdown.open .custom-dropdown__menu,
@@ -1874,6 +1786,122 @@ body.weapon-picker-open {
     overflow: hidden;
 }
 
+body.ammo-picker-open {
+    overflow: hidden;
+}
+
+/* ── Ammo picker modal (mobile) ── */
+.ammo-picker {
+    position: fixed;
+    inset: 0;
+    z-index: 2200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.ammo-picker.open {
+    opacity: 1;
+    visibility: visible;
+    overscroll-behavior: contain;
+}
+
+.ammo-picker__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(4px);
+}
+
+.ammo-picker__dialog {
+    position: relative;
+    width: 100%;
+    max-height: min(72dvh, 560px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(14, 12, 10, 0.98);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+}
+
+.ammo-picker__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+}
+
+.ammo-picker__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.ammo-picker__close {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.ammo-picker__close svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ammo-picker__close:hover {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ammo-picker__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px;
+}
+
+.ammo-picker__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ammo-picker__list .ammo-dropdown-item {
+    width: 100%;
+}
+
+.ammo-picker__empty {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+
 /* ── Dropdowns ── */
 .custom-dropdown { position: relative; width: 100%; z-index: 10; }
 .custom-dropdown.open { z-index: 1000; }
@@ -2656,7 +2684,8 @@ body.weapon-picker-open {
 .target-list-panel {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
+    min-width: 0;
 }
 
 .target-list-panel__body {
@@ -2667,7 +2696,7 @@ body.weapon-picker-open {
 
 .target-list {
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 12px;
     width: 100%;
     min-width: 0;
@@ -2688,10 +2717,21 @@ body.weapon-picker-open {
     flex-direction: column;
     gap: 8px;
     flex: 0 0 min(228px, 78vw);
+    width: min(228px, 78vw);
     padding: 12px;
     background: rgba(0, 0, 0, 0.32);
     border: 1px solid var(--color-border);
     border-radius: var(--r-md);
+    box-sizing: border-box;
+}
+
+button.target-card {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
 }
 
 .target-card__header {
@@ -2797,58 +2837,45 @@ body.weapon-picker-open {
     flex-shrink: 0;
 }
 
-.target-card__fields {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.target-card__select {
-    width: 100%;
-    height: 34px;
-    padding: 0 28px 0 10px;
-    font-family: var(--font-main);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text);
-    background: rgba(0, 0, 0, 0.28);
-    border: 1px solid var(--color-border);
-    border-radius: var(--r-sm);
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.target-card__select:hover {
-    border-color: rgba(255, 255, 255, 0.14);
-    background-color: rgba(0, 0, 0, 0.36);
-}
-
-.target-card__select:focus {
-    outline: none;
-    border-color: var(--color-target);
-}
-
-.target-card__select option {
-    background: #0c0a09;
-    color: var(--color-text);
-}
-
 .target-card--add {
-    flex: 0 0 min(168px, 56vw);
-    min-width: 168px;
-    align-self: stretch;
-    justify-content: center;
-    align-items: center;
-    padding: 16px 12px;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
     border: 1px dashed var(--color-border);
-    border-radius: var(--r-md);
     background: rgba(0, 0, 0, 0.18);
     cursor: pointer;
     transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.target-card--add::before {
+    content: '';
+    grid-row: 1;
+    min-height: 32px;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.target-card--add .target-card__header {
+    grid-row: 1 / 3;
+    grid-column: 1;
+    place-self: center;
+    z-index: 1;
+    justify-content: center;
+}
+
+.target-card--add .target-card__identity {
+    flex: 0 1 auto;
+    justify-content: center;
+}
+
+.target-card--add .target-card__name {
+    text-align: center;
+}
+
+.target-card--add .target-card__stat--spacer {
+    grid-row: 2;
+    grid-column: 1;
 }
 
 .target-card--add:hover {
@@ -2857,58 +2884,17 @@ body.weapon-picker-open {
     color: var(--color-accent);
 }
 
-.target-card__add-icon {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(168, 120, 42, 0.12);
-    color: var(--color-target);
-    font-size: 28px;
+.target-card__add-plus {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
     line-height: 1;
-    margin-bottom: 8px;
 }
 
-.target-card__add-text {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text);
-    text-align: center;
-    line-height: 1.3;
-}
-
-.target-list__footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 2px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.target-distance {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-}
-
-.target-distance__label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-}
-
-.target-distance__input {
-    width: 88px;
-    height: 34px;
-    padding: 0 10px;
-    text-align: center;
+.target-card__stat--spacer {
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
 }
 
 .target-edit-modal {
@@ -3071,6 +3057,11 @@ body.weapon-picker-open {
     background: rgba(212, 160, 48, 0.15);
 }
 
+.ttk-mode-toggle__btn[data-mode="limb"].ttk-mode-toggle__btn--active {
+    color: var(--color-limb);
+    background: rgba(100, 140, 180, 0.15);
+}
+
 /* ── Chart panel ── */
 .chart-panel__body {
     gap: 0;
@@ -3144,6 +3135,12 @@ body.weapon-picker-open {
     color: var(--color-headshot);
     background: rgba(212, 160, 48, 0.12);
     border-color: rgba(212, 160, 48, 0.22);
+}
+
+.chart-panel:has(.ttk-mode-toggle__btn[data-mode="limb"].ttk-mode-toggle__btn--active) .chart-summary__mode {
+    color: var(--color-limb);
+    background: rgba(100, 140, 180, 0.12);
+    border-color: rgba(100, 140, 180, 0.22);
 }
 
 .chart-summary__sep {
@@ -3290,6 +3287,7 @@ body.weapon-picker-open {
 }
 
 .chart-tooltip__header--head { background: rgba(212, 160, 48, 0.1); }
+.chart-tooltip__header--limb { background: rgba(100, 140, 180, 0.1); }
 
 .chart-tooltip__distance {
     font-size: 15px;
@@ -3299,6 +3297,7 @@ body.weapon-picker-open {
 }
 
 .chart-tooltip__header--head .chart-tooltip__distance { color: var(--color-headshot); }
+.chart-tooltip__header--limb .chart-tooltip__distance { color: var(--color-limb); }
 
 .chart-tooltip__label {
     font-size: 9px;
@@ -3426,6 +3425,11 @@ body.weapon-picker-open {
     border-color: rgba(212, 160, 48, 0.28);
 }
 
+.chart-rank--limb.chart-rank--best {
+    background: rgba(100, 140, 180, 0.08);
+    border-color: rgba(100, 140, 180, 0.28);
+}
+
 .chart-rank__pos {
     display: flex;
     align-items: center;
@@ -3449,6 +3453,11 @@ body.weapon-picker-open {
 .chart-rank--head.chart-rank--best .chart-rank__pos {
     color: var(--color-headshot);
     background: rgba(212, 160, 48, 0.15);
+}
+
+.chart-rank--limb.chart-rank--best .chart-rank__pos {
+    color: var(--color-limb);
+    background: rgba(100, 140, 180, 0.15);
 }
 
 .chart-rank__info {
@@ -3492,6 +3501,7 @@ body.weapon-picker-open {
 
 .chart-rank--best .chart-rank__ttk-value { color: var(--color-positive); }
 .chart-rank--head.chart-rank--best .chart-rank__ttk-value { color: var(--color-headshot); }
+.chart-rank--limb.chart-rank--best .chart-rank__ttk-value { color: var(--color-limb); }
 
 .chart-rank__ttk-unit {
     font-size: 9px;
@@ -3519,6 +3529,11 @@ body.weapon-picker-open {
     background: rgba(212, 160, 48, 0.15);
 }
 
+.chart-rank--limb.chart-rank--best .chart-rank__badge {
+    color: var(--color-limb);
+    background: rgba(100, 140, 180, 0.15);
+}
+
 .chart-placeholder {
     display: flex;
     flex-direction: column;
@@ -3531,7 +3546,6 @@ body.weapon-picker-open {
     color: var(--color-text-muted);
     background: rgba(0, 0, 0, 0.22);
     border-radius: var(--r-md);
-    border: 1px dashed rgba(var(--c-accent-rgb), 0.2);
 }
 
 .chart-placeholder.hidden { display: none; }
@@ -3772,7 +3786,12 @@ body.weapon-picker-open {
 
 .comparison-table__weapon { display: flex; flex-direction: column; gap: 2px; }
 .comparison-table__weapon-name { font-weight: 500; color: var(--color-text); }
-.comparison-table__weapon-rarity { font-size: 9px; font-weight: 600; text-transform: uppercase; }
+.comparison-table__weapon-name.rarity--common { color: #10a115; background: none; }
+.comparison-table__weapon-name.rarity--uncommon { color: #426ce7; background: none; }
+.comparison-table__weapon-name.rarity--collection { color: #e568b3; background: none; }
+.comparison-table__weapon-name.rarity--rare { color: #9b1554; background: none; }
+.comparison-table__weapon-name.rarity--unique { color: #cc1237; background: none; }
+.comparison-table__weapon-name.rarity--legendary { color: #ff8c00; background: none; }
 .comparison-table__best { color: var(--color-positive); font-weight: 600; }
 
 /* ── Responsive ── */
@@ -3784,37 +3803,69 @@ body.weapon-picker-open {
 }
 
 @media (max-width: 768px) {
-    .ttk-calculator { padding-bottom: var(--space-lg); }
+    .ttk-calculator {
+        padding: calc(var(--header-h) + var(--space-sm)) 0 var(--space-md);
+        min-height: 0;
+        height: 100dvh;
+        max-height: 100dvh;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
 
     .ttk-calculator > .container {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
         padding-left: 0;
         padding-right: 0;
     }
 
-    .ttk-page-head,
+    .ttk-page-head {
+        display: none;
+    }
+
     .ttk-slots-bar {
         padding-left: var(--space-md);
         padding-right: var(--space-md);
     }
 
     .ttk-carousel {
+        flex: 1 1 auto;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         gap: var(--space-sm);
         --ttk-carousel-nav-h: 44px;
-        --ttk-carousel-slide-h: calc(100dvh - var(--header-h) - var(--ttk-carousel-nav-h) - var(--space-md) * 2);
+        --ttk-carousel-slide-h: calc(
+            100dvh
+            - var(--header-h)
+            - var(--space-sm)
+            - var(--ttk-carousel-nav-h)
+            - var(--space-sm)
+            - var(--space-md)
+            - env(safe-area-inset-bottom, 0px)
+        );
     }
 
     .ttk-layout {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: var(--ttk-carousel-slide-h);
         display: flex;
         flex-direction: row;
+        align-items: stretch;
         gap: 0;
         overflow-x: auto;
+        overflow-y: hidden;
         scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
+        scroll-behavior: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        overscroll-behavior-x: contain;
+        overscroll-behavior: contain;
+        touch-action: pan-x;
     }
 
     .ttk-layout::-webkit-scrollbar { display: none; }
@@ -3822,13 +3873,45 @@ body.weapon-picker-open {
     .ttk-col {
         flex: 0 0 100%;
         min-width: 100%;
+        min-height: 0;
+        max-height: var(--ttk-carousel-slide-h);
         scroll-snap-align: start;
         scroll-snap-stop: always;
-        max-height: var(--ttk-carousel-slide-h);
         overflow-y: auto;
         overflow-x: hidden;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
         padding: 0 var(--space-md);
         box-sizing: border-box;
+        touch-action: pan-x pan-y;
+    }
+
+    .ttk-col .calc-card,
+    .ttk-col .calc-card__body,
+    .ttk-col .weapon-list-panel,
+    .ttk-col .weapon-list-panel__body,
+    .ttk-col .weapon-list,
+    .ttk-col .weapon-row,
+    .ttk-col .weapon-row__main,
+    .ttk-col .weapon-row__ammo,
+    .ttk-col .target-list-panel,
+    .ttk-col .target-list-panel__body,
+    .ttk-col .target-list,
+    .ttk-col .target-card,
+    .ttk-col .chart-panel,
+    .ttk-col .chart-panel__body,
+    .ttk-col .chart-results,
+    .ttk-col .chart-results__layout,
+    .ttk-col .chart-results__graph,
+    .ttk-col .damage-chart__container,
+    .ttk-col .weapon-preview-panel,
+    .ttk-col .comparison-table {
+        touch-action: inherit;
+    }
+
+    .ttk-col .weapon-list-panel,
+    .ttk-col .target-list-panel {
+        overflow: visible;
     }
 
     .ttk-col:has(.weapon-row__ammo-dropdown.open),
@@ -3839,6 +3922,16 @@ body.weapon-picker-open {
     .ttk-col--preview,
     .ttk-col--results { position: static; }
 
+    .ttk-col--preview .weapon-preview-panel {
+        overflow: visible;
+        height: auto;
+    }
+
+    .ttk-col--preview .weapon-preview-panel .stats-panel__body {
+        max-height: none;
+        overflow: visible;
+    }
+
     .ttk-carousel__nav {
         display: flex;
         gap: 6px;
@@ -3847,6 +3940,7 @@ body.weapon-picker-open {
         background: rgba(0, 0, 0, 0.35);
         border: 1px solid var(--color-border);
         border-radius: var(--r-md);
+        flex: 0 0 auto;
         flex-shrink: 0;
     }
 
@@ -3873,23 +3967,46 @@ body.weapon-picker-open {
         box-shadow: inset 0 0 0 1px rgba(var(--c-accent-rgb), 0.35);
     }
 
+    .weapon-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 28px;
+        grid-template-rows: auto auto;
+        align-items: stretch;
+        overflow: visible;
+    }
+
     .weapon-row__main {
-        flex-wrap: wrap;
-        padding: 6px 8px;
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        padding: 8px 8px 6px;
+    }
+
+    .weapon-row__thumb {
+        width: 72px;
+        height: 24px;
+    }
+
+    .weapon-row__remove {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: stretch;
+        width: 28px;
+        min-width: 28px;
+        min-height: 44px;
     }
 
     .weapon-row__ammo {
-        width: auto;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
         min-width: 0;
-        flex: 1 1 auto;
         border-left: none;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .weapon-row__remove {
-        align-self: stretch;
-        width: 28px;
-        min-width: 28px;
+    .weapon-row--active .weapon-row__ammo {
+        border-top-color: color-mix(in srgb, var(--slot-color, var(--slot-color-0)) 30%, rgba(255, 255, 255, 0.12));
     }
 
     .weapon-row__ammo-dropdown.open .custom-dropdown__menu,
@@ -3900,17 +4017,74 @@ body.weapon-picker-open {
     }
 
     .weapon-row__ammo-trigger {
-        padding: 8px 10px 8px 6px;
+        padding: 10px 10px 10px 8px;
+        min-height: 44px;
     }
 
     .weapon-row__ammo-icon {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
     }
 
     .weapon-row__ammo-icon img {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
+    }
+
+    .calc-card__body.weapon-list-panel__body {
+        max-height: none;
+        overflow: visible;
+        overscroll-behavior: visible;
+    }
+
+    .target-list-panel__body {
+        overflow: visible;
+        min-width: 0;
+    }
+
+    .target-list {
+        padding: 2px 2px 10px;
+        scroll-padding-inline: 4px;
+    }
+
+    .target-card {
+        flex: 0 0 min(240px, calc(100vw - var(--space-md) * 2 - 24px));
+        width: min(240px, calc(100vw - var(--space-md) * 2 - 24px));
+    }
+
+    .target-card--add {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+
+    .target-card--add::before {
+        display: none;
+    }
+
+    .target-card--add .target-card__header {
+        grid-row: auto;
+        grid-column: auto;
+        place-self: auto;
+        justify-content: flex-start;
+    }
+
+    .target-card--add .target-card__identity {
+        justify-content: flex-start;
+    }
+
+    .target-card--add .target-card__name {
+        text-align: left;
+        font-size: 14px;
+    }
+
+    .target-card--add .target-card__stat--spacer {
+        display: flex;
+    }
+
+    .weapon-row__ammo-dropdown .custom-dropdown__menu {
+        display: none !important;
     }
 
     .weapon-picker { padding: 0; align-items: stretch; }
@@ -3967,16 +4141,13 @@ body.weapon-picker-open {
         display: none;
     }
     .input-row { grid-template-columns: 1fr; }
-    .target-list { padding-bottom: 8px; }
-    .target-card { flex-basis: min(210px, 84vw); }
-    .target-card--add { flex-basis: min(148px, 52vw); min-width: 148px; }
-    .target-list__footer { justify-content: stretch; }
-    .target-distance { width: 100%; justify-content: space-between; }
-    .target-distance__input { flex: 1; max-width: 120px; }
     .weapon-details__stats { grid-template-columns: 1fr; }
     .stats-panel__hero { grid-template-columns: 1fr; }
     .hero-stat__value { font-size: 22px; }
     .calc-card__head { flex-wrap: wrap; }
+    .calc-card__body {
+        padding: 12px;
+    }
     .chart-results__layout {
         grid-template-columns: 1fr;
     }
@@ -4007,6 +4178,17 @@ body.weapon-picker-open {
     .chart-rank__name { max-width: 100px; }
     .damage-chart__container { height: 240px; }
     .chart-summary { flex-direction: column; align-items: flex-start; }
+    .weapon-row__name { font-size: 12px; }
+    .target-card {
+        flex: 0 0 min(220px, calc(100vw - var(--space-md) * 2 - 16px));
+        width: min(220px, calc(100vw - var(--space-md) * 2 - 16px));
+    }
+    .target-card__name { font-size: 13px; }
+    .comparison-table__table th,
+    .comparison-table__table td {
+        padding: 9px 10px;
+        font-size: 11px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

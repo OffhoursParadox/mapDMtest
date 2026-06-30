@@ -179,8 +179,14 @@ const DESC_TRANSLATIONS = {
 
 let map;
 let markerLayers = {};
+let markerRegistry = {};
 let activeFilters = new Set();
 let currentLevel = 'surface';
+let markerUpdateScheduled = false;
+let coordUpdateRAF = null;
+let lastMouseLatLng = null;
+
+const MAX_MARKERS_PER_FRAME = 80;
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -524,11 +530,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initControls();
     initLevelSwitcher();
     updateMarkerCounts();
+    scheduleMarkerUpdate(true);
 });
 
 document.addEventListener('languageChanged', () => {
     refreshMarkersPopups();
     updateLevelSwitcherText();
+});
+
+document.addEventListener('fullscreenchange', () => {
+    document.documentElement.classList.toggle('is-fullscreen', !!document.fullscreenElement);
+    setTimeout(() => map?.invalidateSize(), 100);
+    scheduleMarkerUpdate(true);
 });
 
 function initMap() {
@@ -551,6 +564,9 @@ function initMap() {
         bounds: bounds,
         noWrap: true,
         tileSize: MAP_CONFIG.tileSize,
+        updateWhenIdle: true,
+        updateWhenZooming: false,
+        keepBuffer: 2,
         errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
     }).addTo(map);
 
@@ -559,14 +575,24 @@ function initMap() {
     map.setMaxBounds(bounds);
 
     map.on('mousemove', (e) => {
-        const point = map.project(e.latlng, MAP_CONFIG.nativeZoom);
-        document.getElementById('coordX').textContent = Math.round(point.x);
-        document.getElementById('coordY').textContent = Math.round(point.y);
+        lastMouseLatLng = e.latlng;
+        if (coordUpdateRAF) return;
+        coordUpdateRAF = requestAnimationFrame(() => {
+            coordUpdateRAF = null;
+            if (!lastMouseLatLng) return;
+            const point = map.project(lastMouseLatLng, MAP_CONFIG.nativeZoom);
+            const coordX = document.getElementById('coordX');
+            const coordY = document.getElementById('coordY');
+            if (coordX) coordX.textContent = Math.round(point.x);
+            if (coordY) coordY.textContent = Math.round(point.y);
+        });
     });
 
-    setTimeout(() => {
-        if (window.Dynmap) Dynmap.init(map);
-    }, 500);
+    map.on('movestart zoomstart', () => document.body.classList.add('map-interacting'));
+    map.on('moveend zoomend', () => {
+        document.body.classList.remove('map-interacting');
+        scheduleMarkerUpdate(true);
+    });
 }
 
 function initMarkers() {
@@ -577,37 +603,119 @@ function initMarkers() {
             surface: L.layerGroup(),
             underground: L.layerGroup()
         };
+        markerRegistry[type] = { surface: [], underground: [] };
 
         MARKERS_DATA[type].forEach(markerData => {
             const level = markerData.level || 'surface';
             const latLng = map.unproject([markerData.coords[1], markerData.coords[0]], MAP_CONFIG.nativeZoom);
-            const icon = MARKER_ICONS[type];
-            if (!icon) return;
+            if (!MARKER_ICONS[type]) return;
 
-            const popupOptions = markerData.extended
-                ? { maxWidth: 560, minWidth: 360, className: 'extended-popup' }
-                : { maxWidth: 320 };
-
-            const marker = L.marker(latLng, { icon });
-            marker.markerType = type;
-            marker.markerData = markerData;
-            marker.markerLevel = level;
-            marker.bindPopup(() => createMarkerPopup(type, markerData), popupOptions);
-
-            markerLayers[type][level].addLayer(marker);
+            markerRegistry[type][level].push({ latLng, markerData, type, marker: null });
         });
 
-        // Add only the current level's layer group to the map
         markerLayers[type][currentLevel].addTo(map);
         activeFilters.add(type);
     });
+}
+
+function getVisibleBounds() {
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    const latPad = (ne.lat - sw.lat) * 0.15;
+    const lngPad = (ne.lng - sw.lng) * 0.15;
+    return L.latLngBounds(
+        [sw.lat - latPad, sw.lng - lngPad],
+        [ne.lat + latPad, ne.lng + lngPad]
+    );
+}
+
+function scheduleMarkerUpdate(immediate = false) {
+    if (!map) return;
+    if (immediate) {
+        markerUpdateScheduled = false;
+        updateVisibleMarkers();
+        return;
+    }
+    if (markerUpdateScheduled) return;
+    markerUpdateScheduled = true;
+    requestAnimationFrame(() => {
+        markerUpdateScheduled = false;
+        updateVisibleMarkers();
+    });
+}
+
+function createMarkerFromEntry(entry) {
+    const { type, markerData, latLng } = entry;
+    const popupOptions = markerData.extended
+        ? { maxWidth: 560, minWidth: 360, className: 'extended-popup' }
+        : { maxWidth: 320 };
+
+    const marker = L.marker(latLng, { icon: MARKER_ICONS[type] });
+    marker.markerType = type;
+    marker.markerData = markerData;
+    marker.markerLevel = markerData.level || 'surface';
+    marker.bindPopup(() => createMarkerPopup(type, markerData), popupOptions);
+    entry.marker = marker;
+    return marker;
+}
+
+function destroyMarkerEntry(entry, type, level) {
+    if (!entry.marker) return;
+    if (entry.marker.isPopupOpen()) map.closePopup();
+    markerLayers[type][level].removeLayer(entry.marker);
+    entry.marker.remove();
+    entry.marker = null;
+}
+
+function updateVisibleMarkers() {
+    if (!map) return;
+    const bounds = getVisibleBounds();
+    const toAdd = [];
+    const toRemove = [];
+
+    Object.keys(markerRegistry).forEach(type => {
+        const isActive = activeFilters.has(type);
+        ['surface', 'underground'].forEach(level => {
+            const shouldShow = isActive && level === currentLevel;
+            markerRegistry[type][level].forEach(entry => {
+                const inView = bounds.contains(entry.latLng);
+                const needsMarker = shouldShow && inView;
+
+                if (needsMarker && !entry.marker) {
+                    toAdd.push({ entry, type, level });
+                } else if (!needsMarker && entry.marker) {
+                    toRemove.push({ entry, type, level });
+                }
+            });
+        });
+    });
+
+    toRemove.forEach(({ entry, type, level }) => destroyMarkerEntry(entry, type, level));
+
+    if (toAdd.length === 0) return;
+
+    let index = 0;
+    function addBatch() {
+        const end = Math.min(index + MAX_MARKERS_PER_FRAME, toAdd.length);
+        for (; index < end; index++) {
+            const { entry, type, level } = toAdd[index];
+            if (entry.marker) continue;
+            const marker = createMarkerFromEntry(entry);
+            markerLayers[type][level].addLayer(marker);
+        }
+        if (index < toAdd.length) {
+            requestAnimationFrame(addBatch);
+        }
+    }
+    addBatch();
 }
 
 function refreshMarkersPopups() {
     Object.values(markerLayers).forEach(levelGroups => {
         ['surface', 'underground'].forEach(level => {
             levelGroups[level].eachLayer(marker => {
-                if (marker.markerType && marker.markerData) {
+                if (marker.isPopupOpen?.() && marker.markerType && marker.markerData) {
                     marker.setPopupContent(createMarkerPopup(marker.markerType, marker.markerData));
                 }
             });
@@ -666,19 +774,19 @@ function switchLevel(newLevel, animate = true) {
         mapContainer?.classList.remove('underground-active');
     }
 
-    // Swap marker layers
+    // Swap marker layers and refresh visible markers
     Object.keys(markerLayers).forEach(type => {
-        if (!activeFilters.has(type)) return;
-
-        const layers = markerLayers[type];
-        if (layers[oldLevel]) map.removeLayer(layers[oldLevel]);
-        if (layers[newLevel]) layers[newLevel].addTo(map);
+        markerRegistry[type]?.[oldLevel]?.forEach(entry => {
+            if (entry.marker) destroyMarkerEntry(entry, type, oldLevel);
+        });
+        map.removeLayer(markerLayers[type][oldLevel]);
+        if (activeFilters.has(type)) {
+            markerLayers[type][newLevel].addTo(map);
+        }
     });
 
-    // Close any open popups
     map.closePopup();
-
-    // Update counts
+    scheduleMarkerUpdate(true);
     updateMarkerCounts();
 }
 
@@ -780,9 +888,6 @@ function initFilters() {
         checkbox.checked = state;
         if (!state) {
             activeFilters.delete(filter);
-            if (markerLayers[filter]) {
-                map.removeLayer(markerLayers[filter][currentLevel]);
-            }
         }
 
         checkbox.addEventListener('change', () => {
@@ -796,20 +901,24 @@ function initFilters() {
     });
 
     document.querySelector('.filter-group')?.classList.add('open');
+    scheduleMarkerUpdate(true);
 }
 
 function toggleFilter(filterType, isActive) {
     if (isActive) {
         activeFilters.add(filterType);
-        if (markerLayers[filterType]) {
+        if (markerLayers[filterType] && !map.hasLayer(markerLayers[filterType][currentLevel])) {
             markerLayers[filterType][currentLevel].addTo(map);
         }
     } else {
         activeFilters.delete(filterType);
-        if (markerLayers[filterType]) {
-            map.removeLayer(markerLayers[filterType][currentLevel]);
-        }
+        ['surface', 'underground'].forEach(level => {
+            markerRegistry[filterType]?.[level]?.forEach(entry => {
+                if (entry.marker) destroyMarkerEntry(entry, filterType, level);
+            });
+        });
     }
+    scheduleMarkerUpdate(true);
     updateMarkerCounts();
 }
 

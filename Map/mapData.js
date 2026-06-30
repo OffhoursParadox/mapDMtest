@@ -17,15 +17,18 @@ function convertCoords(oldY, oldX) {
 
 // ============================================================
 // ИЗОБРАЖЕНИЯ НАГРАД (лут)
+// Материалы бартера — общая папка images/materials/ (см. getMaterialImagePath в data.js)
 // ============================================================
+const MAP_MATERIALS_ICON = '../images/materials/';
+
 const REWARD_ICONS = {
-    anomaly_filter: { icon: 'images/rewards/anomaly_filter.png', name: { ru: 'Аномальный фильтр', en: 'Anomaly Filter' } },
+    anomaly_filter: { icon: `${MAP_MATERIALS_ICON}anomaly_filter.png`, name: { ru: 'Аномальный фильтр', en: 'Anomaly Filter' } },
     black_box: { icon: 'images/rewards/black_box.png', name: { ru: 'Черный ящик', en: 'Black Box' } },
-    converter: { icon: 'images/rewards/converter.png', name: { ru: 'Преобразователь', en: 'Converter' } },
+    converter: { icon: `${MAP_MATERIALS_ICON}converter.png`, name: { ru: 'Преобразователь', en: 'Converter' } },
     titanium_frame: { icon: 'images/rewards/titanium_frame.png', name: { ru: 'Титановый каркас', en: 'Titanium Frame' } },
     advanced_upgrade_tools: { icon: 'images/rewards/advanced_upgrade_tools.png', name: { ru: 'Инструменты улучшения экипировки (продвинутые)', en: 'Advanced Equipment Upgrade Tools' } },
     spare_parts: { icon: 'images/rewards/spare_parts.png', name: { ru: 'Запасные детали для улучшения экипировки', en: 'Spare Parts for Equipment Upgrade' } },
-    anomaly_detector: { icon: 'images/rewards/anomaly_detector.png', name: { ru: 'Датчик аномальной активности', en: 'Anomaly Activity Detector' } },
+    anomaly_detector: { icon: `${MAP_MATERIALS_ICON}anomaly_detector.png`, name: { ru: 'Датчик аномальной активности', en: 'Anomaly Activity Detector' } },
     basic_upgrade_tools: { icon: 'images/rewards/basic_upgrade_tools.png', name: { ru: 'Инструменты улучшения экипировки (базовые)', en: 'Basic Equipment Upgrade Tools' } },
     basic_armor_kit: { icon: 'images/rewards/basic_armor_kit.png', name: { ru: 'Ремнабор с компонентами брони (базовый)', en: 'Basic Armor Component Repair Kit' } },
     advanced_armor_kit: { icon: 'images/rewards/advanced_armor_kit.png', name: { ru: 'Ремнабор с компонентами брони (продвинутый)', en: 'Advanced Armor Component Repair Kit' } },
@@ -55,7 +58,7 @@ const REWARD_ICONS = {
     snork_hand: { icon: 'images/rewards/snork_hand.png', name: { ru: 'Рука снорка', en: 'Snork Hand' } },
     toy_car: { icon: 'images/rewards/toy_car.png', name: { ru: 'Игрушечная машина', en: 'Toy Car' } },
     toy_doll: { icon: 'images/rewards/toy_doll.png', name: { ru: 'Игрушечная кукла', en: 'Toy Doll' } },
-    hazy_pollen: { icon: 'images/rewards/hazy_pollen.png', name: { ru: 'Мглистая пыльца', en: 'Hazy Pollen' } },
+    hazy_pollen: { icon: `${MAP_MATERIALS_ICON}hazy_pollen.png`, name: { ru: 'Мглистая пыльца', en: 'Hazy Pollen' } },
     ammo_9x39_sp6: { icon: 'images/rewards/ammo_9x39_sp6.png', name: { ru: 'Патроны 9x39 мм СП-6', en: '9x39 mm SP-6 Ammo' } },
     medkit: { icon: 'images/rewards/medkit.png', name: { ru: 'Индивидуальная аптечка', en: 'Individual First Aid Kit' } },
     tourist_breakfast: { icon: 'images/rewards/tourist_breakfast.png', name: { ru: 'Консервы "Завтрак туриста"', en: '"Tourist\'s Breakfast" Canned Food' } },
@@ -64,14 +67,14 @@ const REWARD_ICONS = {
     belomorkanal: { icon: 'images/rewards/belomorkanal.png', name: { ru: 'Пачка сигарет "Беломорканал"', en: '"Belomorkanal" Cigarettes' } },
     tarpaulin: { icon: 'images/rewards/tarpaulin.png', name: { ru: 'Брезент', en: 'Tarpaulin' } },
     servomotors: { icon: 'images/rewards/servomotors.png', name: { ru: 'Сервоприводы', en: 'Servomotors' } },
-    yantar_fragments: { icon: 'images/rewards/yantar_fragments.png', name: { ru: 'Фрагменты "Янтаря"', en: 'Yantar Fragments' } },
+    yantar_fragments: { icon: `${MAP_MATERIALS_ICON}yantar_fragments.png`, name: { ru: 'Фрагменты "Янтаря"', en: 'Yantar Fragments' } },
     rubles_1000: { icon: 'images/rewards/rubles.png', name: { ru: '1 000 рублей', en: '1,000 rubles' } },
     antirad: { icon: 'images/rewards/antirad.png', name: { ru: 'Противорадиационные препараты', en: 'Anti-radiation drugs' } },
     radioprotector: { icon: 'images/rewards/radioprotector.png', name: { ru: 'Радиопротектор', en: 'Radioprotector' } },
     pork_stew: { icon: 'images/rewards/pork_stew.png', name: { ru: 'Тушёнка из свинины', en: 'Pork Stew' } },
     energy_drink: { icon: 'images/rewards/energy_drink.png', name: { ru: 'Энергетический напиток "S.T.A.L.K.E.R"', en: '"S.T.A.L.K.E.R" Energy Drink' } },
-    mandrake_root: { icon: 'images/rewards/mandrake_root.png', name: { ru: 'Корень Мандрагоры', en: 'Mandrake Root' } },
-    mutated_tissue_sample: { icon: 'images/rewards/mutated_tissue_sample.png', name: { ru: 'Мутировавший образец ткани', en: 'Mutated Tissue Sample' } },
+    mandrake_root: { icon: `${MAP_MATERIALS_ICON}mandrake_root.png`, name: { ru: 'Корень Мандрагоры', en: 'Mandrake Root' } },
+    mutated_tissue_sample: { icon: `${MAP_MATERIALS_ICON}mutated_tissue_sample.png`, name: { ru: 'Мутировавший образец ткани', en: 'Mutated Tissue Sample' } },
     scan_flash_drive: { icon: 'images/rewards/scan_flash_drive.png', name: { ru: 'Флеш-диск с результатами сканирования', en: 'Scan Results Flash Drive' } },
     expedition_reports_disk: { icon: 'images/rewards/expedition_reports_disk.png', name: { ru: 'Диск с отчётами экспедиции', en: 'Expedition Reports Disk' } },
     ammo_12x70: { icon: 'images/rewards/ammo_12x70.png', name: { ru: 'Патроны 12x70 Дробь', en: '12x70 Shotgun Shells' } },

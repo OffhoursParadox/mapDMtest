@@ -1,5 +1,5 @@
 function createDefaultSlot() {
-    return { weapon: null, ammo: null, fireMode: 'auto', visible: true, magazineSize: null };
+    return { weapon: null, ammo: null, fireMode: 'auto', visible: true };
 }
 
 const DEFAULT_MAGAZINE_BY_CATEGORY = {
@@ -36,42 +36,11 @@ function getDefaultReloadTime(weapon) {
     return DEFAULT_RELOAD_BY_CATEGORY[weapon.category] ?? 2.5;
 }
 
-function getSlotMagazineSize(slotIndex) {
-    const slot = state.slots[slotIndex];
-    if (!slot?.weapon) return 30;
-    return slot.magazineSize ?? getDefaultMagazineSize(slot.weapon);
-}
-
-function clampMagazineSize(value) {
-    return Math.min(999, Math.max(1, Math.round(Number(value)) || 1));
-}
-
-function setSlotMagazineSize(slotIndex, value) {
-    const slot = state.slots[slotIndex];
-    if (!slot?.weapon) return;
-    slot.magazineSize = clampMagazineSize(value);
-}
-
-function applyMagazineChange(slotIndex) {
-    renderWeaponGrid();
-    calculateResults();
-    updateChart();
-    updateComparisonTable();
-}
-
 const MAX_SLOTS = 20;
 const MAX_TARGETS = 12;
 const DEFAULT_TARGET_HP = 100;
 const DEFAULT_TARGET_BULLET_RESISTANCE = 500;
-
-const TTK_MEDICATIONS = [
-    { id: '', name: 'Медикамент', nameEn: 'Medication' },
-    { id: 'med_bandage', name: 'Бинт', nameEn: 'Bandage', hpBonus: 15 },
-    { id: 'med_army', name: 'Армейская аптечка', nameEn: 'Army medkit', hpBonus: 35, regeneration: 0.5 },
-    { id: 'med_sci', name: 'Научная аптечка', nameEn: 'Scientific medkit', hpBonus: 60, regeneration: 1 },
-    { id: 'med_stim', name: 'Стимулятор', nameEn: 'Stimulant', bulletResistance: 12, regeneration: 2 },
-    { id: 'med_morphine', name: 'Морфин', nameEn: 'Morphine', regeneration: 3, bulletResistance: -5 }
-];
+const LIMB_DAMAGE_MULT = 0.95;
 
 const TARGET_ICON_HELMET = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M12 13.4c-2.9 0-5.2 1.9-5.2 4.2v1.4c0 .7 2.3 1.3 5.2 1.3s5.2-.6 5.2-1.3v-1.4c0-2.3-2.3-4.2-5.2-4.2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
@@ -86,9 +55,7 @@ function createDefaultTarget() {
     return {
         customName: '',
         hp: DEFAULT_TARGET_HP,
-        bulletResistance: DEFAULT_TARGET_BULLET_RESISTANCE,
-        regeneration: 0,
-        medicationId: ''
+        bulletResistance: DEFAULT_TARGET_BULLET_RESISTANCE
     };
 }
 
@@ -105,6 +72,7 @@ const state = {
     activeSlot: 0,
     visibleSlots: 0,
     weaponPickerSlot: null,
+    ammoPickerSlot: null,
     pendingNewSlot: false,
     pickerClickedWeaponId: null,
     pickerPreviewWeaponId: null,
@@ -158,7 +126,6 @@ const elements = {
     weaponPickerPreviewCategory: document.getElementById('weaponPickerPreviewCategory'),
     weaponPickerPreviewStats: document.getElementById('weaponPickerPreviewStats'),
     targetGrid: document.getElementById('targetGrid'),
-    targetDistance: document.getElementById('targetDistance'),
     targetEditModal: document.getElementById('targetEditModal'),
     targetEditBackdrop: document.getElementById('targetEditBackdrop'),
     targetEditClose: document.getElementById('targetEditClose'),
@@ -167,7 +134,10 @@ const elements = {
     targetEditName: document.getElementById('targetEditName'),
     targetEditHp: document.getElementById('targetEditHp'),
     targetEditBulletResistance: document.getElementById('targetEditBulletResistance'),
-    targetEditRegeneration: document.getElementById('targetEditRegeneration'),
+    ammoPicker: document.getElementById('ammoPicker'),
+    ammoPickerBackdrop: document.getElementById('ammoPickerBackdrop'),
+    ammoPickerClose: document.getElementById('ammoPickerClose'),
+    ammoPickerList: document.getElementById('ammoPickerList'),
     damageChart: document.getElementById('damageChart'),
     damageCanvas: document.getElementById('damageCanvas'),
     chartLegend: document.getElementById('chartLegend'),
@@ -339,8 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initLangDropdownClose();
     initWeaponGrid();
     initTargetGrid();
+    initAmmoPicker();
     initWeaponPicker();
-    initEventListeners();
     initChartInteractivity();
     initTtkModeToggle();
     initTtkMobileCarousel();
@@ -502,15 +472,20 @@ function getAmmoDropdownMenu(dropdown) {
 function portalAmmoDropdownMenu(dropdown) {
     const menu = dropdown.querySelector('.custom-dropdown__menu');
     const panel = dropdown.closest('.weapon-list-panel');
-    if (!menu || !panel || dropdown._portaledMenu) return menu;
+    const portalRoot = isMobilePicker() ? document.body : panel;
+    if (!menu || !portalRoot || dropdown._portaledMenu) return menu;
 
     dropdown._menuPortal = {
         parent: menu.parentElement,
-        next: menu.nextSibling
+        next: menu.nextSibling,
+        useFixed: isMobilePicker()
     };
     dropdown._portaledMenu = menu;
     menu.classList.add('weapon-row__ammo-menu--portaled');
-    panel.appendChild(menu);
+    if (isMobilePicker()) {
+        menu.classList.add('weapon-row__ammo-menu--fixed');
+    }
+    portalRoot.appendChild(menu);
     return menu;
 }
 
@@ -531,13 +506,21 @@ function restoreAmmoDropdownMenu(dropdown) {
     } else {
         parent.appendChild(menu);
     }
-    menu.classList.remove('weapon-row__ammo-menu--portaled', 'is-open', 'is-closing', 'weapon-row__ammo-dropdown--flip', 'weapon-row__ammo-dropdown--align-right');
+    menu.classList.remove(
+        'weapon-row__ammo-menu--portaled',
+        'weapon-row__ammo-menu--fixed',
+        'is-open',
+        'is-closing',
+        'weapon-row__ammo-dropdown--flip',
+        'weapon-row__ammo-dropdown--align-right'
+    );
     delete dropdown._portaledMenu;
     delete dropdown._menuPortal;
 }
 
 function clearAmmoDropdownMenuPosition(menu) {
     if (!menu) return;
+    menu.style.position = '';
     menu.style.top = '';
     menu.style.left = '';
     menu.style.right = '';
@@ -605,11 +588,43 @@ function adjustAmmoDropdownPosition(dropdown) {
     const menu = getAmmoDropdownMenu(dropdown);
     const trigger = dropdown.querySelector('.custom-dropdown__trigger');
     const positionRoot = dropdown.closest('.weapon-list-panel');
-    if (!menu || !trigger || !positionRoot) return;
+    if (!menu || !trigger) return;
 
     const triggerRect = trigger.getBoundingClientRect();
+    const useFixed = Boolean(dropdown._menuPortal?.useFixed || menu.classList.contains('weapon-row__ammo-menu--fixed'));
+    const minWidth = useFixed ? Math.min(triggerRect.width, 220) : 272;
+    const width = Math.min(Math.max(triggerRect.width, minWidth), window.innerWidth - 16);
+
+    if (useFixed) {
+        let left = triggerRect.left;
+        if (left + width > window.innerWidth - 8) {
+            dropdown.classList.add('weapon-row__ammo-dropdown--align-right');
+            left = triggerRect.right - width;
+        }
+        left = Math.max(8, left);
+
+        menu.style.position = 'fixed';
+        menu.style.width = `${width}px`;
+        menu.style.maxWidth = `${window.innerWidth - 16}px`;
+        menu.style.left = `${left}px`;
+        menu.style.top = `${triggerRect.bottom + 2}px`;
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+
+        const menuHeight = menu.scrollHeight;
+        if (triggerRect.bottom + menuHeight > window.innerHeight - 8 && triggerRect.top > menuHeight + 8) {
+            dropdown.classList.add('weapon-row__ammo-dropdown--flip');
+            menu.style.top = `${Math.max(8, triggerRect.top - menuHeight - 2)}px`;
+        }
+
+        menu.classList.toggle('weapon-row__ammo-dropdown--flip', dropdown.classList.contains('weapon-row__ammo-dropdown--flip'));
+        menu.classList.toggle('weapon-row__ammo-dropdown--align-right', dropdown.classList.contains('weapon-row__ammo-dropdown--align-right'));
+        return;
+    }
+
+    if (!positionRoot) return;
+
     const rootRect = positionRoot.getBoundingClientRect();
-    const width = Math.min(Math.max(triggerRect.width, 272), window.innerWidth - 16);
     let left = triggerRect.left - rootRect.left;
     let top = triggerRect.bottom - rootRect.top + 2;
 
@@ -618,6 +633,7 @@ function adjustAmmoDropdownPosition(dropdown) {
         left = triggerRect.right - rootRect.left - width;
     }
 
+    menu.style.position = 'absolute';
     menu.style.width = `${width}px`;
     menu.style.maxWidth = `${window.innerWidth - 16}px`;
     menu.style.left = `${Math.max(0, left)}px`;
@@ -730,6 +746,7 @@ function initTtkMobileCarousel() {
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     let activeIndex = 0;
     let scrollRaf = null;
+    let swipeOriginIndex = null;
 
     function isActive() {
         return mobileQuery.matches;
@@ -737,6 +754,18 @@ function initTtkMobileCarousel() {
 
     function getSlideWidth() {
         return track.clientWidth;
+    }
+
+    function getClampedSlideIndex(fromIndex, rawIndex) {
+        const minIndex = Math.max(0, fromIndex - 1);
+        const maxIndex = Math.min(tabs.length - 1, fromIndex + 1);
+        return Math.max(minIndex, Math.min(rawIndex, maxIndex));
+    }
+
+    function getRawSlideIndex() {
+        const width = getSlideWidth();
+        if (width <= 0) return activeIndex;
+        return Math.round(track.scrollLeft / width);
     }
 
     function setActiveSlide(index) {
@@ -770,10 +799,51 @@ function initTtkMobileCarousel() {
         scrollRaf = requestAnimationFrame(() => {
             const width = getSlideWidth();
             if (width <= 0) return;
-            const index = Math.round(track.scrollLeft / width);
+            let index = getRawSlideIndex();
+            if (swipeOriginIndex !== null) {
+                index = getClampedSlideIndex(swipeOriginIndex, index);
+            }
             setActiveSlide(index);
         });
     }, { passive: true });
+
+    function finalizeSwipeScroll() {
+        if (!isActive()) return;
+        const origin = swipeOriginIndex;
+        swipeOriginIndex = null;
+        if (origin === null) return;
+
+        const width = getSlideWidth();
+        if (width <= 0) return;
+
+        const targetIndex = getClampedSlideIndex(origin, getRawSlideIndex());
+        if (Math.abs(track.scrollLeft - width * targetIndex) > 1) {
+            scrollToSlide(targetIndex);
+        } else {
+            setActiveSlide(targetIndex);
+        }
+    }
+
+    track.addEventListener('touchstart', () => {
+        if (!isActive()) return;
+        swipeOriginIndex = activeIndex;
+    }, { passive: true });
+
+    track.addEventListener('touchend', () => {
+        if (!isActive() || swipeOriginIndex === null) return;
+        if ('onscrollend' in track) return;
+        requestAnimationFrame(() => requestAnimationFrame(finalizeSwipeScroll));
+    }, { passive: true });
+
+    track.addEventListener('touchcancel', () => {
+        swipeOriginIndex = null;
+    }, { passive: true });
+
+    if ('onscrollend' in track) {
+        track.addEventListener('scrollend', () => {
+            if (swipeOriginIndex !== null) finalizeSwipeScroll();
+        }, { passive: true });
+    }
 
     const handleLayoutChange = () => {
         if (isActive()) {
@@ -830,6 +900,74 @@ function getFireModeLabel(mode) {
     return mode.toUpperCase();
 }
 
+function renderAmmoPickerList(slotIndex) {
+    if (!elements.ammoPickerList) return;
+
+    const slot = state.slots[slotIndex];
+    const weapon = slot?.weapon;
+    if (!weapon) {
+        elements.ammoPickerList.innerHTML = `<div class="ammo-picker__empty">${t('ttk.selectWeaponFirst', 'Сначала выберите оружие...')}</div>`;
+        return;
+    }
+
+    const ammoOptions = getAmmoForWeapon(weapon);
+    const currentAmmo = slot.ammo;
+
+    if (!ammoOptions.length) {
+        elements.ammoPickerList.innerHTML = `<div class="ammo-picker__empty">${t('ttk.selectAmmo', 'Выберите патроны...')}</div>`;
+        return;
+    }
+
+    elements.ammoPickerList.innerHTML = `
+        <div class="ammo-dropdown-list ammo-picker__list">
+            ${ammoOptions.map(ammo => renderAmmoDropdownItem(ammo, ammo.id === currentAmmo?.id)).join('')}
+        </div>`;
+}
+
+function openAmmoPicker(slotIndex) {
+    if (!elements.ammoPicker || !state.slots[slotIndex]?.weapon) return;
+
+    closeWeaponPicker();
+    closeAmmoDropdowns(null, true);
+    state.ammoPickerSlot = slotIndex;
+    renderAmmoPickerList(slotIndex);
+
+    elements.ammoPicker.classList.add('open');
+    elements.ammoPicker.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('ammo-picker-open');
+}
+
+function closeAmmoPicker() {
+    if (!elements.ammoPicker) return;
+
+    state.ammoPickerSlot = null;
+    elements.ammoPicker.classList.remove('open');
+    elements.ammoPicker.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('ammo-picker-open');
+}
+
+function initAmmoPicker() {
+    if (!elements.ammoPicker) return;
+
+    elements.ammoPickerBackdrop?.addEventListener('click', closeAmmoPicker);
+    elements.ammoPickerClose?.addEventListener('click', closeAmmoPicker);
+
+    elements.ammoPicker?.addEventListener('click', (e) => {
+        const ammoItem = e.target.closest('.ammo-dropdown-item[data-ammo-id]');
+        if (!ammoItem) return;
+
+        const slotIndex = state.ammoPickerSlot;
+        if (slotIndex === null || slotIndex === undefined) return;
+
+        selectAmmoForSlot(slotIndex, ammoItem.dataset.ammoId);
+        closeAmmoPicker();
+    });
+
+    elements.ammoPicker?.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAmmoPicker();
+    });
+}
+
 function initWeaponGrid() {
     if (!elements.weaponGrid) return;
 
@@ -837,9 +975,17 @@ function initWeaponGrid() {
     if (weaponListBody) {
         weaponListBody.addEventListener('scroll', repositionOpenAmmoDropdowns, { passive: true });
     }
+    const ttkInputsCol = document.querySelector('.ttk-col--inputs');
+    if (ttkInputsCol) {
+        ttkInputsCol.addEventListener('scroll', repositionOpenAmmoDropdowns, { passive: true });
+    }
     window.addEventListener('resize', repositionOpenAmmoDropdowns, { passive: true });
+    window.addEventListener('scroll', repositionOpenAmmoDropdowns, { passive: true, capture: true });
 
     document.addEventListener('click', (e) => {
+        const modalAmmoItem = e.target.closest('.ammo-picker .ammo-dropdown-item[data-ammo-id]');
+        if (modalAmmoItem) return;
+
         const ammoItem = e.target.closest('.custom-dropdown__menu--ammo .ammo-dropdown-item[data-ammo-id]');
         if (ammoItem) {
             e.stopPropagation();
@@ -868,6 +1014,15 @@ function initWeaponGrid() {
         if (ammoTrigger) {
             e.stopPropagation();
             const dropdown = ammoTrigger.closest('.weapon-row__ammo-dropdown');
+            const slotIndex = parseInt(dropdown?.dataset.slot, 10);
+
+            if (isMobilePicker()) {
+                if (!Number.isNaN(slotIndex) && !ammoTrigger.disabled) {
+                    openAmmoPicker(slotIndex);
+                }
+                return;
+            }
+
             const willOpen = !dropdown.classList.contains('open');
             closeAmmoDropdowns(willOpen ? dropdown : null);
             if (willOpen) {
@@ -884,25 +1039,6 @@ function initWeaponGrid() {
 
         if (e.target.closest('.weapon-row__ammo-dropdown') || e.target.closest('.weapon-row__ammo-menu--portaled')) return;
 
-        const magDec = e.target.closest('[data-action="mag-dec"]');
-        const magInc = e.target.closest('[data-action="mag-inc"]');
-        if (magDec || magInc) {
-            e.stopPropagation();
-            const row = e.target.closest('.weapon-row[data-slot]');
-            if (!row) return;
-            const slotIndex = parseInt(row.dataset.slot, 10);
-            if (Number.isNaN(slotIndex)) return;
-            const current = getSlotMagazineSize(slotIndex);
-            setSlotMagazineSize(slotIndex, current + (magInc ? 1 : -1));
-            applyMagazineChange(slotIndex);
-            return;
-        }
-
-        if (e.target.closest('.weapon-row__mag-stepper')) {
-            e.stopPropagation();
-            return;
-        }
-
         const row = e.target.closest('.weapon-row[data-slot]');
         if (!row) return;
 
@@ -918,18 +1054,6 @@ function initWeaponGrid() {
         }
 
         selectSlot(slotIndex);
-    });
-
-    elements.weaponGrid.addEventListener('change', (e) => {
-        const input = e.target.closest('.weapon-row__mag-input');
-        if (!input) return;
-        e.stopPropagation();
-        const row = input.closest('.weapon-row[data-slot]');
-        if (!row) return;
-        const slotIndex = parseInt(row.dataset.slot, 10);
-        if (Number.isNaN(slotIndex)) return;
-        setSlotMagazineSize(slotIndex, input.value);
-        applyMagazineChange(slotIndex);
     });
 
 }
@@ -996,6 +1120,7 @@ function resolveSlotIndexForNewWeapon() {
 }
 
 function showWeaponPicker() {
+    closeAmmoPicker();
     elements.weaponPicker.classList.add('open');
     elements.weaponPicker.setAttribute('aria-hidden', 'false');
     document.body.classList.add('weapon-picker-open');
@@ -1039,6 +1164,7 @@ function renderWeaponGrid() {
     if (!elements.weaponGrid) return;
 
     closeAmmoDropdowns(null, true);
+    closeAmmoPicker();
 
     let html = '';
 
@@ -1069,8 +1195,6 @@ function renderWeaponRow(index) {
     const weapon = slot.weapon;
     const rarityClass = weapon.rarity ? ` rarity--${weapon.rarity}` : '';
     const ammoOptions = getAmmoForWeapon(weapon);
-    const magazineSize = getSlotMagazineSize(index);
-    const magazineLabel = t('ttk.stat.magazine', 'Магазин') + ':';
 
     return `
         <div class="weapon-row${activeClass}${dimmedClass}" data-slot="${index}" style="--slot-color: ${slotColor}">
@@ -1078,16 +1202,6 @@ function renderWeaponRow(index) {
                 ${getWeaponThumbHtml(weapon)}
                 <div class="weapon-row__info">
                     <span class="weapon-row__name${rarityClass}">${getLocalizedName(weapon)}</span>
-                    <div class="weapon-row__stats">
-                        <div class="weapon-row__mag-stepper">
-                            <span class="weapon-row__mag-label">${magazineLabel}</span>
-                            <div class="weapon-row__mag-controls">
-                                <button type="button" class="weapon-row__mag-btn" data-action="mag-dec" aria-label="−">−</button>
-                                <input type="text" inputmode="numeric" class="weapon-row__mag-input" value="${magazineSize}" aria-label="${magazineLabel}">
-                                <button type="button" class="weapon-row__mag-btn" data-action="mag-inc" aria-label="+">+</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="weapon-row__ammo">
@@ -1118,8 +1232,7 @@ function duplicateSlot(index) {
         weapon: source.weapon,
         ammo: source.ammo,
         fireMode: source.fireMode || 'auto',
-        visible: source.visible !== false,
-        magazineSize: source.magazineSize
+        visible: source.visible !== false
     };
     selectSlot(targetIndex);
     calculateResults();
@@ -1508,7 +1621,6 @@ function selectWeaponFromDropdown(weaponId) {
     state.slots[slotIndex].ammo = null;
     state.slots[slotIndex].fireMode = weapon.fireModes?.includes('auto') ? 'auto' : (weapon.fireModes?.[0] || 'auto');
     state.slots[slotIndex].visible = true;
-    state.slots[slotIndex].magazineSize = null;
 
     ensureSlotAmmo(slotIndex, true);
     closeWeaponPicker();
@@ -1571,27 +1683,7 @@ function renderWeaponStats() {
     elements.weaponStats.style.display = html ? 'block' : 'none';
 }
 
-function initEventListeners() {
-    if (elements.targetDistance) {
-        elements.targetDistance.addEventListener('input', (e) => {
-            state.targetDistance = Math.max(0, parseFloat(e.target.value) || 0);
-            calculateResults();
-            updateChart();
-            updateComparisonTable();
-        });
-    }
-}
-
 // ==================== СПИСОК ЦЕЛЕЙ ====================
-
-function getMedicationById(id) {
-    return TTK_MEDICATIONS.find(med => med.id === id) || TTK_MEDICATIONS[0];
-}
-
-function getLocalizedMedicationName(medication) {
-    if (!medication) return '';
-    return isEnglish() ? (medication.nameEn || medication.name) : medication.name;
-}
 
 function getTargetBaseBulletResistance(target) {
     if (!target) return 0;
@@ -1600,12 +1692,7 @@ function getTargetBaseBulletResistance(target) {
 
 function getTargetBulletResistance(target) {
     if (!target) return 0;
-
-    let resistance = getTargetBaseBulletResistance(target);
-    const medication = getMedicationById(target.medicationId);
-    if (medication?.bulletResistance) resistance += medication.bulletResistance;
-
-    return Math.max(0, resistance);
+    return Math.max(0, getTargetBaseBulletResistance(target));
 }
 
 function getTargetBaseHP(target) {
@@ -1615,30 +1702,7 @@ function getTargetBaseHP(target) {
 
 function getTargetHP(target) {
     if (!target) return DEFAULT_TARGET_HP;
-
-    let hp = getTargetBaseHP(target);
-    const medication = getMedicationById(target.medicationId);
-    if (medication?.hpBonus) hp += medication.hpBonus;
-
-    return Math.max(1, hp);
-}
-
-function getTargetRegeneration(target) {
-    if (!target) return 0;
-
-    let regen = parseFloat(target.regeneration) || 0;
-    const medication = getMedicationById(target.medicationId);
-    if (medication?.regeneration) regen += medication.regeneration;
-
-    return regen;
-}
-
-function renderMedicationSelectOptions(selectedId) {
-    return TTK_MEDICATIONS.map(item => {
-        const selected = item.id === selectedId ? ' selected' : '';
-        const label = item.id ? getLocalizedMedicationName(item) : getLocalizedMedicationName(TTK_MEDICATIONS[0]);
-        return `<option value="${item.id}"${selected}>${label}</option>`;
-    }).join('');
+    return Math.max(1, getTargetBaseHP(target));
 }
 
 function getActiveTarget() {
@@ -1697,11 +1761,6 @@ function renderTargetCard(index) {
                 <span class="target-card__stat-label">${t('ttk.bulletResistance', 'Пулестойкость')}:</span>
                 <span class="target-card__stat-value">${formatTargetStat(bulletResistance)}</span>
             </div>
-            <div class="target-card__fields">
-                <select class="target-card__select" data-field="medication" aria-label="${t('ttk.medication', 'Медикамент')}">
-                    ${renderMedicationSelectOptions(target.medicationId)}
-                </select>
-            </div>
         </article>`;
 }
 
@@ -1715,8 +1774,16 @@ function renderTargetGrid() {
 
     html += `
         <button type="button" class="target-card target-card--add" data-action="add-dummy" aria-label="${t('ttk.addDummy', 'Добавить манекен')}">
-            <span class="target-card__add-icon">+</span>
-            <span class="target-card__add-text">${t('ttk.addDummy', 'Добавить манекен')}</span>
+            <div class="target-card__header">
+                <div class="target-card__identity">
+                    <div class="target-card__icon" aria-hidden="true"><span class="target-card__add-plus">+</span></div>
+                    <span class="target-card__name">${t('ttk.addDummy', 'Добавить манекен')}</span>
+                </div>
+            </div>
+            <div class="target-card__stat target-card__stat--spacer" aria-hidden="true">
+                <span class="target-card__stat-label">${t('ttk.bulletResistance', 'Пулестойкость')}:</span>
+                <span class="target-card__stat-value">0.00</span>
+            </div>
         </button>`;
 
     elements.targetGrid.innerHTML = html;
@@ -1747,9 +1814,7 @@ function duplicateTarget(index) {
     state.targets[state.visibleTargets] = {
         customName: '',
         hp: source.hp ?? DEFAULT_TARGET_HP,
-        bulletResistance: source.bulletResistance ?? DEFAULT_TARGET_BULLET_RESISTANCE,
-        regeneration: source.regeneration ?? 0,
-        medicationId: source.medicationId ?? ''
+        bulletResistance: source.bulletResistance ?? DEFAULT_TARGET_BULLET_RESISTANCE
     };
     state.visibleTargets += 1;
     state.activeTarget = state.visibleTargets - 1;
@@ -1782,7 +1847,6 @@ function openTargetEditModal(index) {
     elements.targetEditName.value = target.customName || getTargetDisplayName(target, index);
     elements.targetEditHp.value = getTargetBaseHP(target);
     elements.targetEditBulletResistance.value = getTargetBaseBulletResistance(target);
-    elements.targetEditRegeneration.value = parseFloat(target.regeneration) || 0;
 
     elements.targetEditModal.classList.add('open');
     elements.targetEditModal.setAttribute('aria-hidden', 'false');
@@ -1811,7 +1875,6 @@ function saveTargetEdit() {
     target.customName = nextName && nextName !== defaultName ? nextName : '';
     target.hp = Math.max(1, parseFloat(elements.targetEditHp.value) || DEFAULT_TARGET_HP);
     target.bulletResistance = Math.max(0, parseFloat(elements.targetEditBulletResistance.value) || 0);
-    target.regeneration = parseFloat(elements.targetEditRegeneration.value) || 0;
 
     state.activeTarget = index;
     closeTargetEditModal();
@@ -1849,25 +1912,6 @@ function initTargetGrid() {
         }
     });
 
-    elements.targetGrid.addEventListener('change', (e) => {
-        const select = e.target.closest('.target-card__select');
-        if (!select) return;
-
-        const card = select.closest('.target-card[data-target]');
-        if (!card) return;
-
-        const index = parseInt(card.dataset.target, 10);
-        const target = state.targets[index];
-        if (!target || Number.isNaN(index)) return;
-
-        if (select.dataset.field === 'medication') {
-            target.medicationId = select.value;
-        }
-
-        state.activeTarget = index;
-        applyTargetChange();
-    });
-
     elements.targetEditBackdrop?.addEventListener('click', closeTargetEditModal);
     elements.targetEditClose?.addEventListener('click', closeTargetEditModal);
     elements.targetEditCancel?.addEventListener('click', closeTargetEditModal);
@@ -1895,6 +1939,24 @@ function initTargetGrid() {
  *
  * Возвращает объект со всеми данными урона для одного выстрела.
  */
+function getWeaponMaxRange(weapon, ammo) {
+    let effectiveRange = weapon.effectiveRange;
+    const pellets = ammo?.pellets || 1;
+    const isShotgun = pellets > 1;
+
+    if (ammo?.stats?.rangeModifier) {
+        effectiveRange *= (1 + ammo.stats.rangeModifier / 100);
+    }
+
+    const customFalloff = weapon.damageFalloff;
+    if (customFalloff) {
+        const falloffEnd = customFalloff.end ?? effectiveRange;
+        return falloffEnd * 2;
+    }
+
+    return isShotgun ? effectiveRange * 3.5 : effectiveRange * 2;
+}
+
 function computeShotDamage(weapon, ammo, distance, targetArmor) {
     let damageMod = 1.0;
     let pellets = 1;
@@ -1913,23 +1975,38 @@ function computeShotDamage(weapon, ammo, distance, targetArmor) {
 
     const damagePerPellet = weapon.damage * damageMod;
     const isShotgun = pellets > 1;
-    const maxRange = isShotgun ? effectiveRange * 3.5 : effectiveRange * 2;
+    const customFalloff = weapon.damageFalloff;
+    const falloffEnd = customFalloff?.end ?? effectiveRange;
+    const maxRange = getWeaponMaxRange(weapon, ammo);
 
     // Эффективное число попадающих дробин на дистанции
     let hittingPellets = pellets;
     let pelletDamageScale = 1.0; // дополнительное ослабление каждой дробины
 
-    if (distance > maxRange) {
+    if (distance > maxRange && !customFalloff) {
         return {
             damagePerPellet, pellets, hittingPellets: 0,
-            totalBodyDamage: 0, headshotDamage: 0,
+            totalBodyDamage: 0, totalLimbDamage: 0,
+            headshotPelletDamage: 0, headshotTotalDamage: 0, headshotDamage: 0,
             protection: calculateArmorProtection(targetArmor),
             effectiveProtection: Math.max(0, calculateArmorProtection(targetArmor) - ap),
             effectiveRange, maxRange
         };
     }
 
-    if (distance > effectiveRange) {
+    if (customFalloff) {
+        const falloffStart = customFalloff.start ?? effectiveRange;
+        const minScale = customFalloff.minScale ?? 0.4;
+
+        if (distance > falloffStart) {
+            if (distance >= falloffEnd) {
+                pelletDamageScale = minScale;
+            } else {
+                const falloffPercent = (distance - falloffStart) / (falloffEnd - falloffStart);
+                pelletDamageScale = 1 - falloffPercent * (1 - minScale);
+            }
+        }
+    } else if (distance > effectiveRange) {
         const falloffDistance = distance - effectiveRange;
         const maxFalloffDistance = maxRange - effectiveRange;
         const falloffPercent = Math.min(falloffDistance / maxFalloffDistance, 1.0);
@@ -1954,6 +2031,7 @@ function computeShotDamage(weapon, ammo, distance, targetArmor) {
 
     // Урон в тело: все попадающие дробины
     const totalBodyDamage = actualPelletDamage * hittingPellets * armorMultiplier;
+    const totalLimbDamage = totalBodyDamage * LIMB_DAMAGE_MULT;
 
     // Урон в голову: для дробовиков только 1 дробина попадает в голову
     const headshotPelletDamage = actualPelletDamage * weapon.headshotMult * armorMultiplier;
@@ -1970,6 +2048,7 @@ function computeShotDamage(weapon, ammo, distance, targetArmor) {
         pelletDamageScale,
         actualPelletDamage,
         totalBodyDamage,
+        totalLimbDamage,
         headshotPelletDamage,
         headshotTotalDamage,
         headshotDamage: isShotgun ? headshotPelletDamage : headshotTotalDamage,
@@ -1996,8 +2075,6 @@ function calculateSlotDPS(slotIndex) {
     const weapon = slotData.weapon;
     const ammo = slotData.ammo;
     const rpm = weapon.rpm;
-    const magazineSize = getSlotMagazineSize(slotIndex);
-    const reloadTime = getDefaultReloadTime(weapon);
 
     const shot = computeShotDamage(weapon, ammo, state.targetDistance, state.targetArmor);
     const shotAtZero = computeShotDamage(weapon, ammo, 0, state.targetArmor);
@@ -2007,8 +2084,8 @@ function calculateSlotDPS(slotIndex) {
     const dpsHead = calculateDPS(shot.headshotTotalDamage, rpm);
 
     // TTK
-    const ttkBody = calculateTTK(shot.totalBodyDamage, rpm, state.targetHP, magazineSize, reloadTime);
-    const ttkHead = calculateTTK(shot.headshotTotalDamage, rpm, state.targetHP, magazineSize, reloadTime);
+    const ttkBody = calculateTTK(shot.totalBodyDamage, rpm, state.targetHP);
+    const ttkHead = calculateTTK(shot.headshotTotalDamage, rpm, state.targetHP);
 
     const shotsBody = shot.totalBodyDamage > 0 ? Math.ceil(state.targetHP / shot.totalBodyDamage) : Infinity;
     const shotsHead = shot.headshotTotalDamage > 0 ? Math.ceil(state.targetHP / shot.headshotTotalDamage) : Infinity;
@@ -2068,30 +2145,93 @@ function calculateResults() {
     elements.shotsHead.textContent = result.shotsHead === Infinity ? '∞' : result.shotsHead + ' ' + shotsUnit;
 }
 
-function calculateTTKAtDistance(slotIndex, distance, isHeadshot = false) {
+function getShotDamageByMode(shot, mode) {
+    if (mode === 'head') return shot.headshotTotalDamage;
+    if (mode === 'limb') return shot.totalLimbDamage;
+    return shot.totalBodyDamage;
+}
+
+function getTtkModeLabel(mode, uppercase = false) {
+    let label;
+    if (mode === 'head') label = t('ttk.head', 'Голова');
+    else if (mode === 'limb') label = t('ttk.limbs', 'Конечности');
+    else label = t('ttk.body', 'Тело');
+    return uppercase ? label.toUpperCase() : label;
+}
+
+function getChartZoneColor(mode) {
+    if (mode === 'head') return '212, 160, 48';
+    if (mode === 'limb') return '100, 140, 180';
+    return '138, 154, 64';
+}
+
+function getChartTtkAxisLabel(mode) {
+    if (mode === 'head') return isEnglish() ? 'TTK HEAD' : 'TTK ГОЛОВА';
+    if (mode === 'limb') return isEnglish() ? 'TTK LIMBS' : 'TTK КОНЕЧНОСТИ';
+    return isEnglish() ? 'TTK BODY' : 'TTK ТЕЛО';
+}
+
+function getChartModeClass(mode) {
+    if (mode === 'head') return 'chart-rank--head';
+    if (mode === 'limb') return 'chart-rank--limb';
+    return '';
+}
+
+function calculateTTKAtDistance(slotIndex, distance, mode = 'body') {
     const slotData = state.slots[slotIndex];
     if (!slotData.weapon) return Infinity;
 
     const weapon = slotData.weapon;
     const ammo = slotData.ammo;
     const rpm = weapon.rpm;
-    const magazineSize = getSlotMagazineSize(slotIndex);
-    const reloadTime = getDefaultReloadTime(weapon);
 
     const shot = computeShotDamage(weapon, ammo, distance, state.targetArmor);
+    const damagePerShot = getShotDamageByMode(shot, mode);
 
-    const damagePerShot = isHeadshot ? shot.headshotTotalDamage : shot.totalBodyDamage;
-
-    if (damagePerShot <= 0) return Infinity;
-    return calculateTTK(damagePerShot, rpm, state.targetHP, magazineSize, reloadTime);
+    if (!Number.isFinite(damagePerShot) || damagePerShot <= 0) return Infinity;
+    const ttk = calculateTTK(damagePerShot, rpm, state.targetHP);
+    return Number.isFinite(ttk) ? ttk : Infinity;
 }
 
-function calculateDamageAtDistance(slotIndex, distance, isHeadshot = false) {
+function calculateDamageAtDistance(slotIndex, distance, mode = 'body') {
     const slotData = state.slots[slotIndex];
     if (!slotData.weapon) return 0;
 
     const shot = computeShotDamage(slotData.weapon, slotData.ammo, distance, state.targetArmor);
-    return isHeadshot ? shot.headshotTotalDamage : shot.totalBodyDamage;
+    return getShotDamageByMode(shot, mode);
+}
+
+function drawChartFillSegment(ctx, segment, bottomY) {
+    if (segment.length < 2) return;
+    const lastX = segment[segment.length - 1].x;
+    ctx.moveTo(segment[0].x, bottomY);
+    ctx.lineTo(segment[0].x, segment[0].y);
+    for (let k = 1; k < segment.length; k++) ctx.lineTo(segment[k].x, segment[k].y);
+    ctx.lineTo(lastX, bottomY);
+    ctx.closePath();
+}
+
+function sampleChartCurveSegments(slotIndex, maxRange, chartWidth, chartHeight, height, padding, maxTTK, chartMode, points = 100) {
+    const segments = [];
+    let segment = [];
+
+    for (let i = 0; i <= points; i++) {
+        const distance = (maxRange / points) * i;
+        const ttk = calculateTTKAtDistance(slotIndex, distance, chartMode);
+        if (!Number.isFinite(ttk) || ttk === Infinity || ttk > maxTTK) {
+            if (segment.length >= 2) segments.push(segment);
+            segment = [];
+            continue;
+        }
+
+        segment.push({
+            x: padding.left + (distance / maxRange) * chartWidth,
+            y: height - padding.bottom - (ttk / maxTTK) * chartHeight
+        });
+    }
+
+    if (segment.length >= 2) segments.push(segment);
+    return segments;
 }
 
 // ==================== ГРАФИК ====================
@@ -2104,22 +2244,18 @@ function getChartCanvasHeight() {
 
 function updateChartSummary() {
     const meterUnit = isEnglish() ? 'm' : 'м';
-    const isHeadMode = state.ttkMode === 'head';
+    const mode = state.ttkMode;
 
     if (elements.chartDistanceValue) {
         elements.chartDistanceValue.textContent = `${state.targetDistance} ${meterUnit}`;
     }
 
     if (elements.chartModeLabel) {
-        elements.chartModeLabel.textContent = isHeadMode
-            ? t('ttk.head', 'Голова')
-            : t('ttk.body', 'Тело');
+        elements.chartModeLabel.textContent = getTtkModeLabel(mode);
     }
 
     if (elements.chartRankingSubtitle) {
-        const modeLabel = isHeadMode
-            ? t('ttk.head', 'Голова').toLowerCase()
-            : t('ttk.body', 'Тело').toLowerCase();
+        const modeLabel = getTtkModeLabel(mode).toLowerCase();
         elements.chartRankingSubtitle.textContent = `@ ${state.targetDistance}${meterUnit} · ${modeLabel}`;
     }
 }
@@ -2159,21 +2295,26 @@ function updateChart() {
     let maxRange = 100;
     let maxTTK = 0;
 
-    const isHeadMode = state.ttkMode === 'head';
+    const chartMode = state.ttkMode;
 
     for (let i = 0; i < state.visibleSlots; i++) {
         if (!isSlotOnChart(i)) continue;
         const weapon = state.slots[i].weapon;
         const ammo = state.slots[i].ammo;
-        let effectiveRange = weapon.effectiveRange;
-        if (ammo?.stats?.rangeModifier) {
-            effectiveRange = effectiveRange * (1 + ammo.stats.rangeModifier / 100);
-        }
-        maxRange = Math.max(maxRange, effectiveRange * 2);
-        const ttkAtMaxRange = calculateTTKAtDistance(i, maxRange, isHeadMode);
-        if (ttkAtMaxRange !== Infinity) maxTTK = Math.max(maxTTK, ttkAtMaxRange);
+        maxRange = Math.max(maxRange, getWeaponMaxRange(weapon, ammo));
     }
 
+    const ttkSamples = 100;
+    for (let i = 0; i < state.visibleSlots; i++) {
+        if (!isSlotOnChart(i)) continue;
+        for (let j = 0; j <= ttkSamples; j++) {
+            const distance = (maxRange / ttkSamples) * j;
+            const ttk = calculateTTKAtDistance(i, distance, chartMode);
+            if (Number.isFinite(ttk)) maxTTK = Math.max(maxTTK, ttk);
+        }
+    }
+
+    if (!Number.isFinite(maxTTK) || maxTTK <= 0) maxTTK = 2;
     maxTTK = Math.max(maxTTK * 1.2, 2);
 
     canvas.dataset.maxRange = maxRange;
@@ -2187,7 +2328,7 @@ function updateChart() {
     ctx.fillRect(padding.left, padding.top, chartWidth, chartHeight);
 
     const fastKillZone = chartHeight * 0.25;
-    const zoneColor = isHeadMode ? '212, 160, 48' : '138, 154, 64';
+    const zoneColor = getChartZoneColor(chartMode);
     const gradient = ctx.createLinearGradient(0, height - padding.bottom - fastKillZone, 0, height - padding.bottom);
     gradient.addColorStop(0, `rgba(${zoneColor}, 0)`);
     gradient.addColorStop(1, `rgba(${zoneColor}, 0.12)`);
@@ -2218,9 +2359,7 @@ function updateChart() {
     const meterUnit = isEnglish() ? 'm' : 'м';
     const secUnit = isEnglish() ? 's' : 'с';
     const distanceLabel = isEnglish() ? 'DISTANCE' : 'ДИСТАНЦИЯ';
-    const ttkLabel = isHeadMode
-        ? (isEnglish() ? 'TTK HEAD' : 'TTK ГОЛОВА')
-        : (isEnglish() ? 'TTK BODY' : 'TTK ТЕЛО');
+    const ttkLabel = getChartTtkAxisLabel(chartMode);
 
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = '10px Roboto';
@@ -2274,54 +2413,27 @@ function updateChart() {
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+
+        const curveSegments = sampleChartCurveSegments(
+            slotIndex, maxRange, chartWidth, chartHeight, height, padding, maxTTK, chartMode
+        );
+
         ctx.beginPath();
-
-        const points = 100;
-        let firstPoint = true;
-
-        for (let i = 0; i <= points; i++) {
-            const distance = (maxRange / points) * i;
-            const ttk = calculateTTKAtDistance(slotIndex, distance, isHeadMode);
-            if (ttk === Infinity || ttk > maxTTK) continue;
-
-            const x = padding.left + (distance / maxRange) * chartWidth;
-            const y = height - padding.bottom - (ttk / maxTTK) * chartHeight;
-
-            if (firstPoint) {
-                ctx.moveTo(x, y);
-                firstPoint = false;
-            } else {
-                ctx.lineTo(x, y);
-            }
+        for (const segment of curveSegments) {
+            ctx.moveTo(segment[0].x, segment[0].y);
+            for (let k = 1; k < segment.length; k++) ctx.lineTo(segment[k].x, segment[k].y);
         }
         ctx.stroke();
 
-        ctx.beginPath();
-        firstPoint = true;
-        let lastX = padding.left;
-
-        for (let i = 0; i <= points; i++) {
-            const distance = (maxRange / points) * i;
-            const ttk = calculateTTKAtDistance(slotIndex, distance, isHeadMode);
-            if (ttk === Infinity || ttk > maxTTK) continue;
-
-            const x = padding.left + (distance / maxRange) * chartWidth;
-            const y = height - padding.bottom - (ttk / maxTTK) * chartHeight;
-
-            if (firstPoint) {
-                ctx.moveTo(x, height - padding.bottom);
-                ctx.lineTo(x, y);
-                firstPoint = false;
-            } else {
-                ctx.lineTo(x, y);
+        if (curveSegments.length) {
+            ctx.beginPath();
+            const bottomY = height - padding.bottom;
+            for (const segment of curveSegments) {
+                drawChartFillSegment(ctx, segment, bottomY);
             }
-            lastX = x;
+            ctx.fillStyle = hexToRgba(color, 0.1);
+            ctx.fill();
         }
-
-        ctx.lineTo(lastX, height - padding.bottom);
-        ctx.closePath();
-        ctx.fillStyle = hexToRgba(color, 0.1);
-        ctx.fill();
 
         const effX = padding.left + (effectiveRange / maxRange) * chartWidth;
         if (effX < width - padding.right) {
@@ -2341,7 +2453,7 @@ function updateChart() {
         }
 
         if (state.targetDistance > 0 && state.targetDistance <= maxRange) {
-            const ttk = calculateTTKAtDistance(slotIndex, state.targetDistance, isHeadMode);
+            const ttk = calculateTTKAtDistance(slotIndex, state.targetDistance, chartMode);
             if (ttk !== Infinity && ttk <= maxTTK) {
                 const pointX = padding.left + (state.targetDistance / maxRange) * chartWidth;
                 const pointY = height - padding.bottom - (ttk / maxTTK) * chartHeight;
@@ -2368,9 +2480,9 @@ function updateChart() {
             name: getLocalizedName(weapon),
             color: color,
             slotIndex: slotIndex,
-            ttk: calculateTTKAtDistance(slotIndex, state.targetDistance || 0, isHeadMode),
+            ttk: calculateTTKAtDistance(slotIndex, state.targetDistance || 0, chartMode),
             shots: (() => {
-                const dmg = calculateDamageAtDistance(slotIndex, state.targetDistance || 0, isHeadMode);
+                const dmg = calculateDamageAtDistance(slotIndex, state.targetDistance || 0, chartMode);
                 return dmg > 0 ? Math.ceil(state.targetHP / dmg) : Infinity;
             })()
         });
@@ -2407,7 +2519,7 @@ function renderChartLegend(items) {
         return a.ttk - b.ttk;
     });
 
-    const isHeadMode = state.ttkMode === 'head';
+    const chartMode = state.ttkMode;
     const secUnit = t('ttk.sec', 'сек');
     const shotsUnit = t('ttk.shots', 'выстр.');
     const bestLabel = t('ttk.chartBest', 'Лучший');
@@ -2415,7 +2527,7 @@ function renderChartLegend(items) {
     elements.chartLegend.innerHTML = items.map((item, index) => {
         const isBest = index === 0 && item.ttk !== Infinity;
         const rankClass = isBest ? 'chart-rank--best' : '';
-        const modeClass = isHeadMode ? 'chart-rank--head' : '';
+        const modeClass = getChartModeClass(chartMode);
         const ttkValue = formatChartTtk(item.ttk, secUnit);
         const shotsText = item.shots === Infinity ? '∞' : item.shots;
 
@@ -2478,7 +2590,7 @@ function initChartInteractivity() {
         }
 
         const maxRange = parseFloat(elements.damageCanvas.dataset.maxRange) || 100;
-        const isHeadMode = state.ttkMode === 'head';
+        const chartMode = state.ttkMode;
         const distance = ((x - padding.left) / chartWidth) * maxRange;
         const meterUnit = isEnglish() ? 'm' : 'м';
 
@@ -2491,8 +2603,8 @@ function initChartInteractivity() {
             if (!isSlotOnChart(i)) continue;
             const slotData = state.slots[i];
 
-            const ttk = calculateTTKAtDistance(i, distance, isHeadMode);
-            const damageAtDist = calculateDamageAtDistance(i, distance, isHeadMode);
+            const ttk = calculateTTKAtDistance(i, distance, chartMode);
+            const damageAtDist = calculateDamageAtDistance(i, distance, chartMode);
             const shotsNeeded = damageAtDist > 0 ? Math.ceil(state.targetHP / damageAtDist) : Infinity;
 
             tooltipItems.push({
@@ -2511,12 +2623,13 @@ function initChartInteractivity() {
 
         const secUnit = t('ttk.sec', 'сек');
         const shotsUnit = t('ttk.shots', 'выстр.');
-        const modeLabel = isHeadMode
-            ? t('ttk.head', 'Голова').toUpperCase()
-            : t('ttk.body', 'Тело').toUpperCase();
+        const modeLabel = getTtkModeLabel(chartMode, true);
+        const tooltipHeaderClass = chartMode === 'head'
+            ? 'chart-tooltip__header--head'
+            : (chartMode === 'limb' ? 'chart-tooltip__header--limb' : '');
 
         let tooltipContent = `
-            <div class="chart-tooltip__header ${isHeadMode ? 'chart-tooltip__header--head' : ''}">
+            <div class="chart-tooltip__header ${tooltipHeaderClass}">
                 <span class="chart-tooltip__distance">${Math.round(distance)} ${meterUnit}</span>
                 <span class="chart-tooltip__label">${modeLabel}</span>
             </div>
@@ -2564,7 +2677,6 @@ function initChartInteractivity() {
         const maxRange = parseFloat(elements.damageCanvas.dataset.maxRange) || 100;
         const distance = Math.round(((x - padding.left) / chartWidth) * maxRange);
         state.targetDistance = distance;
-        elements.targetDistance.value = distance;
 
         calculateResults();
         updateChart();
@@ -2683,17 +2795,13 @@ function updateComparisonTable() {
         const isBestTTK = r.ttkBody === bestTTK && r.ttkBody !== Infinity;
         const isBestDamage = r.armorDamage === bestDamage;
 
-        const localizedRarity = getLocalizedRarityName(slot.weapon.rarity);
-        const rarityHtml = localizedRarity
-            ? `<span class="comparison-table__weapon-rarity rarity--${slot.weapon.rarity}">${localizedRarity}</span>`
-            : '';
+        const rarityClass = slot.weapon.rarity ? ` rarity--${slot.weapon.rarity}` : '';
 
         html += `
             <tr style="border-left: 3px solid ${SLOT_COLORS[slot.index]}">
                 <td>
                     <div class="comparison-table__weapon">
-                        <span class="comparison-table__weapon-name">${getLocalizedName(slot.weapon)}</span>
-                        ${rarityHtml}
+                        <span class="comparison-table__weapon-name${rarityClass}">${getLocalizedName(slot.weapon)}</span>
                     </div>
                 </td>
                 <td>${slot.ammo ? getLocalizedName(slot.ammo).replace(/^(Патроны |Ammo )/, '') : '—'}</td>
