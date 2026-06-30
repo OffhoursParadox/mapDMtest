@@ -866,6 +866,52 @@ const WEAPON_CATEGORIES = {
 
 // ============== HELPER FUNCTIONS ==============
 const ITEMS_IMAGES_DIR = 'images/items/';
+const MATERIALS_IMAGES_DIR = 'images/materials/';
+
+function getWikiAssetBasePath() {
+    if (typeof document === 'undefined') {
+        return '../';
+    }
+
+    const dataScript = document.querySelector('script[src*="data/data.js"]');
+    if (dataScript) {
+        const srcAttr = dataScript.getAttribute('src');
+        const scriptUrl = dataScript.src || (srcAttr ? new URL(srcAttr, document.baseURI).href : '');
+        if (scriptUrl) {
+            return new URL('../', scriptUrl).href;
+        }
+    }
+
+    const segments = decodeURIComponent(window.location.pathname || '')
+        .split('/')
+        .filter(Boolean);
+    const nestedPages = ['map', 'table', 'calculator', 'ttk', 'barter'];
+    const isNestedPage = nestedPages.some(page => segments.some(segment => {
+        const normalized = segment.toLowerCase();
+        return normalized === page || normalized === `${page}.html`;
+    }));
+
+    return new URL(isNestedPage ? '../' : './', document.baseURI).href;
+}
+
+function resolveWikiAssetUrl(relativePath, basePath) {
+    if (typeof document === 'undefined') {
+        const base = basePath ?? '../';
+        return `${base}${relativePath}`;
+    }
+
+    const base = basePath != null
+        ? new URL(basePath, document.baseURI).href
+        : getWikiAssetBasePath();
+
+    return new URL(relativePath, base).href;
+}
+
+function getMaterialImagePath(materialId, imageFile, basePath = '../') {
+    if (!materialId) return null;
+    const file = imageFile || `${materialId}.png`;
+    return resolveWikiAssetUrl(`${MATERIALS_IMAGES_DIR}${file}`, basePath);
+}
 
 function getItemImagePath(imageFolder, image, basePath = '../') {
     return `${basePath}${ITEMS_IMAGES_DIR}${imageFolder}/${image}`;
@@ -1004,7 +1050,7 @@ const WEAPONS = [
     { id: 'aks74u', image: 'aks74u.png', imageFolder: 'Weapons', name: 'АКС-74У', nameEn: 'AKS-74U', category: 'assault', damage: 30, rpm: 650, headshotMult: 1.25, effectiveRange: 58.0, fireModes: ['auto', 'single'], ammoTypes: ['545x39_ps', '545x39_bp', '545x39_snp'], stats: { verticalRecoil: 1.87, horizontalRecoil: 0.92, hipSpread: 0.67, adsSpread: 0.33 } },
     { id: 'ak74m', image: 'ak74m.png', imageFolder: 'Weapons', name: 'АК-74М', nameEn: 'AK-74M', category: 'assault', rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon', damage: 32, rpm: 650, headshotMult: 1.25, effectiveRange: 105.0, fireModes: ['auto', 'single'], ammoTypes: ['545x39_ps', '545x39_bp', '545x39_snp'], stats: { verticalRecoil: 1.94, horizontalRecoil: 0.79, hipSpread: 0.65, adsSpread: 0.25 } },
     { id: 'm16a2', image: 'm16a2.png', imageFolder: 'Weapons', name: 'M16A2', nameEn: 'M16A2', category: 'assault', damage: 29, rpm: 750, headshotMult: 1.25, effectiveRange: 100.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.83, horizontalRecoil: 0.66, hipSpread: 0.67, adsSpread: 0.24 } },
-    { id: 'm4', image: 'm4.png', imageFolder: 'Weapons', name: 'M4', nameEn: 'M4', category: 'assault', rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common', damage: 29, rpm: 800, headshotMult: 1.25, effectiveRange: 100.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.92, horizontalRecoil: 0.72, hipSpread: 0.64, adsSpread: 0.22 } },
+    { id: 'm4', image: 'm4.png', imageFolder: 'Weapons', name: 'M4', nameEn: 'M4', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 29, rpm: 800, headshotMult: 1.25, effectiveRange: 100.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.92, horizontalRecoil: 0.72, hipSpread: 0.64, adsSpread: 0.22 } },
     { id: 'l85a1', image: 'l85a1.png', imageFolder: 'Weapons', name: 'L85A1', nameEn: 'L85A1', category: 'assault', rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common', damage: 30, rpm: 650, headshotMult: 1.25, effectiveRange: 110.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.35, horizontalRecoil: 1.15, hipSpread: 0.64, adsSpread: 0.23 } },
     { id: 'sig_sg550', image: 'sig_sg550.png', imageFolder: 'Weapons', name: 'SIG SG 550', nameEn: 'SIG SG 550', category: 'assault', rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon', damage: 31, rpm: 650, headshotMult: 1.25, effectiveRange: 108.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.68, horizontalRecoil: 0.59, hipSpread: 0.62, adsSpread: 0.22 } },
     { id: 'steyr_aug_a1', image: 'steyr_aug_a1.png', imageFolder: 'Weapons', name: 'Steyr AUG A1', nameEn: 'Steyr AUG A1', category: 'assault', rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon', damage: 31, rpm: 700, headshotMult: 1.25, effectiveRange: 110.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.44, horizontalRecoil: 0.92, hipSpread: 0.55, adsSpread: 0.20 } },
@@ -1015,7 +1061,7 @@ const WEAPONS = [
     { id: '9a91', image: '9a91.png', imageFolder: 'Weapons', name: '9А-91', nameEn: '9A-91', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 35, rpm: 700, headshotMult: 1.35, effectiveRange: 76.0, fireModes: ['auto', 'single'], ammoTypes: ['9x39_sp5', '9x39_sp6'], stats: { verticalRecoil: 1.62, horizontalRecoil: 0.60, hipSpread: 0.64, adsSpread: 0.19 } },
     { id: 'sr3_vikhr', image: 'sr3_vikhr.png', imageFolder: 'Weapons', name: 'СР-3 «Вихрь»', nameEn: 'SR-3 "Vikhr"', category: 'assault', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 33, rpm: 800, headshotMult: 1.35, effectiveRange: 66.0, fireModes: ['auto', 'single'], ammoTypes: ['9x39_sp5', '9x39_sp6'], stats: { verticalRecoil: 1.77, horizontalRecoil: 0.51, hipSpread: 0.73, adsSpread: 0.33 } },
     { id: 'ak105', image: 'ak105.png', imageFolder: 'Weapons', name: 'АК-105', nameEn: 'AK-105', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 33, rpm: 650, headshotMult: 1.25, effectiveRange: 86.0, fireModes: ['auto', 'single'], ammoTypes: ['545x39_ps', '545x39_bp', '545x39_snp'], stats: { verticalRecoil: 1.72, horizontalRecoil: 0.61, hipSpread: 0.58, adsSpread: 0.23 } },
-    { id: 'm4a1', image: 'm4a1.png', imageFolder: 'Weapons', name: 'M4A1', nameEn: 'M4A1', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 30, rpm: 850, headshotMult: 1.25, effectiveRange: 106.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.81, horizontalRecoil: 0.68, hipSpread: 0.52, adsSpread: 0.20 } },
+    { id: 'm4a1', image: 'm4a1.png', imageFolder: 'Weapons', name: 'M4A1', nameEn: 'M4A1', category: 'assault', rarity: 'common', rarityName: 'Распространённое', rarityNameEn: 'Common', damage: 30, rpm: 850, headshotMult: 1.25, effectiveRange: 106.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.81, horizontalRecoil: 0.68, hipSpread: 0.52, adsSpread: 0.20 } },
     { id: 'fn_scar_l', image: 'fn_scar_l.png', imageFolder: 'Weapons', name: 'FN SCAR-L', nameEn: 'FN SCAR-L', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 32.5, rpm: 625, headshotMult: 1.25, effectiveRange: 136.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.35, horizontalRecoil: 0.38, hipSpread: 0.44, adsSpread: 0.15 } },
     { id: 'hk_g36', image: 'hk_g36.png', imageFolder: 'Weapons', name: 'HK G36', nameEn: 'HK G36', category: 'assault', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 33, rpm: 750, headshotMult: 1.25, effectiveRange: 124.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.62, horizontalRecoil: 0.33, hipSpread: 0.65, adsSpread: 0.05 } },
     { id: 'fn_f2000', image: 'fn_f2000.png', imageFolder: 'Weapons', name: 'FN F2000', nameEn: 'FN F2000', category: 'assault', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 33.50, rpm: 850, headshotMult: 1.25, effectiveRange: 136.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.27, horizontalRecoil: 0.64, hipSpread: 0.96, adsSpread: 0.18 } },
@@ -1037,7 +1083,7 @@ const WEAPONS = [
     { id: 'lr300', image: 'lr300.png', imageFolder: 'Weapons', name: 'LR-300', nameEn: 'LR-300', category: 'assault', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 33, rpm: 950, headshotMult: 1.25, effectiveRange: 74.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.71, horizontalRecoil: 0.54, hipSpread: 0.53, adsSpread: 0.20 } },
     { id: 'fn_fal', image: 'fn_fal.png', imageFolder: 'Weapons', name: 'FN FAL', nameEn: 'FN FAL', category: 'assault', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 45, rpm: 675, headshotMult: 1.25, effectiveRange: 124.0, fireModes: ['auto', 'single'], ammoTypes: ['762x51_m59', '762x51_m61'], stats: { verticalRecoil: 3.19, horizontalRecoil: 1.12, hipSpread: 0.72, adsSpread: 0.12 } },
     { id: 'as_val', image: 'as_val.png', imageFolder: 'Weapons', name: 'АС «Вал»', nameEn: 'AS "Val"', category: 'assault', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 32, rpm: 925, headshotMult: 1.35, effectiveRange: 70.0, fireModes: ['auto', 'single'], ammoTypes: ['9x39_sp5', '9x39_sp6'], stats: { verticalRecoil: 1.86, horizontalRecoil: 0.31, hipSpread: 0.62, adsSpread: 0.21 } },
-    { id: 'ash12', image: 'ash12.png', imageFolder: 'Weapons', name: 'АШ-12', nameEn: 'ASh-12', category: 'assault', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 53, rpm: 575, headshotMult: 1.25, effectiveRange: 76.0, fireModes: ['auto', 'single'], ammoTypes: ['127x55'], stats: { verticalRecoil: 4.35, horizontalRecoil: 1.86, hipSpread: 0.55, adsSpread: 0.18, armorPenetration: 5 } },
+    { id: 'ash12', image: 'ash12.png', imageFolder: 'Weapons', name: 'АШ-12', nameEn: 'ASh-12', category: 'assault', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 53, rpm: 575, headshotMult: 1.25, effectiveRange: 18.0, damageFalloff: { end: 76.0, minScale: 7.39 / 18.48 }, fireModes: ['auto', 'single'], ammoTypes: ['127x55'], stats: { verticalRecoil: 4.35, horizontalRecoil: 1.86, hipSpread: 0.55, adsSpread: 0.18, armorPenetration: 5 } },
     { id: 'gorn', image: 'gorn.png', imageFolder: 'Weapons', name: '«Горн»', nameEn: '"Gorn"', category: 'assault', rarity: 'uncommon', rarityName: 'Необычное', rarityNameEn: 'Uncommon', damage: 29, rpm: 850, headshotMult: 1.25, effectiveRange: 76.0, fireModes: ['auto', 'single'], ammoTypes: ['556x45_m855', '556x45_m995', '556x45_hp'], stats: { verticalRecoil: 1.45, horizontalRecoil: 1.21, hipSpread: 0.58, adsSpread: 0.24 } },
     { id: 'aks74u_modified', image: 'aks74u_modified.png', imageFolder: 'Weapons', name: 'Модифицированный АКС-74У', nameEn: 'Modified AKS-74U', category: 'assault', damage: 30, rpm: 675, headshotMult: 1.25, effectiveRange: 62.0, fireModes: ['auto', 'single'], ammoTypes: ['545x39_ps', '545x39_bp', '545x39_snp'], stats: { verticalRecoil: 1.84, horizontalRecoil: 0.90, hipSpread: 0.58, adsSpread: 0.28 } },
     { id: 'an94_assault', image: 'an94_assault.png', imageFolder: 'Weapons', name: 'АН-94 «Абакан» штурмовой', nameEn: 'AN-94 "Abakan" Assault', category: 'assault', rarity: 'collection', rarityName: 'Коллекционное', rarityNameEn: 'Collection', damage: 35, rpm: 625, headshotMult: 1.25, effectiveRange: 112.0, fireModes: ['auto', 'single'], ammoTypes: ['545x39_ps', '545x39_bp', '545x39_snp'], stats: { verticalRecoil: 1.92, horizontalRecoil: 0.41, hipSpread: 0.74, adsSpread: 0.19 } },
@@ -1100,7 +1146,7 @@ const WEAPONS = [
     { id: 'toz66', image: 'toz66.png', imageFolder: 'Weapons', name: 'Охотничье ружьё ТОЗ-66', nameEn: 'TOZ-66 Hunting Rifle', category: 'shotgun', damage: 84, rpm: 1000, headshotMult: 1.25, effectiveRange: 89.0, fireModes: ['single', 'auto'], ammoTypes: ['12x70_shot', '12x70_buckshot', '12x76_dart', '12x76_slug'], stats: { verticalRecoil: 5.89, horizontalRecoil: 4.89, hipSpread: 1.11, adsSpread: 1.11 } },
     { id: 'saiga12c', image: 'saiga12c.png', imageFolder: 'Weapons', name: 'Сайга-12С', nameEn: 'Saiga-12C', category: 'shotgun', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 88, rpm: 310, headshotMult: 1.25, effectiveRange: 94.0, fireModes: ['auto', 'single'], ammoTypes: ['12x70_shot', '12x70_buckshot', '12x76_dart', '12x76_slug'], stats: { verticalRecoil: 5.54, horizontalRecoil: 3.05, hipSpread: 0.93, adsSpread: 0.93 } },
     { id: 'vepr12_molot', image: 'vepr12_molot.png', imageFolder: 'Weapons', name: 'Вепрь-12 «Молот»', nameEn: 'Vepr-12 "Molot"', category: 'shotgun', rarity: 'unique', rarityName: 'Уникальное', rarityNameEn: 'Unique', damage: 80, rpm: 335, headshotMult: 1.25, effectiveRange: 90.0, fireModes: ['auto', 'single'], ammoTypes: ['12x70_shot', '12x70_buckshot', '12x76_dart', '12x76_slug'], stats: { verticalRecoil: 4.67, horizontalRecoil: 2.70, hipSpread: 0.88, adsSpread: 0.88 } },
-    { id: 'toz66_obrez_sisyphus', image: 'toz66_obrez_sisyphus.png', imageFolder: 'Weapons', name: 'Обрез ТОЗ-66 Сизифа', nameEn: 'TOZ-66 Obrez "Sisyphus"', category: 'shotgun', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 80, rpm: 800, headshotMult: 1.25, effectiveRange: 72.0, fireModes: ['single', 'auto'], ammoTypes: ['12x70_shot', '12x70_buckshot', '12x76_dart', '12x76_slug'], stats: { verticalRecoil: 6.00, horizontalRecoil: 5.00, hipSpread: 1.30, adsSpread: 1.30 } },
+    { id: 'toz66_obrez_sisyphus', image: 'toz66_obrez_sisyphus.png', imageFolder: 'Weapons', name: 'Обрез ТОЗ-66 Сизифа', nameEn: 'TOZ-66 Obrez "Sisyphus"', category: 'shotgun', damage: 80, rpm: 800, headshotMult: 1.25, effectiveRange: 72.0, fireModes: ['single', 'auto'], ammoTypes: ['12x70_shot', '12x70_buckshot', '12x76_dart', '12x76_slug'], stats: { verticalRecoil: 6.00, horizontalRecoil: 5.00, hipSpread: 1.30, adsSpread: 1.30 } },
     // SPECIAL
     { id: 'flamethrower', image: 'flamethrower.png', imageFolder: 'Weapons', name: 'Огнемёт', nameEn: 'Flamethrower', category: 'special', rarity: 'rare', rarityName: 'Раритетное', rarityNameEn: 'Rare', damage: 10, rpm: 650, headshotMult: 1.25, effectiveRange: 15.0, fireModes: ['auto', 'single'], ammoTypes: ['firemix'], stats: { verticalRecoil: 0.40, horizontalRecoil: 0.00, hipSpread: 1.00, adsSpread: 1.00 } }
 ];
@@ -1196,15 +1242,10 @@ function calculateDamageAfterArmor(baseDamage, bulletResistance, armorPenetratio
 
 function calculateDPS(damage, rpm) { return damage * (rpm / 60); }
 
-function calculateTTK(damage, rpm, targetHP, magazineSize = Infinity, reloadTime = 0) {
+function calculateTTK(damage, rpm, targetHP) {
     if (damage <= 0) return Infinity;
     const shotsNeeded = Math.ceil(targetHP / damage);
-    const firingTime = (shotsNeeded - 1) * (60 / rpm);
-    if (!Number.isFinite(magazineSize) || magazineSize <= 0 || reloadTime <= 0 || shotsNeeded <= magazineSize) {
-        return firingTime;
-    }
-    const reloads = Math.ceil(shotsNeeded / magazineSize) - 1;
-    return firingTime + reloads * reloadTime;
+    return (shotsNeeded - 1) * (60 / rpm);
 }
 
 // ============== WEAPON HELPER FUNCTIONS ==============
