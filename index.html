@@ -143,11 +143,17 @@
                 </svg>
                 <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
             </a>
-            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+            <a href="Barter/barter.html" class="mobile-menu__link">
                 <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                 </svg>
-                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+                <span class="mobile-menu__text">
+                    <span data-i18n="nav.barterFull">Калькулятор бартера</span>
+                    <span class="mobile-menu__tag" data-i18n="cards.testVersion">Тестовая версия</span>
+                </span>
+                <svg class="mobile-menu__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
             </a>
         </nav>
         <div class="mobile-lang-switcher">
@@ -224,7 +230,7 @@
             <div class="container">
                 <div class="quick-nav__grid">
                     <a href="Table/table.html" class="quick-card quick-card--encyclopedia" style="--quick-delay:120ms;">
-                        <img src="images/previews/items.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <img src="images/previews/items.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
                         <span class="quick-card__content">
@@ -233,15 +239,12 @@
                             <span class="quick-card__desc" data-i18n="cards.artifacts.desc">Оружие, броня, артефакты, медицина и весь лут — в одном справочнике.</span>
                             <span class="quick-card__action">
                                 <span data-i18n="cards.explore">Изучить каталог</span>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
-                                </svg>
                             </span>
                         </span>
                     </a>
 
                     <a href="Calculator/calculator.html" class="quick-card quick-card--calculator" style="--quick-delay:195ms;">
-                        <img src="images/previews/calculator.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <img src="images/previews/calculator.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
                         <span class="quick-card__content">
@@ -250,15 +253,12 @@
                             <span class="quick-card__desc" data-i18n="cards.calculator.desc">Настрой артефакты под себя, сравни сборки и добейся максимума.</span>
                             <span class="quick-card__action">
                                 <span data-i18n="cards.build">Собрать билд</span>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
-                                </svg>
                             </span>
                         </span>
                     </a>
 
                     <a href="TTK/ttk.html" class="quick-card quick-card--ttk" style="--quick-delay:270ms;">
-                        <img src="images/previews/ttk.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <img src="images/previews/ttk.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
                         <span class="quick-card__content">
@@ -267,15 +267,12 @@
                             <span class="quick-card__desc" data-i18n="cards.ttk.desc">Узнай, какое оружие убьёт быстрее. Сравни урон в сухих цифрах.</span>
                             <span class="quick-card__action">
                                 <span data-i18n="cards.compare">Сравнить оружие</span>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
-                                </svg>
                             </span>
                         </span>
                     </a>
 
                     <a href="Map/map.html" class="quick-card quick-card--map" style="--quick-delay:345ms;">
-                        <img src="images/previews/map.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                        <img src="images/previews/map.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
                         <span class="quick-card__content">
@@ -284,33 +281,33 @@
                             <span class="quick-card__desc" data-i18n="cards.map.desc">Спавны мутантов, тайники, сейфы и ключевые точки — не заблудись в Зоне.</span>
                             <span class="quick-card__action">
                                 <span data-i18n="cards.openMap">Открыть карту</span>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H8M17 7v9"/>
-                                </svg>
                             </span>
                         </span>
                     </a>
 
-                    <a href="#" class="quick-card quick-card--guides quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:420ms;">
-                        <img src="images/previews/guides.jpg" alt="" class="quick-card__image" aria-hidden="true">
-                        <span class="quick-card__atmosphere"></span>
-                        <span class="quick-card__grain"></span>
-                        <span class="quick-card__content">
-                            <span class="quick-card__label" data-i18n="cards.guides.label">Опыт выживших</span>
-                            <span class="quick-card__title" data-i18n="cards.guides.title">Руководства и гайды</span>
-                            <span class="quick-card__desc" data-i18n="cards.guides.desc">Прохождение квестов, тактики боя и советы, которые спасут твою жизнь.</span>
-                            <span class="quick-card__badge" data-i18n="cards.inDevelopment">В разработке</span>
-                        </span>
-                    </a>
-
-                    <a href="#" class="quick-card quick-card--barter quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:495ms;">
-                        <img src="images/previews/barter.jpg" alt="" class="quick-card__image" aria-hidden="true">
+                    <a href="Barter/barter.html" class="quick-card quick-card--barter" style="--quick-delay:420ms;">
+                        <img src="images/previews/barter.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
                         <span class="quick-card__atmosphere"></span>
                         <span class="quick-card__grain"></span>
                         <span class="quick-card__content">
                             <span class="quick-card__label" data-i18n="cards.barter.label">Золотые руки</span>
                             <span class="quick-card__title" data-i18n="cards.barter.title">Калькулятор бартера</span>
                             <span class="quick-card__desc" data-i18n="cards.barter.desc">Рассчитай цепочки обменов, траты и нужный уровень для желаемой экипировки.</span>
+                            <span class="quick-card__badge quick-card__badge--beta" data-i18n="cards.testVersion">Тестовая версия</span>
+                            <span class="quick-card__action">
+                                <span data-i18n="cards.openBarter">Открыть калькулятор</span>
+                            </span>
+                        </span>
+                    </a>
+
+                    <a href="#" class="quick-card quick-card--guides quick-card--disabled" aria-disabled="true" tabindex="-1" style="--quick-delay:495ms;">
+                        <img src="images/previews/guides.jpg" alt="" class="quick-card__image" loading="lazy" decoding="async" fetchpriority="low" aria-hidden="true">
+                        <span class="quick-card__atmosphere"></span>
+                        <span class="quick-card__grain"></span>
+                        <span class="quick-card__content">
+                            <span class="quick-card__label" data-i18n="cards.guides.label">Опыт выживших</span>
+                            <span class="quick-card__title" data-i18n="cards.guides.title">Руководства и гайды</span>
+                            <span class="quick-card__desc" data-i18n="cards.guides.desc">Прохождение квестов, тактики боя и советы, которые спасут твою жизнь.</span>
                             <span class="quick-card__badge" data-i18n="cards.inDevelopment">В разработке</span>
                         </span>
                     </a>
@@ -345,7 +342,7 @@
                         <div class="rf-receiver-block__left-column">
                             <div class="rf-receiver-block__device-panel">
                                 <div class="rf-receiver-block__device-frame">
-                                    <img src="images/devices/rf-receiver.png" alt="Изображение RF-ресивера" class="rf-receiver-block__device-image">
+                                    <img src="images/devices/rf-receiver.png" alt="Изображение RF-ресивера" class="rf-receiver-block__device-image" loading="lazy" decoding="async">
                                 </div>
 
                                 <div class="rf-receiver-block__panel-copy">

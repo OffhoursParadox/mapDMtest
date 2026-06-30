@@ -56,27 +56,51 @@ function initScrollEffects() {
     const scrollTopBtn = document.getElementById('scrollTop');
     if (!header) return;
 
-    let ticking = false;
+    if ('IntersectionObserver' in window) {
+        const headerSentinel = document.createElement('div');
+        headerSentinel.className = 'scroll-sentinel scroll-sentinel--header';
+        headerSentinel.setAttribute('aria-hidden', 'true');
+        document.body.insertBefore(headerSentinel, document.body.firstChild);
 
-    const updateScrollState = () => {
-        const scrollY = window.scrollY;
-        header.classList.toggle('scrolled', scrollY > 50);
+        const headerObserver = new IntersectionObserver(([entry]) => {
+            header.classList.toggle('scrolled', !entry.isIntersecting);
+        }, { threshold: 0 });
+        headerObserver.observe(headerSentinel);
 
         if (scrollTopBtn) {
-            scrollTopBtn.classList.toggle('visible', scrollY > 300);
+            const topSentinel = document.createElement('div');
+            topSentinel.className = 'scroll-sentinel scroll-sentinel--top';
+            topSentinel.setAttribute('aria-hidden', 'true');
+            document.body.insertBefore(topSentinel, document.body.firstChild);
+
+            const topObserver = new IntersectionObserver(([entry]) => {
+                scrollTopBtn.classList.toggle('visible', !entry.isIntersecting);
+            }, { threshold: 0 });
+            topObserver.observe(topSentinel);
         }
+    } else {
+        let ticking = false;
 
-        ticking = false;
-    };
+        const updateScrollState = () => {
+            const scrollY = window.scrollY;
+            header.classList.toggle('scrolled', scrollY > 50);
 
-    updateScrollState();
+            if (scrollTopBtn) {
+                scrollTopBtn.classList.toggle('visible', scrollY > 300);
+            }
 
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(updateScrollState);
-            ticking = true;
-        }
-    }, { passive: true });
+            ticking = false;
+        };
+
+        updateScrollState();
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateScrollState);
+                ticking = true;
+            }
+        }, { passive: true });
+    }
 
     if (scrollTopBtn) {
         scrollTopBtn.addEventListener('click', () => {

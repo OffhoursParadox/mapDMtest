@@ -1,27 +1,24 @@
 'use strict';
 
+const MOBILE_PERF_QUERY = '(max-width: 768px)';
+
 document.addEventListener('DOMContentLoaded', () => {
     initBurgerMenu();
     initScrollEffects();
     initLangDropdownClose();
 
     if (window.i18n && typeof window.i18n.onReady === 'function') {
-        window.i18n.onReady(() => {
-            initRfFrequencies();
-            initRfCopy();
-        });
+        window.i18n.onReady(scheduleRfInit);
     } else {
         document.addEventListener('languageChanged', () => {
             if (!document.querySelector('.rf-item')) {
-                initRfFrequencies();
-                initRfCopy();
+                scheduleRfInit();
             }
         }, { once: true });
 
         setTimeout(() => {
             if (!document.querySelector('.rf-item')) {
-                initRfFrequencies();
-                initRfCopy();
+                scheduleRfInit();
             }
         }, 500);
     }
@@ -30,10 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageAnimations();
 });
 
+function scheduleRfInit() {
+    initRfFrequencies();
+    initRfCopy();
+}
+
 function initPageAnimations() {
-    document.querySelectorAll('.quick-card').forEach((card, index) => {
-        card.style.setProperty('--quick-delay', `${120 + index * 75}ms`);
-    });
+    const isMobile = window.matchMedia(MOBILE_PERF_QUERY).matches;
+
+    if (!isMobile) {
+        document.querySelectorAll('.quick-card').forEach((card, index) => {
+            card.style.setProperty('--quick-delay', `${120 + index * 75}ms`);
+        });
+    }
+
+    if (isMobile) {
+        return;
+    }
+
     document.querySelectorAll('.rf-item').forEach((item, index) => {
         item.style.setProperty('--rf-delay', `${index * 42}ms`);
     });
@@ -351,7 +362,9 @@ function renderUpdates(updates, container) {
     }).join('');
 
     container.querySelectorAll('.update-entry').forEach((entry, index) => {
-        entry.style.setProperty('--update-delay', `${Math.min(index * 75, 450)}ms`);
+        if (!window.matchMedia(MOBILE_PERF_QUERY).matches) {
+            entry.style.setProperty('--update-delay', `${Math.min(index * 75, 450)}ms`);
+        }
     });
 }
 

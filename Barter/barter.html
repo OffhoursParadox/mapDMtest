@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Калькулятор бартера — Project Cataclysm Wiki</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="keywords" content="Project Cataclysm бартер, Project Cataclysm калькулятор бартера, древо бартера">
+    <meta name="description" content="Калькулятор бартера Project Cataclysm. Рассчитай цепочки обменов, материалы и уровень для желаемой экипировки.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="barter.css">
+</head>
+<body data-i18n-page="barter">
+    <header class="header" id="mainHeader">
+        <div class="header__container">
+            <a href="../index.html" class="header__logo">
+                <div class="logo-mark">
+                    <svg class="logo-mark__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2L3 10v16l15 8 15-8V10L18 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M18 6L7 12v12l11 6 11-6V12L18 6z" stroke="currentColor" stroke-width="1" opacity="0.4" fill="none"/>
+                        <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.8"/>
+                        <line x1="18" y1="2" x2="18" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="18" y1="21" x2="18" y2="34" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="3" y1="10" x2="15" y2="18" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                        <line x1="21" y1="18" x2="33" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-text__cataclysm">CATACLYSM</span>
+                    <span class="logo-text__wiki">WIKI</span>
+                </div>
+            </a>
+
+            <nav class="header__nav">
+                <a href="../Map/map.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <span data-i18n="nav.map">Карта</span>
+                </a>
+                <a href="../Table/table.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span data-i18n="nav.items">Предметы</span>
+                </a>
+                <a href="../Calculator/calculator.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="nav.calculator">Калькулятор</span>
+                </a>
+                <a href="../TTK/ttk.html" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="nav.ttk">ТТК</span>
+                </a>
+            </nav>
+
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-label="Выбор языка">
+                    <svg class="lang-switcher__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="lang-switcher__current" id="currentLang">RU</span>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-dropdown__item active" data-lang="ru">
+                        <span class="lang-dropdown__flag">🇷🇺</span>
+                        <span class="lang-dropdown__text">Русский</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button class="lang-dropdown__item" data-lang="en">
+                        <span class="lang-dropdown__flag">🇬🇧</span>
+                        <span class="lang-dropdown__text">English</span>
+                        <svg class="lang-dropdown__check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="header__burger" id="burger" aria-label="Меню" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu__header">
+            <span class="mobile-menu__title" data-i18n="nav.menuTitle">Навигация</span>
+        </div>
+        <nav class="mobile-menu__nav">
+            <a href="../Map/map.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.mapFull">Интерактивная карта</span>
+            </a>
+            <a href="../Table/table.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.itemsFull">База данных предметов</span>
+            </a>
+            <a href="../Calculator/calculator.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.calculatorFull">Калькулятор сборок</span>
+            </a>
+            <a href="../TTK/ttk.html" class="mobile-menu__link">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.ttkFull">Калькулятор ТТК</span>
+            </a>
+            <a href="#" class="mobile-menu__link mobile-menu__link--disabled">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.guidesFull">Руководства и гайды</span>
+            </a>
+            <a href="barter.html" class="mobile-menu__link mobile-menu__link--current">
+                <svg class="mobile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span class="mobile-menu__text" data-i18n="nav.barterFull">Калькулятор бартера</span>
+            </a>
+        </nav>
+        <div class="mobile-lang-switcher">
+            <div class="mobile-lang-switcher__title" data-i18n="nav.languageTitle">Язык интерфейса</div>
+            <div class="mobile-lang-switcher__options">
+                <button class="mobile-lang-btn active" data-lang="ru">
+                    <span class="mobile-lang-btn__flag">🇷🇺</span>
+                    <span class="mobile-lang-btn__text">Русский</span>
+                </button>
+                <button class="mobile-lang-btn" data-lang="en">
+                    <span class="mobile-lang-btn__flag">🇬🇧</span>
+                    <span class="mobile-lang-btn__text">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="barter-page">
+        <div class="barter-toolbar">
+            <div class="barter-toolbar__left">
+                <h1 class="barter-toolbar__title" data-i18n="barter.pageTitle">Древо бартера</h1>
+                <div class="barter-toolbar__category">
+                    <span class="barter-toolbar__category-label" data-i18n="barter.selectedCategory">Выбранная категория:</span>
+                    <select class="barter-category-select" id="barterCategorySelect" aria-label="Категория бартера"></select>
+                </div>
+            </div>
+            <div class="barter-toolbar__right">
+                <div class="barter-toolbar__field">
+                    <span class="barter-toolbar__field-label" data-i18n="barter.selectWeapon">Целевое оружие:</span>
+                    <div class="barter-weapon-picker" id="barterWeaponPicker">
+                        <button type="button" class="barter-weapon-picker__trigger" id="barterWeaponPickerTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="barter-weapon-picker__value" id="barterWeaponPickerValue" data-i18n="barter.searchWeapon">Выберите оружие...</span>
+                            <svg class="barter-weapon-picker__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <div class="barter-weapon-picker__menu" id="barterWeaponPickerMenu" hidden>
+                            <div class="barter-weapon-picker__search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                                </svg>
+                                <input type="search" class="barter-weapon-picker__search-input" id="barterWeaponSearchInput" autocomplete="off" data-i18n-placeholder="barter.searchWeapon" placeholder="Выберите оружие...">
+                            </div>
+                            <div class="barter-weapon-picker__list" id="barterWeaponPickerList" role="listbox"></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="barter-inventory-btn" id="barterInventoryBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+                        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+                    </svg>
+                    <span data-i18n="barter.playerInventory">Инвентарь игрока</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="barter-workspace">
+            <div class="barter-viewport" id="barterViewport">
+                <div class="barter-canvas" id="barterCanvas">
+                    <svg class="barter-lines" id="barterLines" aria-hidden="true"></svg>
+                    <div class="barter-tree" id="barterTree"></div>
+                </div>
+            </div>
+
+            <button type="button" class="barter-cart-fab" id="barterCartFab" aria-expanded="false" aria-controls="barterCart">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+                </svg>
+                <span data-i18n="barter.craftList">Список крафта</span>
+                <span class="barter-cart-fab__badge" id="barterCartBadge" hidden>0</span>
+            </button>
+
+            <div class="barter-cart-backdrop" id="barterCartBackdrop" hidden></div>
+            <aside class="barter-cart" id="barterCart" aria-label="Список крафта" aria-hidden="true">
+                <div class="barter-cart__head">
+                    <div>
+                        <div class="barter-cart__label" data-i18n="barter.craftList">Список крафта</div>
+                        <div class="barter-cart__title" id="barterCartTitle">—</div>
+                    </div>
+                    <div class="barter-cart__head-actions">
+                        <button type="button" class="barter-cart__clear" id="barterCartClear" data-i18n="barter.clearCraftList">Очистить</button>
+                        <button type="button" class="barter-cart__close" id="barterCartClose" aria-label="Закрыть">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="barter-cart__body" id="barterCartBody"></div>
+            </aside>
+
+            <aside class="barter-panel" id="barterPanel" aria-label="Расчёт бартера">
+                <div class="barter-panel__head">
+                    <div class="barter-panel__intro">
+                        <div class="barter-panel__weapon" id="barterPanelWeapon" hidden>
+                            <img class="barter-panel__weapon-image" id="barterPanelWeaponImage" alt="" loading="lazy" decoding="async">
+                        </div>
+                        <div class="barter-panel__title-wrap">
+                            <div class="barter-panel__label" data-i18n="barter.calcTitle">Расчёт бартера</div>
+                            <div class="barter-panel__title" id="barterPanelTitle">—</div>
+                        </div>
+                    </div>
+                    <button type="button" class="barter-panel__close" id="barterPanelClose" aria-label="Закрыть">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="barter-panel__body" id="barterPanelBody"></div>
+            </aside>
+        </div>
+    </main>
+
+    <div class="barter-inventory-modal" id="barterInventoryModal" aria-hidden="true">
+        <div class="barter-inventory-modal__backdrop" id="barterInventoryBackdrop"></div>
+        <div class="barter-inventory-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="barterInventoryTitle">
+            <div class="barter-inventory-modal__head">
+                <div>
+                    <h2 class="barter-inventory-modal__title" id="barterInventoryTitle" data-i18n="barter.playerInventory">Инвентарь игрока</h2>
+                    <p class="barter-inventory-modal__hint" data-i18n="barter.playerInventoryHint">Укажите, сколько материалов у вас уже есть</p>
+                </div>
+                <button type="button" class="barter-inventory-modal__close" id="barterInventoryClose" aria-label="Закрыть">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="barter-inventory-modal__stats" id="barterInventoryStats"></div>
+            <div class="barter-inventory-modal__body" id="barterInventoryBody"></div>
+            <div class="barter-inventory-modal__foot">
+                <button type="button" class="barter-inventory-modal__clear" id="barterInventoryClear" data-i18n="barter.clearInventory">Очистить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../data/data.js"></script>
+    <script src="barterData.js"></script>
+    <script src="../i18n.js"></script>
+    <script src="../shared.js"></script>
+    <script src="barter.js"></script>
+</body>
+</html>

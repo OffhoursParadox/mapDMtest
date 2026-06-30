@@ -1,6 +1,61 @@
 [
     {
         "date": {
+            "ru": "30 июня 2026",
+            "en": "June 30, 2026"
+        },
+        "version": "1.13.2",
+        "items": [
+            {
+                "ru": "Оптимизирована интерактивная карта: улучшена производительность при перемещении, зуме и в полноэкранном режиме",
+                "en": "Interactive map optimized: improved performance when panning, zooming, and in fullscreen mode"
+            },
+            {
+                "ru": "Маркеры на карте теперь отображаются только в видимой области — снижена нагрузка на браузер без потери функционала",
+                "en": "Map markers now render only in the visible area — reduced browser load without losing functionality"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "28 июня 2026",
+            "en": "June 28, 2026"
+        },
+        "version": "1.13.1",
+        "items": [
+            {
+                "ru": "Оптимизирована главная страница сайта на мобильных устройствах",
+                "en": "Main page optimized for mobile devices"
+            },
+            {
+                "ru": "Исправлено некорректное отображение ТТК калькулятора на мобильных устройствах",
+                "en": "Fixed incorrect display of the TTK calculator on mobile devices"
+            }
+        ]
+    },
+    {
+        "date": {
+            "ru": "26 июня 2026",
+            "en": "June 26, 2026"
+        },
+        "version": "1.13.0",
+        "items": [
+            {
+                "ru": "Проведён глобальный редизайн сайта",
+                "en": "Global site redesign completed"
+            },
+            {
+                "ru": "Полностью переработан калькулятор сборок артефактов",
+                "en": "Artifact build calculator completely reworked"
+            },
+            {
+                "ru": "Полностью переработан калькулятор ТТК",
+                "en": "TTK calculator completely reworked"
+            }
+        ]
+    },
+    {
+        "date": {
             "ru": "14 марта 2026",
             "en": "March 14, 2026"
         },
