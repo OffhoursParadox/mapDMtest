@@ -845,6 +845,14 @@ const BARTER_NORTH_TAIL_MATERIAL_IDS = [
     'crystal_bud'
 ];
 
+const BARTER_NON_PURCHASABLE_MATERIAL_IDS = new Set([
+    'dark_pass'
+]);
+
+function isBarterMaterialPurchasable(materialId) {
+    return !BARTER_NON_PURCHASABLE_MATERIAL_IDS.has(materialId);
+}
+
 const BARTER_WINTER_EVENT_MATERIAL_ORDER = [
     'stuzha',
     'homemade_thermoplast',

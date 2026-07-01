@@ -828,9 +828,10 @@ function renderCartPanel(options = {}) {
 
     const adjusted = applyInventoryToRequirements(totals, playerInventory);
     const missingMaterials = adjusted.materials.filter(entry => entry.missing > 0);
-    prunePurchaseOffers(missingMaterials.map(entry => entry.id));
+    const purchasableMissingMaterials = missingMaterials.filter(entry => isBarterMaterialPurchasable(entry.id));
+    prunePurchaseOffers(purchasableMissingMaterials.map(entry => entry.id));
 
-    if (cartActiveTab === 'purchase' && !missingMaterials.length) {
+    if (cartActiveTab === 'purchase' && !purchasableMissingMaterials.length) {
         cartActiveTab = 'craft';
     }
 
@@ -973,9 +974,9 @@ function renderCartPanel(options = {}) {
         ` : ''}
     `;
 
-    const purchaseTabHtml = renderPurchaseTabContent(missingMaterials);
-    const purchaseTabBadge = missingMaterials.length
-        ? `<span class="barter-cart-tab__badge">${missingMaterials.length}</span>`
+    const purchaseTabHtml = renderPurchaseTabContent(purchasableMissingMaterials);
+    const purchaseTabBadge = purchasableMissingMaterials.length
+        ? `<span class="barter-cart-tab__badge">${purchasableMissingMaterials.length}</span>`
         : '';
 
     elements.cartBody.innerHTML = `
@@ -992,7 +993,7 @@ function renderCartPanel(options = {}) {
                     class="barter-cart-tab${cartActiveTab === 'purchase' ? ' is-active' : ''}"
                     data-cart-tab="purchase"
                     aria-selected="${cartActiveTab === 'purchase'}"
-                    ${missingMaterials.length ? '' : 'disabled'}>
+                    ${purchasableMissingMaterials.length ? '' : 'disabled'}>
                 ${t('barter.cartTabPurchase', 'Закупка')}
                 ${purchaseTabBadge}
             </button>
