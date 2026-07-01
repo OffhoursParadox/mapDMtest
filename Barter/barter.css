@@ -248,50 +248,82 @@ body[data-i18n-page="barter"] .header {
     z-index: 15;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 18px;
+    gap: 10px;
+    padding: 7px 14px 7px 7px;
     font-family: var(--font-body);
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.8125rem;
+    font-weight: 600;
     color: var(--barter-text);
-    background: var(--barter-bg-2);
-    border: 1px solid rgba(var(--c-accent-rgb), 0.4);
-    border-radius: 999px;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    background: rgba(20, 20, 20, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--r-sm);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
     cursor: pointer;
-    transition: background var(--t-fast), border-color var(--t-fast);
+    transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
 }
 
-.barter-cart-fab svg {
-    width: 18px;
-    height: 18px;
+.barter-cart-fab__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
+    background: rgba(var(--c-accent-rgb), 0.14);
+    border: 1px solid rgba(var(--c-accent-rgb), 0.28);
+    border-radius: 6px;
+}
+
+.barter-cart-fab__icon svg {
+    width: 16px;
+    height: 16px;
     color: var(--barter-accent);
 }
 
+.barter-cart-fab__label {
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
 .barter-cart-fab:hover {
-    background: rgba(var(--c-accent-rgb), 0.15);
-    border-color: var(--barter-accent);
+    background: rgba(28, 28, 28, 0.96);
+    border-color: rgba(var(--c-accent-rgb), 0.35);
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(var(--c-accent-rgb), 0.08);
 }
 
 .barter-cart-fab[aria-expanded="true"] {
-    background: rgba(var(--c-accent-rgb), 0.2);
-    border-color: var(--barter-accent);
+    background: rgba(var(--c-accent-rgb), 0.12);
+    border-color: rgba(var(--c-accent-rgb), 0.5);
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.45),
+        0 0 20px rgba(var(--c-accent-rgb), 0.15);
 }
 
 .barter-cart-fab__badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.625rem;
+    font-weight: 700;
     color: #0f1412;
     background: var(--barter-accent);
+    border: 2px solid rgba(20, 20, 20, 0.95);
     border-radius: 999px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .barter-cart-fab__badge[hidden] {
@@ -310,7 +342,7 @@ body[data-i18n-page="barter"] .header {
 }
 
 .barter-cart {
-    width: 400px;
+    width: 440px;
     max-width: 100%;
     flex-shrink: 0;
     background: var(--barter-bg-2);
@@ -333,27 +365,50 @@ body[data-i18n-page="barter"] .header {
 
 .barter-cart__head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-md);
-    padding: var(--space-lg);
+    padding: 14px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.18);
     flex-shrink: 0;
 }
 
-.barter-cart__label {
-    font-size: 0.7rem;
-    color: var(--barter-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 4px;
+.barter-cart__head-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
 }
 
 .barter-cart__title {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--barter-text);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.barter-cart__count {
+    flex-shrink: 0;
+    padding: 3px 9px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--barter-accent);
+    background: rgba(var(--c-accent-rgb), 0.15);
+    border-radius: 999px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.barter-cart__count:empty,
+.barter-cart__count[data-empty="true"] {
+    display: none;
 }
 
 .barter-cart__head-actions {
@@ -364,34 +419,36 @@ body[data-i18n-page="barter"] .header {
 }
 
 .barter-cart__clear {
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-family: var(--font-body);
     font-size: 0.75rem;
+    font-weight: 500;
     color: var(--barter-text-muted);
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     cursor: pointer;
-    transition: color var(--t-fast), border-color var(--t-fast);
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
 }
 
 .barter-cart__clear:hover {
     color: var(--barter-text);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
 }
 
 .barter-cart__close {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     color: var(--barter-text-muted);
     cursor: pointer;
-    transition: color var(--t-fast), border-color var(--t-fast);
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
 }
 
 .barter-cart__close:hover {
@@ -434,49 +491,331 @@ body[data-i18n-page="barter"] .header {
     margin-bottom: 0;
 }
 
+.barter-cart-section > .barter-cart-section__title {
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.barter-cart-section__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.barter-cart-section__head--materials {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
 .barter-cart-section__title {
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--barter-text-muted);
-    margin-bottom: var(--space-sm);
-    padding-bottom: var(--space-xs);
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.barter-cart-section__title--prominent,
+.barter-cart-section__title--materials {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    color: var(--barter-text);
+    line-height: 1.2;
+}
+
+.barter-cart-section__title--lined {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.barter-cart-section__stat {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 44px;
+    height: 30px;
+    padding: 0 10px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(var(--c-accent-rgb), 0.22);
+    border-radius: 7px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    font-variant-numeric: tabular-nums;
+}
+
+.barter-cart-section__stat-missing {
+    color: #fff;
+}
+
+.barter-cart-section__stat-sep {
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 500;
+}
+
+.barter-cart-section__stat-total {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+}
+
+.barter-cart-section__stat--ok {
+    min-width: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: #fff;
+    background: #10a115;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(16, 161, 21, 0.3);
+}
+
+.barter-cart-section__stat--ok svg {
+    width: 14px;
+    height: 14px;
+}
+
+.barter-cart-materials {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.barter-cart-materials-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    font-size: 0.8125rem;
+    color: #10a115;
+    background: rgba(16, 161, 21, 0.06);
+    border: 1px solid rgba(16, 161, 21, 0.15);
+    border-radius: var(--r-sm);
+}
+
+.barter-cart-materials-empty svg {
+    width: 28px;
+    height: 28px;
+    opacity: 0.75;
+}
+
+.barter-cart-material {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-sm);
+    transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.barter-cart-material--missing {
+    background: rgba(var(--c-accent-rgb), 0.05);
+    border-color: rgba(var(--c-accent-rgb), 0.2);
+}
+
+.barter-cart-material--ok {
+    opacity: 0.78;
+}
+
+.barter-cart-material__icon {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 5px;
+    padding: 3px;
+}
+
+.barter-cart-material__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.barter-cart-material__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.barter-cart-material__name {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--barter-text);
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.barter-cart-material__counts {
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.barter-cart-material__status {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+}
+
+.barter-cart-material__status--missing {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 7px;
+    background: rgba(var(--c-accent-rgb), 0.22);
+    border-radius: 7px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.barter-cart-material__status-value {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.barter-cart-material__status--ok {
+    width: 32px;
+    height: 32px;
+    background: #10a115;
+    border-radius: 50%;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(16, 161, 21, 0.3);
+}
+
+.barter-cart-material__status--ok svg {
+    width: 15px;
+    height: 15px;
+}
+
+.barter-cart-material__progress {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barter-cart-material__progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--barter-accent);
+    transition: width 0.3s ease;
+}
+
+.barter-cart-material--ok .barter-cart-material__progress-fill {
+    background: #10a115;
+}
+
+.barter-cart-material__have {
+    color: var(--barter-text);
+}
+
+.barter-cart-material--missing .barter-cart-material__have {
+    color: var(--barter-accent);
+}
+
+.barter-cart-material--ok .barter-cart-material__have {
+    color: #10a115;
+}
+
+.barter-cart-material__sep {
+    color: var(--barter-text-muted);
+    font-weight: 400;
+    opacity: 0.55;
+}
+
+.barter-cart-material__need {
+    color: var(--barter-text-muted);
+    font-weight: 500;
+}
+
+.barter-cart-weapons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .barter-cart-weapon {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-sm);
+    transition: border-color var(--t-fast), background var(--t-fast);
 }
 
-.barter-cart-weapon:last-child {
-    border-bottom: none;
+.barter-cart-weapon:hover {
+    background: rgba(0, 0, 0, 0.28);
+    border-color: rgba(255, 255, 255, 0.09);
 }
 
 .barter-cart-weapon__image {
-    width: 48px;
-    height: 34px;
+    width: 44px;
+    height: 32px;
     object-fit: contain;
     flex-shrink: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 4px;
+    border-radius: 5px;
     padding: 2px;
 }
 
-.barter-cart-weapon__info {
+.barter-cart-weapon__image:empty,
+div.barter-cart-weapon__image {
+    display: block;
+}
+
+.barter-cart-weapon__body {
     flex: 1;
     min-width: 0;
 }
 
 .barter-cart-weapon__name {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--barter-text);
-    line-height: 1.3;
+    line-height: 1.25;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -485,143 +824,654 @@ body[data-i18n-page="barter"] .header {
 .barter-cart-weapon__qty {
     display: flex;
     align-items: center;
-    gap: 4px;
     flex-shrink: 0;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
 }
 
 .barter-cart-weapon__qty-btn {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     line-height: 1;
-    color: var(--barter-text);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    color: var(--barter-text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 0;
     cursor: pointer;
-    transition: background var(--t-fast), border-color var(--t-fast);
+    transition: color var(--t-fast), background var(--t-fast);
 }
 
 .barter-cart-weapon__qty-btn:hover {
-    background: rgba(var(--c-accent-rgb), 0.15);
-    border-color: rgba(var(--c-accent-rgb), 0.35);
+    color: var(--barter-text);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: transparent;
 }
 
 .barter-cart-weapon__qty-value {
-    min-width: 24px;
+    min-width: 26px;
+    padding: 0 2px;
     text-align: center;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
-    color: var(--barter-accent);
-}
-
-.barter-cart-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.78rem;
-}
-
-.barter-cart-table th {
-    padding: 6px 4px;
-    font-size: 0.65rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--barter-text-muted);
-    text-align: right;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.barter-cart-table th:first-child {
-    text-align: left;
-}
-
-.barter-cart-table td {
-    padding: 7px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    text-align: right;
-    vertical-align: middle;
-}
-
-.barter-cart-table td:first-child {
-    text-align: left;
-    color: var(--barter-text);
-    max-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.barter-cart-table tr:last-child td {
-    border-bottom: none;
-}
-
-.barter-cart-table__need {
-    font-family: var(--font-mono);
-    color: var(--barter-text-muted);
-}
-
-.barter-cart-table__have {
-    font-family: var(--font-mono);
-    color: var(--barter-text-muted);
-}
-
-.barter-cart-table__missing {
-    font-family: var(--font-mono);
     color: var(--barter-accent);
-    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
-.barter-cart-table__missing--ok {
-    color: var(--barter-text-muted);
-    font-weight: 400;
-}
-
-.barter-cart-table__icon {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    vertical-align: middle;
-    margin-right: 6px;
-}
-
-.barter-cart-meta {
-    display: grid;
+.barter-cart-summary {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.25);
+}
+
+.barter-cart-summary__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.22);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--r-sm);
 }
 
-.barter-cart-meta__row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8125rem;
+.barter-cart-summary__item--missing {
+    background: rgba(var(--c-accent-rgb), 0.05);
+    border-color: rgba(var(--c-accent-rgb), 0.18);
 }
 
-.barter-cart-meta__label {
+.barter-cart-summary__item--ok {
+    opacity: 0.85;
+}
+
+.barter-cart-summary__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--barter-text-muted);
 }
 
-.barter-cart-meta__label--cr {
+.barter-cart-summary__item--cr .barter-cart-summary__label {
     color: var(--barter-cr);
 }
 
-.barter-cart-meta__value {
+.barter-cart-summary__value {
     font-family: var(--font-mono);
-    color: var(--barter-accent);
+    font-size: 0.875rem;
     font-weight: 600;
+    color: var(--barter-accent);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
-.barter-cart-meta__value--ok {
+.barter-cart-summary__item--ok .barter-cart-summary__value {
+    color: #10a115;
+}
+
+.barter-cart-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 var(--space-md);
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--r-md);
+}
+
+.barter-cart-tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--barter-text-muted);
+    background: transparent;
+    border: none;
+    border-radius: calc(var(--r-md) - 2px);
+    cursor: pointer;
+    transition: color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+}
+
+.barter-cart-tab:hover:not(:disabled) {
+    color: var(--barter-text);
+}
+
+.barter-cart-tab.is-active {
+    color: var(--barter-text);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.barter-cart-tab:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.barter-cart-tab__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--barter-accent);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.barter-cart-tab__badge::before {
+    content: '|';
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.28);
+}
+
+.barter-cart-tabpanel[hidden] {
+    display: none;
+}
+
+.barter-cart-tabpanel--purchase {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.barter-purchase {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    min-height: 100%;
+}
+
+.barter-purchase__intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--r-md);
+}
+
+.barter-purchase__intro-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--barter-accent);
+    opacity: 0.85;
+}
+
+.barter-purchase__hint {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--barter-text-muted);
+}
+
+.barter-purchase__list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.barter-purchase-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 200px;
+    gap: var(--space-md);
+    padding: var(--space-xl);
+}
+
+.barter-purchase-empty__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(16, 161, 21, 0.1);
+    color: #10a115;
+}
+
+.barter-purchase-empty__icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.barter-purchase-empty__text {
+    margin: 0;
+    max-width: 240px;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--barter-text-muted);
+}
+
+.barter-purchase-item {
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.18) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--r-md);
+}
+
+.barter-purchase-item__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 14px 10px;
+}
+
+.barter-purchase-item__identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.barter-purchase-item__icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-sm);
+}
+
+.barter-purchase-item__icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.barter-purchase-item__meta {
+    min-width: 0;
+}
+
+.barter-purchase-item__name {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--barter-text);
+    line-height: 1.25;
+}
+
+.barter-purchase-item__need {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: var(--barter-text-muted);
+}
+
+.barter-purchase-item__need strong {
+    color: var(--barter-accent);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.barter-purchase-item__need--ok strong {
+    color: #10a115;
+}
+
+.barter-purchase-item__need--warn strong {
+    color: #f59e0b;
+}
+
+.barter-purchase-item__badge {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--barter-text-muted);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+}
+
+.barter-purchase-item__badge--ok {
+    color: #10a115;
+    border-color: rgba(16, 161, 21, 0.25);
+    background: rgba(16, 161, 21, 0.1);
+}
+
+.barter-purchase-item__badge--warn {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.28);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.barter-purchase-item__bar {
+    height: 3px;
+    margin: 0 14px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barter-purchase-item__bar-fill {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: inherit;
+    transition: width var(--t-fast), background var(--t-fast);
+}
+
+.barter-purchase-item__bar--ok .barter-purchase-item__bar-fill {
+    background: #10a115;
+}
+
+.barter-purchase-item__bar--warn .barter-purchase-item__bar-fill {
+    background: #f59e0b;
+}
+
+.barter-purchase-item__offers-wrap {
+    margin: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.barter-purchase-item__offers-head,
+.barter-purchase-offer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 46px 14px 68px minmax(68px, 1fr) 26px;
+    gap: 4px;
+    align-items: center;
+    padding: 0 8px;
+}
+
+.barter-purchase-item__offers-head {
+    min-height: 26px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.32);
+    background: rgba(0, 0, 0, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.barter-purchase-item__offers-head span:nth-child(3),
+.barter-purchase-item__offers-head span:nth-child(6) {
+    padding: 0;
+}
+
+.barter-purchase-item__offers-head span:nth-child(5) {
+    text-align: right;
+}
+
+.barter-purchase-item__offers {
+    display: flex;
+    flex-direction: column;
+}
+
+.barter-purchase-offer {
+    min-height: 40px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.barter-purchase-offer:last-child {
+    border-bottom: none;
+}
+
+.barter-purchase-offer__input {
+    width: 100%;
+    min-width: 0;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 0.8125rem;
+    color: var(--barter-text);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    outline: none;
+    cursor: text;
+    transition:
+        background var(--t-fast),
+        border-color var(--t-fast),
+        box-shadow var(--t-fast);
+    box-sizing: border-box;
+}
+
+.barter-purchase-offer__input--seller {
+    font-family: inherit;
+    cursor: text;
+}
+
+.barter-purchase-offer__input--qty,
+.barter-purchase-offer__input--price {
+    font-family: var(--font-mono);
+    text-align: center;
+    cursor: text;
+}
+
+.barter-purchase-offer__input::placeholder {
+    color: rgba(255, 255, 255, 0.28);
+    transition: color var(--t-fast);
+}
+
+.barter-purchase-offer__input:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.barter-purchase-offer__input:hover::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.barter-purchase-offer__input:focus {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(var(--c-accent-rgb), 0.45);
+    box-shadow: 0 0 0 2px rgba(var(--c-accent-rgb), 0.14);
+}
+
+.barter-purchase-offer__input:focus::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.barter-purchase-offer__input::-webkit-outer-spin-button,
+.barter-purchase-offer__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.barter-purchase-offer__input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.barter-purchase-offer__times {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.2);
+    text-align: center;
+    line-height: 1;
+    user-select: none;
+}
+
+.barter-purchase-offer__sum {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.barter-purchase-offer__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.125rem;
     font-weight: 400;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: color var(--t-fast), background var(--t-fast);
+}
+
+.barter-purchase-offer:hover .barter-purchase-offer__remove {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.barter-purchase-offer__remove:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.barter-purchase-offer__remove:active {
+    background: rgba(248, 113, 113, 0.16);
+}
+
+.barter-purchase-item__add {
+    display: inline-flex;
+    align-items: center;
+    margin: 8px 12px 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--barter-text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color var(--t-fast);
+}
+
+.barter-purchase-item__add::before {
+    content: '+';
+    margin-right: 5px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--barter-accent);
+}
+
+.barter-purchase-item__add:hover {
+    color: var(--barter-accent);
+}
+
+.barter-purchase-item__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.22);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.barter-purchase-item__avg {
+    font-size: 0.75rem;
+    color: var(--barter-text-muted);
+}
+
+.barter-purchase-item__total {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--barter-accent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.barter-purchase__total {
+    margin-top: auto;
+    margin-left: calc(-1 * var(--space-lg));
+    margin-right: calc(-1 * var(--space-lg));
+    margin-bottom: calc(-1 * var(--space-lg));
+    padding: 0;
+    background: rgba(0, 0, 0, 0.42);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    position: sticky;
+    bottom: calc(-1 * var(--space-lg));
+    backdrop-filter: blur(10px);
+}
+
+.barter-purchase__total::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(var(--c-accent-rgb), 0.55) 20%,
+        rgba(var(--c-accent-rgb), 0.55) 80%,
+        transparent 100%
+    );
+}
+
+.barter-purchase__total--warn::before {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(245, 158, 11, 0.6) 20%,
+        rgba(245, 158, 11, 0.6) 80%,
+        transparent 100%
+    );
+}
+
+.barter-purchase__total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px var(--space-lg) 16px;
+}
+
+.barter-purchase__total-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--barter-text);
+}
+
+.barter-purchase__total-value {
+    font-family: var(--font-mono);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--barter-text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.barter-purchase__total--warn .barter-purchase__total-value {
+    color: #fbbf24;
 }
 
 .barter-node__selection {
@@ -1608,6 +2458,65 @@ body[data-i18n-page="barter"] .header {
     margin-bottom: var(--space-sm);
 }
 
+.barter-chain-card {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: opacity var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+
+.barter-chain-card--current {
+    border-color: rgba(var(--c-accent-rgb), 0.35);
+    background: rgba(var(--c-accent-rgb), 0.08);
+}
+
+.barter-chain-card--current .barter-prereq__name {
+    color: var(--barter-accent);
+    font-weight: 500;
+}
+
+.barter-chain-card--owned {
+    opacity: 0.45;
+}
+
+.barter-chain-card--owned .barter-prereq__name {
+    text-decoration: line-through;
+    color: var(--barter-text-muted);
+}
+
+.barter-chain-card__exclude {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--r-sm);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--barter-text-muted);
+    cursor: pointer;
+    transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+
+.barter-chain-card__exclude svg {
+    width: 12px;
+    height: 12px;
+}
+
+.barter-chain-card__exclude:hover {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.45);
+    background: rgba(248, 113, 113, 0.12);
+}
+
+.barter-chain-card__exclude--active {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.55);
+    background: rgba(248, 113, 113, 0.18);
+}
+
 .barter-prereq:last-child {
     margin-bottom: 0;
 }
@@ -1722,31 +2631,6 @@ body[data-i18n-page="barter"] .header {
     font-weight: 600;
 }
 
-.barter-chain-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.barter-chain-step {
-    font-size: 0.8rem;
-    color: var(--barter-text-muted);
-    padding-left: 12px;
-    position: relative;
-}
-
-.barter-chain-step::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--barter-accent-dim);
-}
-
-.barter-chain-step--current {
-    color: var(--barter-accent);
-    font-weight: 500;
-}
-
 @media (max-width: 1024px) {
     .barter-panel {
         width: 100%;
@@ -1823,8 +2707,70 @@ body[data-i18n-page="barter"] .header {
     .barter-cart-fab {
         right: 12px;
         bottom: 12px;
-        padding: 10px 14px;
+        padding: 6px 12px 6px 6px;
+        gap: 8px;
+        font-size: 0.75rem;
+    }
+
+    .barter-cart-fab__icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .barter-cart-fab__icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .barter-purchase-item__offers-head {
+        display: none;
+    }
+
+    .barter-purchase-item__offers-head,
+    .barter-purchase-offer {
+        grid-template-columns: minmax(0, 1fr) 1fr 1fr;
+        grid-template-areas:
+            "seller seller seller"
+            "qty price sum"
+            "remove remove remove";
+        gap: 6px;
+        padding: 10px;
+    }
+
+    .barter-purchase-offer {
+        min-height: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .barter-purchase-offer__input--seller {
+        grid-area: seller;
+    }
+
+    .barter-purchase-offer__input--qty {
+        grid-area: qty;
+        text-align: left;
+    }
+
+    .barter-purchase-offer__times {
+        display: none;
+    }
+
+    .barter-purchase-offer__input--price {
+        grid-area: price;
+        text-align: left;
+    }
+
+    .barter-purchase-offer__sum {
+        grid-area: sum;
+        align-self: center;
+        text-align: right;
         font-size: 0.8125rem;
+    }
+
+    .barter-purchase-offer__remove {
+        grid-area: remove;
+        justify-self: end;
+        opacity: 1;
     }
 
     .barter-tree {

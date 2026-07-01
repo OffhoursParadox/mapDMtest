@@ -941,7 +941,7 @@ function calculateAggregatedBarterRequirements(category, selections) {
         const calc = calculateBarterRequirements(
             category,
             selection.nodeId,
-            selection.includeChain !== false,
+            false,
             selection.offerIndex || 0
         );
         if (!calc) return;
@@ -1006,16 +1006,26 @@ function applyInventoryToRequirements(totals, inventory = {}) {
     };
 }
 
-function calculateBarterRequirements(category, nodeId, includeChain = true, offerIndex = 0) {
+function applyChainOwnership(chainNodes, ownedThroughNodeId) {
+    if (!ownedThroughNodeId || !chainNodes.length) return chainNodes;
+
+    const ownedIndex = chainNodes.findIndex(node => node.id === ownedThroughNodeId);
+    if (ownedIndex === -1) return chainNodes;
+
+    return chainNodes.slice(ownedIndex + 1);
+}
+
+function calculateBarterRequirements(category, nodeId, includeChain = true, offerIndex = 0, ownedThroughNodeId = null) {
     const node = getBarterNodeById(category, nodeId);
     if (!node) return null;
 
     const offers = getBarterNodeOffers(node);
     const offer = getBarterOfferByIndex(node, offerIndex);
-    const chainNodes = getBarterChainNodes(category, nodeId, includeChain, offerIndex);
-    const prerequisites = chainNodes
-        .map(chainNode => chainNode.prerequisite)
-        .filter(Boolean);
+    const fullChainNodes = getBarterChainNodes(category, nodeId, includeChain, offerIndex);
+    const chainNodes = applyChainOwnership(fullChainNodes, ownedThroughNodeId);
+    const prerequisites = includeChain && fullChainNodes.length > 1
+        ? fullChainNodes.slice(0, -1).map(chainNode => chainNode.weaponId || chainNode.id)
+        : (offer.prerequisite ? [offer.prerequisite] : []);
 
     const uniquePrerequisites = [...new Set(prerequisites)];
 
@@ -1025,7 +1035,9 @@ function calculateBarterRequirements(category, nodeId, includeChain = true, offe
         offerIndex,
         offers,
         usesChain: offer.usesChain !== false && Boolean(offer.prerequisite),
+        fullChainNodes,
         chainNodes,
+        ownedThroughNodeId: ownedThroughNodeId || null,
         prerequisites: uniquePrerequisites,
         materials: aggregateBarterMaterials(chainNodes),
         materialsByNode: chainNodes.map(chainNode => ({

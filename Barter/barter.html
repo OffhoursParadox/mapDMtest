@@ -192,19 +192,23 @@
             </div>
 
             <button type="button" class="barter-cart-fab" id="barterCartFab" aria-expanded="false" aria-controls="barterCart">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
-                </svg>
-                <span data-i18n="barter.craftList">Список крафта</span>
-                <span class="barter-cart-fab__badge" id="barterCartBadge" hidden>0</span>
+                <span class="barter-cart-fab__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                        <rect x="9" y="3" width="6" height="4" rx="1"/>
+                        <path d="M9 12h6"/><path d="M9 16h4"/>
+                    </svg>
+                    <span class="barter-cart-fab__badge" id="barterCartBadge" hidden>0</span>
+                </span>
+                <span class="barter-cart-fab__label" data-i18n="barter.craftList">Список крафта</span>
             </button>
 
             <div class="barter-cart-backdrop" id="barterCartBackdrop" hidden></div>
             <aside class="barter-cart" id="barterCart" aria-label="Список крафта" aria-hidden="true">
                 <div class="barter-cart__head">
-                    <div>
-                        <div class="barter-cart__label" data-i18n="barter.craftList">Список крафта</div>
-                        <div class="barter-cart__title" id="barterCartTitle">—</div>
+                    <div class="barter-cart__head-main">
+                        <h2 class="barter-cart__title" data-i18n="barter.craftList">Список крафта</h2>
+                        <span class="barter-cart__count" id="barterCartTitle">—</span>
                     </div>
                     <div class="barter-cart__head-actions">
                         <button type="button" class="barter-cart__clear" id="barterCartClear" data-i18n="barter.clearCraftList">Очистить</button>

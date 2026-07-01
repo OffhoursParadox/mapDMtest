@@ -23,13 +23,17 @@ let currentCategory = null;
 let selectedNodeId = null;
 let selectedOfferIndex = 0;
 let includeFullChain = true;
+const chainOwnedThroughByKey = new Map();
 let selectedWeapons = [];
 let playerInventory = createEmptyPlayerInventory();
 let weaponPickerQuery = '';
 let weaponPickerOpen = false;
 let cartPanelOpen = false;
+let cartActiveTab = 'craft';
+let purchaseOffers = {};
 
 const INVENTORY_STORAGE_KEY = 'barter-player-inventory';
+const PURCHASE_STORAGE_KEY = 'barter-purchase-offers';
 const MAX_PLAYER_LEVEL = 50;
 
 let isDragging = false;
@@ -91,6 +95,204 @@ function savePlayerInventory() {
     }
 }
 
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function createEmptyPurchaseRow() {
+    return { seller: '', qty: 0, price: 0 };
+}
+
+function normalizePurchaseRow(row) {
+    return {
+        seller: typeof row?.seller === 'string' ? row.seller : '',
+        qty: Math.max(0, Number(row?.qty) || 0),
+        price: Math.max(0, Number(row?.price) || 0)
+    };
+}
+
+function loadPurchaseOffers() {
+    try {
+        const raw = localStorage.getItem(PURCHASE_STORAGE_KEY);
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return {};
+
+        return Object.fromEntries(
+            Object.entries(parsed).map(([materialId, rows]) => [
+                materialId,
+                Array.isArray(rows) && rows.length
+                    ? rows.map(normalizePurchaseRow)
+                    : [createEmptyPurchaseRow()]
+            ])
+        );
+    } catch {
+        return {};
+    }
+}
+
+function savePurchaseOffers() {
+    try {
+        localStorage.setItem(PURCHASE_STORAGE_KEY, JSON.stringify(purchaseOffers));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function getPurchaseRows(materialId) {
+    if (!purchaseOffers[materialId]?.length) {
+        purchaseOffers[materialId] = [createEmptyPurchaseRow()];
+    }
+    return purchaseOffers[materialId];
+}
+
+function readPurchaseFormFromDom() {
+    if (!elements.cartBody || cartActiveTab !== 'purchase') return;
+
+    elements.cartBody.querySelectorAll('[data-purchase-material]').forEach(section => {
+        const materialId = section.dataset.purchaseMaterial;
+        if (!materialId) return;
+
+        const rows = [];
+        section.querySelectorAll('[data-purchase-row]').forEach(rowEl => {
+            rows.push(normalizePurchaseRow({
+                seller: rowEl.querySelector('[data-purchase-seller]')?.value || '',
+                qty: rowEl.querySelector('[data-purchase-qty]')?.value,
+                price: rowEl.querySelector('[data-purchase-price]')?.value
+            }));
+        });
+
+        purchaseOffers[materialId] = rows.length ? rows : [createEmptyPurchaseRow()];
+    });
+
+    savePurchaseOffers();
+}
+
+function prunePurchaseOffers(missingMaterialIds) {
+    const allowed = new Set(missingMaterialIds);
+    let changed = false;
+
+    Object.keys(purchaseOffers).forEach(materialId => {
+        if (!allowed.has(materialId)) {
+            delete purchaseOffers[materialId];
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        savePurchaseOffers();
+    }
+}
+
+function calculatePurchaseRowTotals(rows) {
+    return rows.reduce((totals, row) => {
+        const qty = Math.max(0, Number(row.qty) || 0);
+        const price = Math.max(0, Number(row.price) || 0);
+        totals.allocatedQty += qty;
+        totals.totalCost += qty * price;
+        return totals;
+    }, { allocatedQty: 0, totalCost: 0 });
+}
+
+function updatePurchaseTotalsInDom() {
+    if (!elements.cartBody) return;
+
+    let grandTotal = 0;
+    let hasQtyMismatch = false;
+
+    elements.cartBody.querySelectorAll('[data-purchase-material]').forEach(section => {
+        const needed = Math.max(0, Number(section.dataset.purchaseNeeded) || 0);
+        let allocatedQty = 0;
+        let materialTotal = 0;
+
+        section.querySelectorAll('[data-purchase-row]').forEach(rowEl => {
+            const qty = Math.max(0, Number(rowEl.querySelector('[data-purchase-qty]')?.value) || 0);
+            const price = Math.max(0, Number(rowEl.querySelector('[data-purchase-price]')?.value) || 0);
+            const subtotal = qty * price;
+
+            allocatedQty += qty;
+            materialTotal += subtotal;
+
+            const subtotalEl = rowEl.querySelector('[data-purchase-subtotal]');
+            if (subtotalEl) {
+                subtotalEl.textContent = formatPrice(subtotal);
+            }
+        });
+
+        grandTotal += materialTotal;
+
+        const qtyMismatch = allocatedQty !== needed;
+        if (qtyMismatch && allocatedQty > 0) {
+            hasQtyMismatch = true;
+        }
+
+        const remaining = Math.max(0, needed - allocatedQty);
+        const overAllocated = allocatedQty > needed;
+
+        const needEl = section.querySelector('[data-purchase-need]');
+        const remainingEl = section.querySelector('[data-purchase-remaining]');
+        if (remainingEl) {
+            remainingEl.textContent = remaining;
+        }
+        if (needEl) {
+            needEl.classList.toggle('barter-purchase-item__need--ok', remaining === 0 && !overAllocated);
+            needEl.classList.toggle('barter-purchase-item__need--warn', overAllocated);
+        }
+
+        const statusEl = section.querySelector('[data-purchase-status]');
+        if (statusEl) {
+            statusEl.classList.toggle('barter-purchase-item__badge--ok', !qtyMismatch && allocatedQty > 0);
+            statusEl.classList.toggle('barter-purchase-item__badge--warn', qtyMismatch && allocatedQty > 0);
+
+            if (allocatedQty === 0) {
+                statusEl.textContent = `0 / ${needed}`;
+            } else if (qtyMismatch) {
+                statusEl.textContent = t('barter.purchaseQtyMismatch', '{allocated} / {needed}')
+                    .replace('{allocated}', allocatedQty)
+                    .replace('{needed}', needed);
+            } else {
+                statusEl.textContent = `${allocatedQty} / ${needed}`;
+            }
+        }
+
+        const progressEl = section.querySelector('[data-purchase-progress]');
+        if (progressEl) {
+            const progress = needed > 0 ? Math.min(100, Math.round((allocatedQty / needed) * 100)) : 0;
+            progressEl.style.width = `${progress}%`;
+            progressEl.parentElement?.classList.toggle('barter-purchase-item__bar--ok', !qtyMismatch && allocatedQty > 0);
+            progressEl.parentElement?.classList.toggle('barter-purchase-item__bar--warn', qtyMismatch && allocatedQty > 0);
+        }
+
+        const materialTotalEl = section.querySelector('[data-purchase-material-total]');
+        if (materialTotalEl) {
+            materialTotalEl.textContent = formatPrice(materialTotal);
+        }
+
+        const avgPriceEl = section.querySelector('[data-purchase-avg-price]');
+        if (avgPriceEl) {
+            const avgPrice = allocatedQty > 0 ? Math.round(materialTotal / allocatedQty) : 0;
+            avgPriceEl.textContent = allocatedQty > 0
+                ? t('barter.purchaseAvgPrice', 'Средняя: {price}').replace('{price}', formatPrice(avgPrice))
+                : '';
+        }
+    });
+
+    const grandTotalEl = elements.cartBody.querySelector('[data-purchase-grand-total]');
+    if (grandTotalEl) {
+        grandTotalEl.textContent = formatPrice(grandTotal);
+    }
+
+    const grandTotalWrap = elements.cartBody.querySelector('[data-purchase-grand-total-wrap]');
+    if (grandTotalWrap) {
+        grandTotalWrap.classList.toggle('barter-purchase__total--warn', hasQtyMismatch);
+    }
+}
+
 function getWeaponCount(nodeId) {
     return selectedWeapons.filter(entry => entry.nodeId === nodeId).length;
 }
@@ -123,16 +325,9 @@ function groupSelectedWeapons() {
 }
 
 function getWeaponSelectionOptions(nodeId) {
-    if (selectedNodeId === nodeId) {
-        return {
-            offerIndex: selectedOfferIndex,
-            includeChain: includeFullChain
-        };
-    }
-
     return {
-        offerIndex: 0,
-        includeChain: true
+        offerIndex: selectedNodeId === nodeId ? selectedOfferIndex : 0,
+        includeChain: false
     };
 }
 
@@ -220,16 +415,35 @@ function clearCraftList() {
     updateWeaponListUi();
 }
 
+function getChainStateKey(nodeId, offerIndex = selectedOfferIndex) {
+    return `${nodeId}|${offerIndex}`;
+}
+
+function getChainOwnedThroughId(nodeId, offerIndex = selectedOfferIndex) {
+    return chainOwnedThroughByKey.get(getChainStateKey(nodeId, offerIndex)) || null;
+}
+
+function setChainOwnedThroughId(nodeId, ownedThroughNodeId, offerIndex = selectedOfferIndex) {
+    const key = getChainStateKey(nodeId, offerIndex);
+    if (ownedThroughNodeId) {
+        chainOwnedThroughByKey.set(key, ownedThroughNodeId);
+    } else {
+        chainOwnedThroughByKey.delete(key);
+    }
+}
+
+function clearChainOwnership(nodeId, offerIndex = selectedOfferIndex) {
+    chainOwnedThroughByKey.delete(getChainStateKey(nodeId, offerIndex));
+}
+
 function syncWeaponListEntry(nodeId) {
     if (selectedNodeId !== nodeId) return;
 
     const offerIndex = selectedOfferIndex;
-    const includeChain = includeFullChain;
 
     selectedWeapons.forEach(entry => {
         if (entry.nodeId === nodeId) {
             entry.offerIndex = offerIndex;
-            entry.includeChain = includeChain;
         }
     });
 
@@ -293,6 +507,7 @@ function openCartPanel() {
 }
 
 function closeCartPanel() {
+    readPurchaseFormFromDom();
     cartPanelOpen = false;
 
     if (elements.cart) {
@@ -330,23 +545,273 @@ function updateCartPanel() {
     renderCartPanel();
 }
 
-function renderCartPanel() {
+function renderPurchaseSellerRow(materialId, row, rowIndex) {
+    const subtotal = (Number(row.qty) || 0) * (Number(row.price) || 0);
+    const removeLabel = t('barter.purchaseRemoveSeller', 'Убрать продавца');
+    const sellerLabel = t('barter.purchaseSeller', 'Продавец');
+    const qtyLabel = t('barter.purchaseQty', 'Кол-во');
+    const priceLabel = t('barter.purchasePrice', 'Цена/шт');
+
+    return `
+        <div class="barter-purchase-offer" data-purchase-row data-row-index="${rowIndex}">
+            <input type="text"
+                   class="barter-purchase-offer__input barter-purchase-offer__input--seller"
+                   data-purchase-seller
+                   value="${escapeHtml(row.seller)}"
+                   placeholder="${sellerLabel}"
+                   autocomplete="off"
+                   aria-label="${sellerLabel}">
+            <input type="number"
+                   class="barter-purchase-offer__input barter-purchase-offer__input--qty"
+                   data-purchase-qty
+                   value="${row.qty || ''}"
+                   min="0"
+                   step="1"
+                   inputmode="numeric"
+                   placeholder="0"
+                   aria-label="${qtyLabel}">
+            <span class="barter-purchase-offer__times" aria-hidden="true">×</span>
+            <input type="number"
+                   class="barter-purchase-offer__input barter-purchase-offer__input--price"
+                   data-purchase-price
+                   value="${row.price || ''}"
+                   min="0"
+                   step="1"
+                   inputmode="numeric"
+                   placeholder="0"
+                   aria-label="${priceLabel}">
+            <span class="barter-purchase-offer__sum" data-purchase-subtotal>${formatPrice(subtotal)}</span>
+            <button type="button"
+                    class="barter-purchase-offer__remove"
+                    data-purchase-remove
+                    data-material-id="${materialId}"
+                    data-row-index="${rowIndex}"
+                    aria-label="${removeLabel}">×</button>
+        </div>
+    `;
+}
+
+function renderPurchaseMaterialBlock(entry) {
+    const rows = getPurchaseRows(entry.id);
+    const totals = calculatePurchaseRowTotals(rows);
+    const qtyMismatch = totals.allocatedQty !== entry.missing;
+    const badgeClass = totals.allocatedQty === 0
+        ? ''
+        : (qtyMismatch ? 'barter-purchase-item__badge--warn' : 'barter-purchase-item__badge--ok');
+    const barClass = totals.allocatedQty === 0
+        ? ''
+        : (qtyMismatch ? 'barter-purchase-item__bar--warn' : 'barter-purchase-item__bar--ok');
+    const progress = entry.missing > 0
+        ? Math.min(100, Math.round((totals.allocatedQty / entry.missing) * 100))
+        : 0;
+    const avgPrice = totals.allocatedQty > 0
+        ? Math.round(totals.totalCost / totals.allocatedQty)
+        : 0;
+    const imagePath = getBarterMaterialImagePath(entry.id, BASE_PATH);
+    const materialName = getBarterMaterialName(entry.material);
+    const rowsHtml = rows.map((row, index) => renderPurchaseSellerRow(entry.id, row, index)).join('');
+
+    return `
+        <article class="barter-purchase-item" data-purchase-material="${entry.id}" data-purchase-needed="${entry.missing}">
+            <header class="barter-purchase-item__head">
+                <div class="barter-purchase-item__identity">
+                    <div class="barter-purchase-item__icon-wrap">
+                        <img class="barter-purchase-item__icon" src="${imagePath}" alt="" loading="lazy" decoding="async">
+                    </div>
+                    <div class="barter-purchase-item__meta">
+                        <h4 class="barter-purchase-item__name">${materialName}</h4>
+                        <p class="barter-purchase-item__need" data-purchase-need>
+                            ${t('barter.purchaseStillNeed', 'Не хватает')}: <strong data-purchase-remaining>${Math.max(0, entry.missing - totals.allocatedQty)}</strong> ${t('barter.pcs', 'шт.')}
+                        </p>
+                    </div>
+                </div>
+                <span class="barter-purchase-item__badge ${badgeClass}" data-purchase-status>
+                    ${totals.allocatedQty} / ${entry.missing}
+                </span>
+            </header>
+            <div class="barter-purchase-item__bar ${barClass}" role="progressbar"
+                 aria-valuenow="${totals.allocatedQty}" aria-valuemin="0" aria-valuemax="${entry.missing}">
+                <div class="barter-purchase-item__bar-fill" data-purchase-progress style="width: ${progress}%"></div>
+            </div>
+            <div class="barter-purchase-item__offers-wrap">
+                <div class="barter-purchase-item__offers-head" aria-hidden="true">
+                    <span>${t('barter.purchaseSeller', 'Продавец')}</span>
+                    <span>${t('barter.purchaseQty', 'Кол-во')}</span>
+                    <span></span>
+                    <span>${t('barter.purchasePrice', 'Цена/шт')}</span>
+                    <span>${t('barter.purchaseSubtotal', 'Сумма')}</span>
+                    <span></span>
+                </div>
+                <div class="barter-purchase-item__offers">
+                    ${rowsHtml}
+                </div>
+            </div>
+            <button type="button"
+                    class="barter-purchase-item__add"
+                    data-purchase-add
+                    data-material-id="${entry.id}">
+                ${t('barter.purchaseAddSeller', 'Добавить продавца')}
+            </button>
+            <footer class="barter-purchase-item__foot">
+                <span class="barter-purchase-item__avg" data-purchase-avg-price>
+                    ${totals.allocatedQty > 0
+                        ? t('barter.purchaseAvgPrice', 'Средняя: {price}').replace('{price}', formatPrice(avgPrice))
+                        : ''}
+                </span>
+                <span class="barter-purchase-item__total" data-purchase-material-total>${formatPrice(totals.totalCost)}</span>
+            </footer>
+        </article>
+    `;
+}
+
+function renderPurchaseTabContent(missingMaterials) {
+    if (!missingMaterials.length) {
+        return `
+            <div class="barter-purchase-empty">
+                <div class="barter-purchase-empty__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                </div>
+                <p class="barter-purchase-empty__text">${t('barter.purchaseAllCovered', 'Все материалы уже есть — закупка не нужна')}</p>
+            </div>
+        `;
+    }
+
+    const materialsHtml = missingMaterials
+        .sort((a, b) => b.missing - a.missing)
+        .map(entry => renderPurchaseMaterialBlock(entry))
+        .join('');
+
+    const grandTotal = missingMaterials.reduce((sum, entry) => {
+        const rows = getPurchaseRows(entry.id);
+        return sum + calculatePurchaseRowTotals(rows).totalCost;
+    }, 0);
+
+    return `
+        <div class="barter-purchase">
+            <div class="barter-purchase__intro">
+                <svg class="barter-purchase__intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="barter-purchase__hint">${t('barter.purchaseHint', 'Укажите цены у разных продавцов — калькулятор посчитает итог в рублях')}</p>
+            </div>
+            <div class="barter-purchase__list">${materialsHtml}</div>
+            <div class="barter-purchase__total" data-purchase-grand-total-wrap>
+                <div class="barter-purchase__total-row">
+                    <span class="barter-purchase__total-label">${t('barter.purchaseGrandTotal', 'Итого закупка')}</span>
+                    <span class="barter-purchase__total-value" data-purchase-grand-total>${formatPrice(grandTotal)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function handleCartBodyClick(event) {
+    const addBtn = event.target.closest('[data-purchase-add]');
+    if (addBtn) {
+        event.preventDefault();
+        readPurchaseFormFromDom();
+        getPurchaseRows(addBtn.dataset.materialId).push(createEmptyPurchaseRow());
+        savePurchaseOffers();
+        renderCartPanel({ skipPurchaseRead: true });
+        return;
+    }
+
+    const removeBtn = event.target.closest('[data-purchase-remove]');
+    if (removeBtn) {
+        event.preventDefault();
+        readPurchaseFormFromDom();
+        const materialId = removeBtn.dataset.materialId;
+        const rowIndex = Number(removeBtn.dataset.rowIndex);
+        const rows = getPurchaseRows(materialId);
+
+        if (rows.length > 1) {
+            rows.splice(rowIndex, 1);
+        } else {
+            rows[0] = createEmptyPurchaseRow();
+        }
+
+        savePurchaseOffers();
+        renderCartPanel({ skipPurchaseRead: true });
+        return;
+    }
+
+    const tab = event.target.closest('[data-cart-tab]');
+    if (tab) {
+        const nextTab = tab.dataset.cartTab;
+        if (!nextTab || tab.disabled || nextTab === cartActiveTab) return;
+
+        if (cartActiveTab === 'purchase') {
+            readPurchaseFormFromDom();
+        }
+        cartActiveTab = nextTab;
+        renderCartPanel();
+        return;
+    }
+
+    const qtyBtn = event.target.closest('[data-cart-qty]');
+    if (qtyBtn) {
+        const groupKey = qtyBtn.dataset.groupKey;
+        if (qtyBtn.dataset.cartQty === 'inc') {
+            addOneToWeaponGroup(groupKey);
+        } else {
+            removeOneFromWeaponGroup(groupKey);
+        }
+    }
+}
+
+function handleCartBodyInput(event) {
+    if (!event.target.matches('[data-purchase-qty], [data-purchase-price], [data-purchase-seller]')) return;
+    updatePurchaseTotalsInDom();
+}
+
+function handleCartBodyChange(event) {
+    if (!event.target.matches('[data-purchase-qty], [data-purchase-price], [data-purchase-seller]')) return;
+    readPurchaseFormFromDom();
+}
+
+function initCartBodyDelegation() {
+    if (!elements.cartBody || elements.cartBody.dataset.delegationBound) return;
+
+    elements.cartBody.dataset.delegationBound = 'true';
+    elements.cartBody.addEventListener('click', handleCartBodyClick);
+    elements.cartBody.addEventListener('input', handleCartBodyInput);
+    elements.cartBody.addEventListener('change', handleCartBodyChange);
+}
+
+function bindCartPanelInteractions() {
+    // Delegated handlers are attached once in initCartBodyDelegation.
+}
+
+function renderCartPanel(options = {}) {
     if (!elements.cartBody) return;
+
+    if (cartActiveTab === 'purchase' && !options.skipPurchaseRead) {
+        readPurchaseFormFromDom();
+    }
 
     const count = selectedWeapons.length;
     if (elements.cartTitle) {
-        elements.cartTitle.textContent = count
-            ? t('barter.craftListCount', '{count} предмет(ов)').replace('{count}', count)
-            : '—';
+        if (count) {
+            elements.cartTitle.textContent = t('barter.craftListCount', '{count} предмет(ов)').replace('{count}', count);
+            elements.cartTitle.removeAttribute('data-empty');
+        } else {
+            elements.cartTitle.textContent = '';
+            elements.cartTitle.setAttribute('data-empty', 'true');
+        }
     }
 
     updateCartFab();
 
     if (!count) {
+        cartActiveTab = 'craft';
         elements.cartBody.innerHTML = `
             <div class="barter-cart__empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <path d="M9 12h6"/><path d="M9 16h4"/>
                 </svg>
                 <span>${t('barter.noWeaponsSelected', 'Добавьте оружие в список для расчёта ресурсов')}</span>
             </div>
@@ -362,6 +827,12 @@ function renderCartPanel() {
     }
 
     const adjusted = applyInventoryToRequirements(totals, playerInventory);
+    const missingMaterials = adjusted.materials.filter(entry => entry.missing > 0);
+    prunePurchaseOffers(missingMaterials.map(entry => entry.id));
+
+    if (cartActiveTab === 'purchase' && !missingMaterials.length) {
+        cartActiveTab = 'craft';
+    }
 
     const weaponsHtml = groups.map(group => {
         const node = getBarterNodeById(currentCategory, group.nodeId);
@@ -373,7 +844,7 @@ function renderCartPanel() {
         return `
             <div class="barter-cart-weapon">
                 ${imagePath ? `<img class="barter-cart-weapon__image" src="${imagePath}" alt="" loading="lazy" decoding="async">` : '<div class="barter-cart-weapon__image"></div>'}
-                <div class="barter-cart-weapon__info">
+                <div class="barter-cart-weapon__body">
                     <div class="barter-cart-weapon__name">${name}</div>
                 </div>
                 <div class="barter-cart-weapon__qty">
@@ -385,47 +856,68 @@ function renderCartPanel() {
         `;
     }).join('');
 
-    const materialRows = adjusted.materials
+    const materialEntries = adjusted.materials
         .filter(entry => entry.amount > 0)
-        .map(entry => {
-            const imagePath = getBarterMaterialImagePath(entry.id, BASE_PATH);
-            const missingClass = entry.missing > 0
-                ? 'barter-cart-table__missing'
-                : 'barter-cart-table__missing barter-cart-table__missing--ok';
+        .sort((a, b) => {
+            if (a.satisfied !== b.satisfied) return a.satisfied ? 1 : -1;
+            return b.missing - a.missing;
+        });
 
-            return `
-                <tr>
-                    <td>
-                        <img class="barter-cart-table__icon" src="${imagePath}" alt="" loading="lazy" decoding="async">
-                        ${getBarterMaterialName(entry.material)}
-                    </td>
-                    <td class="barter-cart-table__need">${entry.amount}</td>
-                    <td class="barter-cart-table__have">${entry.have}</td>
-                    <td class="${missingClass}">${entry.missing}</td>
-                </tr>
-            `;
-        }).join('');
+    const missingMaterialCount = materialEntries.filter(entry => entry.missing > 0).length;
+
+    const materialCards = materialEntries.map(entry => {
+        const imagePath = getBarterMaterialImagePath(entry.id, BASE_PATH);
+        const progress = Math.min(100, Math.round((entry.have / entry.amount) * 100));
+        const statusClass = entry.missing > 0
+            ? 'barter-cart-material--missing'
+            : 'barter-cart-material--ok';
+
+        return `
+            <div class="barter-cart-material ${statusClass}">
+                <img class="barter-cart-material__icon" src="${imagePath}" alt="" loading="lazy" decoding="async">
+                <div class="barter-cart-material__body">
+                    <div class="barter-cart-material__head">
+                        <span class="barter-cart-material__name">${getBarterMaterialName(entry.material)}</span>
+                        <div class="barter-cart-material__counts" aria-label="${t('barter.have', 'Есть')} / ${t('barter.need', 'Нужно')}">
+                            <span class="barter-cart-material__have">${entry.have}</span>
+                            <span class="barter-cart-material__sep">/</span>
+                            <span class="barter-cart-material__need">${entry.amount}</span>
+                        </div>
+                    </div>
+                    <div class="barter-cart-material__progress" role="progressbar" aria-valuenow="${entry.have}" aria-valuemin="0" aria-valuemax="${entry.amount}" aria-label="${getBarterMaterialName(entry.material)}">
+                        <div class="barter-cart-material__progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                ${entry.missing > 0
+                    ? `<div class="barter-cart-material__status barter-cart-material__status--missing" title="${t('barter.missing', 'Не хватает')}">
+                        <span class="barter-cart-material__status-value">${entry.missing}</span>
+                    </div>`
+                    : `<div class="barter-cart-material__status barter-cart-material__status--ok" title="${t('barter.allMaterialsCovered', 'Все материалы есть')}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                    </div>`
+                }
+            </div>
+        `;
+    }).join('');
 
     const metaRows = [];
 
     if (adjusted.money.required > 0) {
         metaRows.push(`
-            <div class="barter-cart-meta__row">
-                <span class="barter-cart-meta__label">${t('barter.money', 'Деньги')}</span>
-                <span class="barter-cart-meta__value${adjusted.money.missing === 0 ? ' barter-cart-meta__value--ok' : ''}">
-                    ${formatPrice(adjusted.money.missing)}
-                </span>
+            <div class="barter-cart-summary__item${adjusted.money.missing === 0 ? ' barter-cart-summary__item--ok' : ' barter-cart-summary__item--missing'}">
+                <span class="barter-cart-summary__label">${t('barter.money', 'Деньги')}</span>
+                <span class="barter-cart-summary__value">${formatPrice(adjusted.money.missing)}</span>
             </div>
         `);
     }
 
     if (adjusted.cr.required > 0) {
         metaRows.push(`
-            <div class="barter-cart-meta__row">
-                <span class="barter-cart-meta__label barter-cart-meta__label--cr">${t('barter.cr', 'CR')}</span>
-                <span class="barter-cart-meta__value${adjusted.cr.missing === 0 ? ' barter-cart-meta__value--ok' : ''}">
-                    ${formatEventCost(adjusted.cr.missing)}
-                </span>
+            <div class="barter-cart-summary__item barter-cart-summary__item--cr${adjusted.cr.missing === 0 ? ' barter-cart-summary__item--ok' : ' barter-cart-summary__item--missing'}">
+                <span class="barter-cart-summary__label">${t('barter.cr', 'CR')}</span>
+                <span class="barter-cart-summary__value">${formatEventCost(adjusted.cr.missing)}</span>
             </div>
         `);
     }
@@ -436,56 +928,84 @@ function renderCartPanel() {
             : String(adjusted.level.required);
 
         metaRows.push(`
-            <div class="barter-cart-meta__row">
-                <span class="barter-cart-meta__label">${t('barter.level', 'Уровень')}</span>
-                <span class="barter-cart-meta__value${adjusted.level.missing === 0 ? ' barter-cart-meta__value--ok' : ''}">
-                    ${levelText}
-                </span>
+            <div class="barter-cart-summary__item${adjusted.level.missing === 0 ? ' barter-cart-summary__item--ok' : ' barter-cart-summary__item--missing'}">
+                <span class="barter-cart-summary__label">${t('barter.level', 'Уровень')}</span>
+                <span class="barter-cart-summary__value">${levelText}</span>
             </div>
         `);
     }
 
-    elements.cartBody.innerHTML = `
-        <div class="barter-cart-section">
-            <div class="barter-cart-section__title">${t('barter.selectedWeapons', 'Выбранное оружие')}</div>
-            ${weaponsHtml}
+    const craftTabHtml = `
+        <div class="barter-cart-section barter-cart-section--weapons">
+            <h3 class="barter-cart-section__title barter-cart-section__title--prominent barter-cart-section__title--lined">${t('barter.selectedWeapons', 'Выбранное оружие')}</h3>
+            <div class="barter-cart-weapons">${weaponsHtml}</div>
         </div>
 
         <div class="barter-cart-section">
-            <div class="barter-cart-section__title">${t('barter.totalSummary', 'Не хватает')}</div>
-            ${materialRows ? `
-                <table class="barter-cart-table">
-                    <thead>
-                        <tr>
-                            <th>${t('barter.materials', 'Материалы')}</th>
-                            <th>${t('barter.need', 'Нужно')}</th>
-                            <th>${t('barter.have', 'Есть')}</th>
-                            <th>${t('barter.missing', 'Не хватает')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${materialRows}</tbody>
-                </table>
-            ` : `<div class="barter-cart-meta__row"><span class="barter-cart-meta__label">${t('barter.allMaterialsCovered', 'Все материалы есть')}</span></div>`}
+            <div class="barter-cart-section__head barter-cart-section__head--materials">
+                <h3 class="barter-cart-section__title barter-cart-section__title--prominent">${t('barter.totalSummary', 'Не хватает')}</h3>
+                ${materialEntries.length ? `
+                    <div class="barter-cart-section__stat${missingMaterialCount === 0 ? ' barter-cart-section__stat--ok' : ''}" aria-label="${missingMaterialCount} / ${materialEntries.length}">
+                        ${missingMaterialCount === 0
+                            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>`
+                            : `<span class="barter-cart-section__stat-missing">${missingMaterialCount}</span><span class="barter-cart-section__stat-sep">/</span><span class="barter-cart-section__stat-total">${materialEntries.length}</span>`
+                        }
+                    </div>
+                ` : ''}
+            </div>
+            ${materialCards ? `
+                <div class="barter-cart-materials">${materialCards}</div>
+            ` : `
+                <div class="barter-cart-materials-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>${t('barter.allMaterialsCovered', 'Все материалы есть')}</span>
+                </div>
+            `}
         </div>
 
         ${metaRows.length ? `
-            <div class="barter-cart-section">
-                <div class="barter-cart-section__title">${t('barter.summary', 'Итого')}</div>
-                <div class="barter-cart-meta">${metaRows.join('')}</div>
+            <div class="barter-cart-section barter-cart-section--summary">
+                <h3 class="barter-cart-section__title barter-cart-section__title--prominent barter-cart-section__title--lined">${t('barter.summary', 'Итого')}</h3>
+                <div class="barter-cart-summary">${metaRows.join('')}</div>
             </div>
         ` : ''}
     `;
 
-    elements.cartBody.querySelectorAll('[data-cart-qty]').forEach(button => {
-        button.addEventListener('click', () => {
-            const groupKey = button.dataset.groupKey;
-            if (button.dataset.cartQty === 'inc') {
-                addOneToWeaponGroup(groupKey);
-            } else {
-                removeOneFromWeaponGroup(groupKey);
-            }
-        });
-    });
+    const purchaseTabHtml = renderPurchaseTabContent(missingMaterials);
+    const purchaseTabBadge = missingMaterials.length
+        ? `<span class="barter-cart-tab__badge">${missingMaterials.length}</span>`
+        : '';
+
+    elements.cartBody.innerHTML = `
+        <div class="barter-cart-tabs" role="tablist">
+            <button type="button"
+                    role="tab"
+                    class="barter-cart-tab${cartActiveTab === 'craft' ? ' is-active' : ''}"
+                    data-cart-tab="craft"
+                    aria-selected="${cartActiveTab === 'craft'}">
+                ${t('barter.cartTabCraft', 'Крафт')}
+            </button>
+            <button type="button"
+                    role="tab"
+                    class="barter-cart-tab${cartActiveTab === 'purchase' ? ' is-active' : ''}"
+                    data-cart-tab="purchase"
+                    aria-selected="${cartActiveTab === 'purchase'}"
+                    ${missingMaterials.length ? '' : 'disabled'}>
+                ${t('barter.cartTabPurchase', 'Закупка')}
+                ${purchaseTabBadge}
+            </button>
+        </div>
+        <div class="barter-cart-tabpanel" data-cart-tabpanel="craft" ${cartActiveTab === 'craft' ? '' : 'hidden'}>
+            ${craftTabHtml}
+        </div>
+        <div class="barter-cart-tabpanel barter-cart-tabpanel--purchase" data-cart-tabpanel="purchase" ${cartActiveTab === 'purchase' ? '' : 'hidden'}>
+            ${purchaseTabHtml}
+        </div>
+    `;
+
+    bindCartPanelInteractions();
 }
 
 function getCategoryWeaponOptions() {
@@ -814,6 +1334,7 @@ function initWeaponPicker() {
 }
 
 function initCartPanel() {
+    initCartBodyDelegation();
     elements.cartFab?.addEventListener('click', toggleCartPanel);
     elements.cartClose?.addEventListener('click', closeCartPanel);
     elements.cartBackdrop?.addEventListener('click', closeCartPanel);
@@ -1546,7 +2067,7 @@ function renderMaterialRow(entry, basePath = BASE_PATH) {
 function renderMaterialsSection(calc) {
     const totalsHtml = calc.materials.map(entry => renderMaterialRow(entry)).join('');
 
-    if (!includeFullChain || calc.materialsByNode.length <= 1) {
+    if (calc.materialsByNode.length <= 1) {
         return totalsHtml;
     }
 
@@ -1666,8 +2187,127 @@ function renderCostSummary(calc) {
     return rows.join('');
 }
 
+function renderChainCard(chainNode, { isCurrent, isOwned, canExclude }) {
+    const weapon = getBarterWeapon(chainNode, BASE_PATH);
+    const name = weapon ? getWeaponName(weapon) : chainNode.id;
+    const image = weapon?.imagePath
+        ? `<img class="barter-prereq__image" src="${weapon.imagePath}" alt="">`
+        : '';
+    const excludeLabel = t('barter.excludeChainNode', 'Уже есть — не учитывать в расчёте');
+    const excludeBtn = canExclude
+        ? `
+            <button type="button"
+                    class="barter-chain-card__exclude${isOwned ? ' barter-chain-card__exclude--active' : ''}"
+                    data-chain-node-id="${chainNode.id}"
+                    aria-label="${excludeLabel}"
+                    aria-pressed="${isOwned ? 'true' : 'false'}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18"/>
+                </svg>
+            </button>
+        `
+        : '';
+
+    return `
+        <div class="barter-prereq barter-chain-card${isCurrent ? ' barter-chain-card--current' : ''}${isOwned ? ' barter-chain-card--owned' : ''}">
+            ${image}
+            <span class="barter-prereq__name">${name}</span>
+            ${excludeBtn}
+        </div>
+    `;
+}
+
+function renderChainSection(calc, nodeId) {
+    const effectiveIncludeChain = calc.usesChain && includeFullChain;
+    const ownedThroughId = getChainOwnedThroughId(nodeId);
+    const ownedIndex = ownedThroughId
+        ? calc.fullChainNodes.findIndex(chainNode => chainNode.id === ownedThroughId)
+        : -1;
+
+    if (effectiveIncludeChain && calc.fullChainNodes.length > 1) {
+        const cardsHtml = calc.fullChainNodes.map((chainNode, index) => renderChainCard(chainNode, {
+            isCurrent: index === calc.fullChainNodes.length - 1,
+            isOwned: ownedIndex >= 0 && index <= ownedIndex,
+            canExclude: index < calc.fullChainNodes.length - 1
+        })).join('');
+
+        return `
+            <div class="barter-calc-section">
+                <div class="barter-calc-section__title">${t('barter.chain', 'Цепочка бартера')}</div>
+                ${cardsHtml}
+            </div>
+        `;
+    }
+
+    if (calc.prerequisites.length) {
+        const cardsHtml = calc.prerequisites.map(prereqId => {
+            const prereq = getBarterPrerequisiteWeapon(prereqId, BASE_PATH);
+            const name = prereq ? getWeaponName(prereq) : prereqId;
+            const image = prereq?.imagePath
+                ? `<img class="barter-prereq__image" src="${prereq.imagePath}" alt="">`
+                : '';
+
+            return `
+                <div class="barter-prereq barter-chain-card">
+                    ${image}
+                    <span class="barter-prereq__name">${name}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="barter-calc-section">
+                <div class="barter-calc-section__title">${t('barter.prerequisites', 'Предыдущее снаряжение')}</div>
+                ${cardsHtml}
+            </div>
+        `;
+    }
+
+    return `
+        <div class="barter-calc-section">
+            <div class="barter-calc-section__title">${t('barter.prerequisites', 'Предыдущее снаряжение')}</div>
+            <span class="barter-calc-meta__label">${t('barter.noPrerequisites', 'Не требуется')}</span>
+        </div>
+    `;
+}
+
+function handleChainExcludeClick(nodeId, chainNodeId) {
+    const calc = calculateBarterRequirements(
+        currentCategory,
+        nodeId,
+        includeFullChain,
+        selectedOfferIndex
+    );
+    if (!calc?.fullChainNodes?.length) return;
+
+    const currentOwnedId = getChainOwnedThroughId(nodeId);
+    const clickedIndex = calc.fullChainNodes.findIndex(chainNode => chainNode.id === chainNodeId);
+    const currentOwnedIndex = currentOwnedId
+        ? calc.fullChainNodes.findIndex(chainNode => chainNode.id === currentOwnedId)
+        : -1;
+
+    if (clickedIndex === -1) return;
+
+    if (clickedIndex === currentOwnedIndex) {
+        const previousNode = clickedIndex > 0 ? calc.fullChainNodes[clickedIndex - 1] : null;
+        setChainOwnedThroughId(nodeId, previousNode?.id || null);
+    } else {
+        setChainOwnedThroughId(nodeId, chainNodeId);
+    }
+
+    syncWeaponListEntry(nodeId);
+    renderCalculator(nodeId);
+}
+
 function renderCalculator(nodeId) {
-    const calc = calculateBarterRequirements(currentCategory, nodeId, includeFullChain, selectedOfferIndex);
+    const ownedThroughId = getChainOwnedThroughId(nodeId);
+    const calc = calculateBarterRequirements(
+        currentCategory,
+        nodeId,
+        includeFullChain,
+        selectedOfferIndex,
+        ownedThroughId
+    );
     if (!calc || !elements.panelBody) return;
 
     const weapon = getBarterWeapon(calc.node, BASE_PATH);
@@ -1681,42 +2321,13 @@ function renderCalculator(nodeId) {
         elements.panelTitle.textContent = weaponName;
     }
 
-    const prerequisitesHtml = calc.prerequisites.map(prereqId => {
-        const prereq = getBarterPrerequisiteWeapon(prereqId, BASE_PATH);
-        const name = prereq ? getWeaponName(prereq) : prereqId;
-        const image = prereq?.imagePath
-            ? `<img class="barter-prereq__image" src="${prereq.imagePath}" alt="">`
-            : '';
-
-        return `
-            <div class="barter-prereq">
-                ${image}
-                <span class="barter-prereq__name">${name}</span>
-            </div>
-        `;
-    }).join('');
-
     const materialsHtml = renderMaterialsSection(calc);
 
     const locationsHtml = calc.locations
         .map(loc => getBarterLocationName(loc))
         .join(', ');
 
-    const chainHtml = effectiveIncludeChain && calc.chainNodes.length > 1
-        ? `
-            <div class="barter-calc-section">
-                <div class="barter-calc-section__title">${t('barter.chain', 'Цепочка бартера')}</div>
-                <div class="barter-chain-steps">
-                    ${calc.chainNodes.map((chainNode, index) => {
-                        const chainWeapon = getBarterWeapon(chainNode, BASE_PATH);
-                        const chainName = chainWeapon ? getWeaponName(chainWeapon) : chainNode.id;
-                        const isCurrent = index === calc.chainNodes.length - 1;
-                        return `<div class="barter-chain-step${isCurrent ? ' barter-chain-step--current' : ''}">${chainName}</div>`;
-                    }).join('')}
-                </div>
-            </div>
-        `
-        : '';
+    const chainSectionHtml = renderChainSection(calc, nodeId);
 
     const chainToggleHtml = showChainToggle
         ? `
@@ -1732,12 +2343,7 @@ function renderCalculator(nodeId) {
 
         ${chainToggleHtml}
 
-        ${chainHtml}
-
-        <div class="barter-calc-section">
-            <div class="barter-calc-section__title">${t('barter.prerequisites', 'Предыдущее снаряжение')}</div>
-            ${prerequisitesHtml || `<span class="barter-calc-meta__label">${t('barter.noPrerequisites', 'Не требуется')}</span>`}
-        </div>
+        ${chainSectionHtml}
 
         <div class="barter-calc-section">
             <div class="barter-calc-section__title">${effectiveIncludeChain && calc.materialsByNode.length > 1
@@ -1770,10 +2376,20 @@ function renderCalculator(nodeId) {
         });
     });
 
+    elements.panelBody.querySelectorAll('.barter-chain-card__exclude').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            handleChainExcludeClick(nodeId, button.dataset.chainNodeId);
+        });
+    });
+
     const toggle = document.getElementById('barterChainToggleInner');
     if (toggle) {
         toggle.addEventListener('change', () => {
             includeFullChain = toggle.checked;
+            if (!includeFullChain) {
+                clearChainOwnership(nodeId);
+            }
             syncWeaponListEntry(nodeId);
             renderCalculator(nodeId);
         });
@@ -1803,6 +2419,7 @@ function init() {
 
     initElements();
     playerInventory = loadPlayerInventory();
+    purchaseOffers = loadPurchaseOffers();
     initBurgerMenu();
     initScrollEffects();
     initLangDropdownClose();
