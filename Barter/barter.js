@@ -30,6 +30,7 @@ let weaponPickerOpen = false;
 let cartPanelOpen = false;
 
 const INVENTORY_STORAGE_KEY = 'barter-player-inventory';
+const MAX_PLAYER_LEVEL = 50;
 
 let isDragging = false;
 let dragStartX = 0;
@@ -68,7 +69,7 @@ function loadPlayerInventory() {
 
         const parsed = JSON.parse(raw);
         return {
-            level: Math.max(0, Number(parsed.level) || 0),
+            level: Math.min(MAX_PLAYER_LEVEL, Math.max(0, Number(parsed.level) || 0)),
             money: Math.max(0, Number(parsed.money) || 0),
             cr: Math.max(0, Number(parsed.cr) || 0),
             materials: parsed.materials && typeof parsed.materials === 'object'
@@ -421,7 +422,7 @@ function renderCartPanel() {
     if (adjusted.cr.required > 0) {
         metaRows.push(`
             <div class="barter-cart-meta__row">
-                <span class="barter-cart-meta__label">${t('barter.cr', 'CR')}</span>
+                <span class="barter-cart-meta__label barter-cart-meta__label--cr">${t('barter.cr', 'CR')}</span>
                 <span class="barter-cart-meta__value${adjusted.cr.missing === 0 ? ' barter-cart-meta__value--ok' : ''}">
                     ${formatEventCost(adjusted.cr.missing)}
                 </span>
@@ -553,6 +554,17 @@ function renderWeaponPickerList() {
     }).join('');
 }
 
+function updateWeaponPickerMenuPosition() {
+    const trigger = elements.weaponPickerTrigger;
+    const menu = elements.weaponPickerMenu;
+    if (!trigger || !menu || menu.hidden) return;
+
+    const rect = trigger.getBoundingClientRect();
+    menu.style.top = `${rect.bottom + 4}px`;
+    menu.style.left = `${rect.left}px`;
+    menu.style.width = `${rect.width}px`;
+}
+
 function setWeaponPickerOpen(isOpen) {
     weaponPickerOpen = isOpen;
 
@@ -561,9 +573,28 @@ function setWeaponPickerOpen(isOpen) {
     elements.weaponPickerMenu.hidden = !isOpen;
     elements.weaponPickerTrigger.setAttribute('aria-expanded', String(isOpen));
 
+    if (elements.weaponPickerValue) {
+        elements.weaponPickerValue.hidden = isOpen;
+    }
+    if (elements.weaponSearchInput) {
+        elements.weaponSearchInput.hidden = !isOpen;
+    }
+
     if (isOpen) {
+        if (elements.weaponSearchInput) {
+            elements.weaponSearchInput.value = weaponPickerQuery;
+        }
         renderWeaponPickerList();
-        elements.weaponSearchInput?.focus();
+        requestAnimationFrame(() => {
+            updateWeaponPickerMenuPosition();
+            elements.weaponSearchInput?.focus();
+        });
+    } else {
+        weaponPickerQuery = '';
+        if (elements.weaponSearchInput) {
+            elements.weaponSearchInput.value = '';
+        }
+        updateWeaponPickerValue(selectedNodeId);
     }
 }
 
@@ -618,8 +649,9 @@ function renderInventoryModal() {
                    class="barter-inventory-stat__input"
                    id="barterInventoryLevel"
                    min="0"
+                   max="${MAX_PLAYER_LEVEL}"
                    step="1"
-                   value="${playerInventory.level || 0}">
+                   value="${Math.min(MAX_PLAYER_LEVEL, playerInventory.level || 0)}">
         </label>
         <label class="barter-inventory-stat">
             <span class="barter-inventory-stat__label">${t('barter.money', 'Деньги')}</span>
@@ -631,7 +663,7 @@ function renderInventoryModal() {
                    value="${playerInventory.money || 0}">
         </label>
         <label class="barter-inventory-stat">
-            <span class="barter-inventory-stat__label">${t('barter.cr', 'CR')}</span>
+            <span class="barter-inventory-stat__label barter-inventory-stat__label--cr">${t('barter.cr', 'CR')}</span>
             <input type="number"
                    class="barter-inventory-stat__input"
                    id="barterInventoryCr"
@@ -641,35 +673,50 @@ function renderInventoryModal() {
         </label>
     `;
 
-    const groups = getBarterMaterialsGroupedByRank();
-    elements.inventoryBody.innerHTML = groups.map(group => `
-        <div class="barter-inventory-group">
-            <div class="barter-inventory-group__head">
-                ${group.rankName}<span class="barter-material-group__sep">|</span>${group.locationName}
-            </div>
-            ${group.materials.map(entry => {
+    const materials = getBarterMaterialsForInventory();
+    elements.inventoryBody.innerHTML = `
+        <div class="barter-inventory-grid">
+            ${materials.map(entry => {
                 const imagePath = getBarterMaterialImagePath(entry.id, BASE_PATH);
                 const amount = playerInventory.materials[entry.id] || 0;
 
                 return `
-                    <label class="barter-inventory-item">
-                        <img class="barter-inventory-item__icon" src="${imagePath}" alt="" loading="lazy" decoding="async">
-                        <span class="barter-inventory-item__name">${getBarterMaterialName(entry.material)}</span>
-                        <input type="number"
-                               class="barter-inventory-item__input"
-                               data-material-id="${entry.id}"
-                               min="0"
-                               step="1"
-                               value="${amount}">
-                    </label>
+                    <div class="barter-inventory-cell">
+                        <img class="barter-inventory-cell__icon" src="${imagePath}" alt="" loading="lazy" decoding="async">
+                        <span class="barter-inventory-cell__name">${getBarterMaterialName(entry.material)}</span>
+                        <div class="barter-inventory-cell__qty">
+                            <button type="button" class="barter-inventory-cell__qty-btn" data-inventory-qty="dec" aria-label="−">−</button>
+                            <input type="number"
+                                   class="barter-inventory-cell__qty-input"
+                                   data-material-id="${entry.id}"
+                                   min="0"
+                                   step="1"
+                                   value="${amount}"
+                                   inputmode="numeric"
+                                   aria-label="${getBarterMaterialName(entry.material)}">
+                            <button type="button" class="barter-inventory-cell__qty-btn" data-inventory-qty="inc" aria-label="+">+</button>
+                        </div>
+                    </div>
                 `;
             }).join('')}
         </div>
-    `).join('');
+    `;
+}
+
+function normalizeInventoryLevelInput() {
+    const input = document.getElementById('barterInventoryLevel');
+    if (!input) return 0;
+
+    const level = Math.min(MAX_PLAYER_LEVEL, Math.max(0, Number(input.value) || 0));
+    if (Number(input.value) !== level) {
+        input.value = level;
+    }
+
+    return level;
 }
 
 function readInventoryForm() {
-    const level = Math.max(0, Number(document.getElementById('barterInventoryLevel')?.value) || 0);
+    const level = Math.min(MAX_PLAYER_LEVEL, Math.max(0, Number(document.getElementById('barterInventoryLevel')?.value) || 0));
     const money = Math.max(0, Number(document.getElementById('barterInventoryMoney')?.value) || 0);
     const cr = Math.max(0, Number(document.getElementById('barterInventoryCr')?.value) || 0);
     const materials = {};
@@ -716,7 +763,29 @@ function initWeaponPicker() {
 
     elements.weaponPickerTrigger?.addEventListener('click', (event) => {
         event.stopPropagation();
-        setWeaponPickerOpen(!weaponPickerOpen);
+
+        if (event.target.closest('.barter-weapon-picker__arrow') && weaponPickerOpen) {
+            setWeaponPickerOpen(false);
+            return;
+        }
+
+        if (event.target === elements.weaponSearchInput) {
+            return;
+        }
+
+        if (!weaponPickerOpen) {
+            setWeaponPickerOpen(true);
+        }
+    });
+
+    elements.weaponPickerTrigger?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            if (event.target === elements.weaponSearchInput) return;
+            event.preventDefault();
+            if (!weaponPickerOpen) {
+                setWeaponPickerOpen(true);
+            }
+        }
     });
 
     elements.weaponSearchInput?.addEventListener('input', () => {
@@ -765,6 +834,45 @@ function initInventoryModal() {
 
     elements.inventoryModal?.addEventListener('input', () => {
         readInventoryForm();
+    });
+
+    elements.inventoryModal?.addEventListener('focusout', (event) => {
+        if (event.target.id !== 'barterInventoryLevel') return;
+
+        normalizeInventoryLevelInput();
+        readInventoryForm();
+    });
+
+    elements.inventoryBody?.addEventListener('click', (event) => {
+        const qtyBtn = event.target.closest('[data-inventory-qty]');
+        if (!qtyBtn) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const cell = qtyBtn.closest('.barter-inventory-cell');
+        const input = cell?.querySelector('[data-material-id]');
+        if (!input) return;
+
+        const delta = qtyBtn.dataset.inventoryQty === 'inc' ? 1 : -1;
+        input.value = Math.max(0, (Number(input.value) || 0) + delta);
+        readInventoryForm();
+    });
+
+    elements.inventoryBody?.addEventListener('mousedown', (event) => {
+        if (!window.matchMedia('(pointer: fine)').matches) return;
+        if (event.target.closest('[data-inventory-qty]')
+            || event.target.closest('.barter-inventory-cell__qty-input')) return;
+
+        const cell = event.target.closest('.barter-inventory-cell');
+        if (!cell) return;
+
+        const input = cell.querySelector('[data-material-id]');
+        if (!input) return;
+
+        event.preventDefault();
+        input.focus();
+        input.select();
     });
 
     document.addEventListener('keydown', (event) => {
@@ -1720,6 +1828,7 @@ function init() {
         updateCanvasSize();
         drawConnections();
         clampPan();
+        updateWeaponPickerMenuPosition();
     });
 }
 

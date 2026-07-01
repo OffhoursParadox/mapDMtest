@@ -834,6 +834,24 @@ const BARTER_RANK_ORDER = [
     'lockpick', 'novice', 'stalker', 'experienced', 'veteran', 'expert', 'professional', 'master', 'legend'
 ];
 
+const BARTER_INVENTORY_RANK_ORDER = [
+    'veteran', 'experienced', 'stalker', 'novice', 'lockpick'
+];
+
+const BARTER_NORTH_TAIL_MATERIAL_IDS = [
+    'dark_pass',
+    'anomaly_glass',
+    'storm_shard',
+    'crystal_bud'
+];
+
+const BARTER_WINTER_EVENT_MATERIAL_ORDER = [
+    'stuzha',
+    'homemade_thermoplast',
+    'alpha_substance_container',
+    'frost_beacon'
+];
+
 function getAllBarterMaterialIds() {
     const ids = [];
     const seen = new Set();
@@ -877,6 +895,35 @@ function getBarterMaterialsGroupedByRank() {
             };
         })
         .filter(Boolean);
+}
+
+function getBarterMaterialsForInventory() {
+    const result = [];
+    const seen = new Set();
+
+    const pushEntry = (id) => {
+        if (seen.has(id)) return;
+
+        const material = BARTER_MATERIALS[id];
+        if (!material) return;
+
+        seen.add(id);
+        result.push({ id, material });
+    };
+
+    BARTER_INVENTORY_RANK_ORDER.forEach(rank => {
+        const tier = BARTER_RESOURCE_TIERS[rank];
+        if (!tier?.materialIds?.length) return;
+
+        tier.materialIds.forEach(pushEntry);
+    });
+
+    BARTER_NORTH_TAIL_MATERIAL_IDS.forEach(pushEntry);
+    BARTER_WINTER_EVENT_MATERIAL_ORDER.forEach(pushEntry);
+
+    Object.keys(BARTER_MATERIALS).forEach(pushEntry);
+
+    return result;
 }
 
 function calculateAggregatedBarterRequirements(category, selections) {
